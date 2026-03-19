@@ -1133,7 +1133,7 @@ function buildReminderResponse(text) {
 // 留空则使用本地关键词匹配引擎（离线可用）
 // ============================================================
 const DEEPSEEK_CONFIG = {
-  apiKey: '',          // 填入：sk-xxxxxxxxxxxxxxxx
+  apiKey: 'sk-bc78fcee9c484e70a8ca747a70bab465',
   baseUrl: 'https://api.deepseek.com/v1',
   model: 'deepseek-chat',
   enabled() { return !!this.apiKey.trim(); },
