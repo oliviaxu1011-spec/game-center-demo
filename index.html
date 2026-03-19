@@ -875,96 +875,247 @@ body {
 
 <script>
 // ============================================================
-// INTENT ENGINE
+// INTENT ENGINE v2 — 模糊语义识别
+// 支持：精确关键词 / 正则模式 / 同义句式 / 语义向量近似
 // ============================================================
+
 const INTENTS = [
   {
     id: 'welfare',
     label: '🎁 福利/礼包',
-    keywords: ['礼包','福利','领取','奖励','兑换','可以领','能领','有啥福利','什么福利','今天福利','限时礼'],
-    // 高权重词：出现即可高置信
-    strongKeywords: ['礼包','福利','领取','兑换'],
+    keywords: ['礼包','福利','领取','奖励','兑换','可以领','能领','有啥福利','什么福利','今天福利','限时礼','白嫖','免费','赠送','活动奖品','签到'],
+    strongKeywords: ['礼包','福利','领取','兑换','白嫖','签到'],
+    // 正则模式 — 匹配自然语言句式
+    patterns: [
+      /有.{0,4}(好东西|好处|好康|东西|奖品|活动|福利|礼|包).*(?:领|拿|要|可以|能)/,
+      /(?:今天|今日|最近|现在).{0,4}(?:有啥|有什么|有没有|能不能).{0,6}(?:领|拿|得|白嫖|签|兑|奖|包|福|利|活动)/,
+      /(?:送|给|发|赠).{0,4}(?:东西|奖品|礼物|好东西)/,
+      /(?:不花钱|不要钱|不用花|0元|零元|免费).{0,6}(?:拿|得|获|领)/,
+      /(?:签到|每日|登录).{0,4}(?:奖|礼|领|拿)/,
+      /有(?:没有)?什么.*(?:能|可以).*(?:领|拿|获|白嫖)/,
+      /(?:给我|帮我|来点|整点).{0,4}(?:福利|好处|礼包|奖励)/,
+    ],
     confidence: 0,
   },
   {
     id: 'record',
     label: '🏆 战绩查询',
-    keywords: ['战绩','战报','最近打','胜率','赢了多少','输了多少','kda','KDA','我的数据','排位数据','局数','胜负'],
-    strongKeywords: ['战绩','战报','胜率','kda','KDA'],
+    keywords: ['战绩','战报','最近打','胜率','赢了多少','输了多少','kda','KDA','我的数据','排位数据','局数','胜负','几连胜','几连败','分数','段位','星数','排位','打了几把','对局记录'],
+    strongKeywords: ['战绩','战报','胜率','kda','KDA','段位','星数'],
+    patterns: [
+      /(?:我|俺|老子|哥|姐).{0,6}(?:打|玩|搞|干).{0,6}(?:怎么样|如何|咋样|行不行|好不好|得怎样)/,
+      /(?:最近|今天|昨天|这周|上周).{0,6}(?:赢|输|打|玩).{0,6}(?:多少|几|怎|如何|咋)/,
+      /(?:看看|查查|查下|查一下|瞅瞅).{0,6}(?:我|成绩|数据|战绩|记录|胜率)/,
+      /(?:赢|输|胜|负|败).{0,4}(?:了|多少|几|率)/,
+      /(?:表现|水平|实力|成绩|发挥).{0,4}(?:怎么样|如何|咋样)/,
+      /(?:连赢|连输|连胜|连败).{0,4}(?:了|几|多少)?/,
+      /(?:什么|啥|多少).{0,4}(?:段位|段|星|分)/,
+      /(?:我的|查个|帮我查).{0,6}(?:数据|记录|战绩|对局)/,
+      /(?:上|涨|掉|升|降).{0,4}(?:分|星|段)/,
+    ],
     confidence: 0,
   },
   {
     id: 'replay',
     label: '🔍 AI复盘',
-    keywords: ['复盘','分析','上一把','上局','刚才那把','这把','怎么输的','为什么输','打得怎么样','AI分析','复盘一下'],
-    strongKeywords: ['复盘','上一把','上局','怎么输的','为什么输'],
+    keywords: ['复盘','分析','上一把','上局','刚才那把','这把','怎么输的','为什么输','打得怎么样','AI分析','复盘一下','回顾','刚才','那局','那把','失误','问题在哪','哪里不对'],
+    strongKeywords: ['复盘','上一把','上局','怎么输的','为什么输','刚才那把'],
+    patterns: [
+      /(?:刚才|刚|上一|上次|那).{0,4}(?:把|局|场|盘|次).{0,6}(?:分析|看看|怎么|咋|问题|失误|原因|输|回顾)/,
+      /(?:为什么|为啥|咋).{0,4}(?:输|败|崩|炸|送|菜)/,
+      /(?:分析|看看|帮我看|分析下|复盘|回顾).{0,6}(?:刚才|上一|刚|那|一下)/,
+      /(?:我|这|那|上).{0,4}(?:把|局|场).{0,4}(?:问题|毛病|不对|差|失误|不好|不行)/,
+      /(?:怎么|为啥|为什么).{0,6}(?:打|玩|输|败).{0,4}(?:这么|那么)(?:差|菜|烂|惨)/,
+      /(?:帮我|给我|来个).{0,4}(?:分析|复盘|回顾|看看)/,
+      /(?:哪里|什么地方|哪个环节).{0,4}(?:出了|有|做).{0,4}(?:问题|错|不对|差)/,
+    ],
     confidence: 0,
   },
   {
     id: 'partner',
     label: '🤝 找搭子',
-    keywords: ['搭子','搭一搭','队友','找人','一起玩','组队','开黑','上分','找个人','陪玩','匹配','找搭','国服','来个','带我','一起'],
-    strongKeywords: ['搭子','开黑','组队','陪玩','国服'],
+    keywords: ['搭子','搭一搭','队友','找人','一起玩','组队','开黑','上分','找个人','陪玩','匹配','找搭','国服','来个','带我','一起','打游戏','求带','求抱大腿','大腿','好友','约','排位上分','双排','五排','三排','开车'],
+    strongKeywords: ['搭子','开黑','组队','陪玩','国服','双排','五排','求带'],
+    patterns: [
+      /(?:有没有|有谁|谁).{0,6}(?:一起|陪我|带我|跟我|和我).{0,6}(?:玩|打|开|排|上|冲)/,
+      /(?:找|来|求|约|想要|需要).{0,6}(?:个|一个|几个)?(?:人|队友|搭子|伙伴|小伙伴|朋友).{0,6}(?:玩|打|开黑|排位|上分|组队)?/,
+      /(?:想|要|能不能|可以|可不可以).{0,6}(?:一起|一块|一块儿|陪|跟|和|同).{0,6}(?:玩|打|开|组|上|冲)/,
+      /(?:好无聊|无聊|没人|一个人|孤独|寂寞).{0,6}(?:玩|打|开|组|上)/,
+      /(?:带|抱|carry|Carry|帮).{0,4}(?:我|飞|上|冲|分)/,
+      /(?:几|多少)(?:个|排|黑|缺|差)(?:人|位|个)?/,
+      /(?:满|凑|差|缺).{0,4}(?:人|一个|两个|位|个)/,
+      /(?:有没有|有人|谁要).{0,6}(?:开黑|上分|排位|组队|一起)/,
+      /(?:单排|solo).{0,4}(?:无聊|没意思|烦|累|寂寞)/,
+    ],
     confidence: 0,
   },
   {
     id: 'news',
     label: '📰 游戏资讯',
-    keywords: ['资讯','更新','新版本','新英雄','新角色','活动','公告','新地图','改动','新增','版本'],
-    strongKeywords: ['资讯','新版本','新英雄','公告','更新'],
+    keywords: ['资讯','更新','新版本','新英雄','新角色','活动','公告','新地图','改动','新增','版本','补丁','赛季','新赛季','调整','削弱','增强','改版','维护','停机','上线','S赛','联赛','比赛','赛事','战队','选手'],
+    strongKeywords: ['资讯','新版本','新英雄','公告','更新','赛季','赛事','比赛'],
+    patterns: [
+      /(?:最近|最新|有没有|有啥|有什么).{0,6}(?:更新|改动|消息|动态|新闻|资讯|活动|公告)/,
+      /(?:什么时候|啥时候|几号|多久).{0,6}(?:更新|维护|出|上线|开|版本|赛季)/,
+      /(?:新|下个|下一个|即将).{0,6}(?:版本|赛季|英雄|角色|地图|武器|皮肤)/,
+      /(?:谁|哪个|什么).{0,4}(?:被|要|会|将).{0,4}(?:削|加强|调整|改|砍|buff|nerf)/,
+      /(?:游戏|版本).{0,4}(?:有什么|有啥|啥).{0,4}(?:变化|改动|更新|新的)/,
+    ],
     confidence: 0,
   },
   {
     id: 'guide',
     label: '📖 攻略查询',
-    // 移除了过于宽泛的 "如何"，只保留游戏相关的攻略词
-    keywords: ['怎么玩','攻略','出装','加点','技巧','套路','怎么打','玩法','推荐装备','铭文','符文','怎么用','连招'],
-    strongKeywords: ['攻略','出装','铭文','符文','加点','连招'],
+    keywords: ['怎么玩','攻略','出装','加点','技巧','套路','怎么打','玩法','推荐装备','铭文','符文','怎么用','连招','教学','教程','思路','打法','对线','克制','怎么克','怎么针对','天赋'],
+    strongKeywords: ['攻略','出装','铭文','符文','加点','连招','教学','天赋'],
+    patterns: [
+      /(?:怎么|如何|咋).{0,6}(?:玩|打|用|操作|连招|发育|对线|克制|针对)/,
+      /(?:教教|教我|告诉我|说说).{0,6}(?:怎么|如何|咋).{0,6}(?:玩|打|用|操作)/,
+      /(?:推荐|建议|该|应该).{0,6}(?:出|带|用|选|配|点).{0,6}(?:什么|啥|哪个)/,
+      /.{0,4}(?:出装|装备|天赋|技能|加点|铭文|符文|连招).{0,4}(?:推荐|怎么|如何|建议|教|分享)/,
+      /(?:怎么|如何|咋).{0,4}(?:才能|可以).{0,4}(?:打好|玩好|上分|carry|赢)/,
+      /(?:新手|萌新|小白|刚入坑).{0,8}(?:怎|如何|求|教)/,
+      /.{0,4}(?:什么|哪个|哪些).{0,4}(?:英雄|角色|武器).{0,4}(?:好用|厉害|强势|好玩|推荐|适合)/,
+    ],
     confidence: 0,
   },
   {
     id: 'highlight',
     label: '🎬 高光/视频',
-    keywords: ['高光','视频','精彩','回放','生成','录像','精彩时刻','集锦','highlight'],
-    strongKeywords: ['高光','集锦','精彩时刻','highlight'],
+    keywords: ['高光','视频','精彩','回放','生成','录像','精彩时刻','集锦','highlight','五杀','超神','mvp','MVP','秀','操作','名场面','绝杀','翻盘'],
+    strongKeywords: ['高光','集锦','精彩时刻','highlight','五杀','超神'],
+    patterns: [
+      /(?:刚才|上次|那个|我的).{0,6}(?:五杀|超神|精彩|秀|mvp|MVP|绝杀|翻盘).{0,6}(?:视频|回放|录像|生成|做|剪)/,
+      /(?:生成|做|来|搞|整).{0,6}(?:个|一个)?.{0,4}(?:视频|回放|集锦|高光|混剪)/,
+      /(?:精彩|厉害|nb|牛|秀|帅).{0,6}(?:操作|时刻|瞬间|画面).{0,6}(?:看|存|录|留|生成)?/,
+      /(?:记录|保存|截|录|留).{0,6}(?:刚才|上次|那个).{0,6}(?:操作|时刻|画面|瞬间)/,
+    ],
     confidence: 0,
   },
   {
     id: 'download',
     label: '⬇️ 游戏下载',
-    keywords: ['下载','安装','预约','怎么下','哪里下','下载链接','客户端','游戏包'],
-    strongKeywords: ['下载','安装','预约'],
+    keywords: ['下载','安装','预约','怎么下','哪里下','下载链接','客户端','游戏包','体验服','测试服','内测','公测','安装包','更新包','装游戏'],
+    strongKeywords: ['下载','安装','预约','体验服','内测'],
+    patterns: [
+      /(?:在哪|怎么|如何|哪里|去哪).{0,6}(?:下|装|弄|搞|获取).{0,6}(?:游戏|客户端|安装包)?/,
+      /(?:想|要|能|可以).{0,6}(?:下|装|试|玩|体验).{0,6}(?:这个|那个|这款|新)?.{0,4}(?:游戏)?/,
+      /(?:手机|电脑|平板|ipad).{0,6}(?:能|可以|怎么|如何).{0,6}(?:玩|下|装|弄)/,
+      /(?:什么时候|啥时候).{0,6}(?:能|可以).{0,6}(?:下|装|玩|体验)/,
+    ],
     confidence: 0,
   },
   {
     id: 'skin',
     label: '🛍️ 皮肤/购买',
-    keywords: ['皮肤','购买','新皮','限定','多少钱','价格','商城','市集','鹅毛','在卖','上架'],
-    strongKeywords: ['皮肤','新皮','限定','商城','鹅毛'],
+    keywords: ['皮肤','购买','新皮','限定','多少钱','价格','商城','市集','鹅毛','在卖','上架','买','外观','时装','特效','点券','钻石','氪金','充值','开箱','抽奖','概率'],
+    strongKeywords: ['皮肤','新皮','限定','商城','鹅毛','充值','氪金'],
+    patterns: [
+      /(?:最近|有什么|有啥|有没有).{0,6}(?:好看|新|好|值).{0,6}(?:皮肤|外观|时装|皮)/,
+      /(?:想|要|准备|打算).{0,6}(?:买|入|氪|抽|充|剁手)/,
+      /(?:划算|值|值不值|性价比).{0,6}(?:买|入|抽|氪)/,
+      /(?:便宜|打折|折扣|活动|优惠).{0,6}(?:皮肤|皮|外观|时装|商城|充值)?/,
+      /.{0,4}(?:多少|几|什么价|要花).{0,4}(?:钱|券|钻|币|点)/,
+    ],
     confidence: 0,
   },
   {
     id: 'report',
     label: '📅 日报/周报',
-    keywords: ['日报','周报','总结','本周','每日','统计','报告','数据总览','回顾'],
-    strongKeywords: ['日报','周报','总结','报告'],
+    keywords: ['日报','周报','总结','本周','每日','统计','报告','数据总览','回顾','月报','盘点','复盘数据','赛季总结','成长','进步'],
+    strongKeywords: ['日报','周报','总结','报告','月报','盘点'],
+    patterns: [
+      /(?:看看|给我|来个|生成|整个).{0,6}(?:总结|报告|回顾|盘点|统计|概况)/,
+      /(?:这周|本周|这个月|本月|这赛季|上周|上月).{0,6}(?:怎么样|如何|咋样|表现|数据|打了)/,
+      /(?:最近|近期).{0,6}(?:进步|成长|变化|提升|退步)/,
+      /(?:总的|整体|全部|所有).{0,6}(?:数据|表现|情况|统计)/,
+    ],
     confidence: 0,
   },
   {
     id: 'emotion',
     label: '😤 情绪互动',
-    keywords: ['好烦','烦死','气死','连跪','一直输','菜','坑','垃圾','太难了','好难','放弃','崩溃','心态','想退坑','不想玩了'],
-    strongKeywords: ['连跪','想退坑','不想玩了','崩溃','心态'],
+    keywords: ['好烦','烦死','气死','连跪','一直输','菜','坑','垃圾','太难了','好难','放弃','崩溃','心态','想退坑','不想玩了','炸了','裂了','自闭','吐了','无语','emmm','唉','哎','淦','草','卧槽','服了','麻了','累了','不想打了','没意思','不好玩'],
+    strongKeywords: ['连跪','想退坑','不想玩了','崩溃','心态','自闭','不想打了'],
+    patterns: [
+      /(?:我|真|太|好|越来越).{0,4}(?:烦|气|累|难受|崩|炸|裂|自闭|无语|服了|麻了)/,
+      /(?:又|一直|总是|老是|每次).{0,6}(?:输|跪|送|菜|坑|死|被|炸|崩)/,
+      /(?:不想|不要|不愿|不打算).{0,6}(?:玩|打|碰|开|继续|排)/,
+      /(?:什么|这什么).{0,6}(?:队友|辣鸡|垃圾|坑|游戏)/,
+      /(?:遇到|碰到|匹配|摊上|碰|遇).{0,6}(?:坑|挂|外挂|演|演员|菜|队友)/,
+      /(?:心态|精神|情绪|人).{0,6}(?:炸|崩|裂|碎|不好|差|爆|没了)/,
+    ],
     confidence: 0,
   },
   {
     id: 'reminder',
     label: '⏰ 定时提醒',
-    keywords: ['提醒','定时','到时候','帮我记','点钟','点提醒','点上线','打卡','提示我','alarm'],
-    strongKeywords: ['提醒','定时','alarm'],
+    keywords: ['提醒','定时','到时候','帮我记','点钟','点提醒','点上线','打卡','提示我','alarm','闹钟','记得','别忘','忘了','通知我'],
+    strongKeywords: ['提醒','定时','alarm','闹钟','通知我'],
+    patterns: [
+      /(?:\d+|几|一会|等下|待会).{0,4}(?:点|分|小时|分钟|后).{0,6}(?:提醒|叫|喊|通知|记得|告诉)/,
+      /(?:帮我|帮忙|给我|麻烦).{0,6}(?:设|定|弄|搞|来).{0,6}(?:个|一个)?(?:提醒|闹钟|定时|通知)/,
+      /(?:别忘|记得|不要忘|提醒我|叫我).{0,6}(?:上线|签到|领|打|登录|抢|参加)/,
+      /(?:到时候|等到|一会).{0,6}(?:提醒|叫|喊|通知)/,
+    ],
     confidence: 0,
   },
 ];
+
+// ============================================================
+// 模糊匹配工具函数
+// ============================================================
+
+// 编辑距离（Levenshtein），用于容错匹配（错别字、谐音字）
+function editDistance(a, b) {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  const dp = Array.from({length:a.length+1}, ()=>Array(b.length+1).fill(0));
+  for (let i=0;i<=a.length;i++) dp[i][0]=i;
+  for (let j=0;j<=b.length;j++) dp[0][j]=j;
+  for (let i=1;i<=a.length;i++){
+    for (let j=1;j<=b.length;j++){
+      dp[i][j] = Math.min(
+        dp[i-1][j]+1, dp[i][j-1]+1,
+        dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1)
+      );
+    }
+  }
+  return dp[a.length][b.length];
+}
+
+// 谐音/易错词映射
+const TYPO_MAP = {
+  '战机':'战绩', '站绩':'战绩', '占绩':'战绩', '战记':'战绩',
+  '付盘':'复盘', '覆盘':'复盘', '复盘盘':'复盘',
+  '搭着':'搭子', '大子':'搭子', '答子':'搭子',
+  '公略':'攻略', '攻率':'攻略',
+  '皮副':'皮肤', '批肤':'皮肤', '皮服':'皮肤',
+  '利包':'礼包', '里包':'礼包',
+  '高管':'高光', '搞光':'高光',
+  '开嘿':'开黑', '开合':'开黑',
+  '段味':'段位', '短位':'段位',
+  '上份':'上分', '伤分':'上分',
+  '下在':'下载', '下栽':'下载',
+  '提行':'提醒', '提星':'提醒',
+};
+
+// 纠错预处理
+function correctTypos(text) {
+  let t = text;
+  for (const [wrong, right] of Object.entries(TYPO_MAP)) {
+    if (t.includes(wrong)) t = t.replace(wrong, right);
+  }
+  return t;
+}
+
+// 拼音首字母简写识别（常用简称）
+const ABBR_MAP = {
+  'zj':'战绩', 'fp':'复盘', 'dz':'搭子', 'kh':'开黑',
+  'gl':'攻略', 'pf':'皮肤', 'lb':'礼包', 'fl':'福利',
+  'gg':'高光', 'zb':'周报', 'rb':'日报', 'tx':'提醒',
+  'xz':'下载', 'zx':'资讯',
+};
 
 // ============================================================
 // GAME DETECTION — 从用户文本中识别游戏
@@ -1118,28 +1269,73 @@ function detectGame(text) {
 const DEFAULT_GAME = GAMES.wzry;
 
 function detectIntent(text) {
-  const t = text.toLowerCase();
+  // ── Step 0: 预处理 ──────────────────────────────
+  let t = text.toLowerCase();
+  const tCorrected = correctTypos(t); // 谐音纠错
+  const tClean = tCorrected.replace(/[？?！!。，,、~…\s]+/g, ''); // 去除标点空格
+
   let best = null, bestScore = 0;
   const scores = [];
 
   INTENTS.forEach(intent => {
     let score = 0;
-    // 普通关键词 +2
+
+    // ── Step 1: 精确关键词匹配 ─────────────────────
     intent.keywords.forEach(kw => {
-      if (t.includes(kw.toLowerCase())) score += 2;
+      const kwL = kw.toLowerCase();
+      // 同时匹配原文和纠错后的文本
+      if (tCorrected.includes(kwL) || tClean.includes(kwL)) score += 2;
     });
+
     // 强关键词额外 +3（总计 +5）
     if (intent.strongKeywords) {
       intent.strongKeywords.forEach(kw => {
-        if (t.includes(kw.toLowerCase())) score += 3;
+        const kwL = kw.toLowerCase();
+        if (tCorrected.includes(kwL) || tClean.includes(kwL)) score += 3;
       });
     }
+
+    // ── Step 2: 正则模式匹配（自然语言句式）──────────
+    if (intent.patterns) {
+      let patternHits = 0;
+      intent.patterns.forEach(re => {
+        if (re.test(tCorrected) || re.test(t)) patternHits++;
+      });
+      // 每命中一个 pattern +4 分，多个 pattern 命中是强信号
+      score += patternHits * 4;
+    }
+
+    // ── Step 3: 拼音简写识别 ─────────────────────────
+    const words = tClean.split('');
+    for (const [abbr, meaning] of Object.entries(ABBR_MAP)) {
+      if (tClean === abbr || t.trim() === abbr) {
+        // 用户输入就是拼音缩写
+        const targetIntent = INTENTS.find(i => i.keywords.some(k => k.includes(meaning)));
+        if (targetIntent && targetIntent.id === intent.id) score += 8;
+      }
+    }
+
+    // ── Step 4: 编辑距离近似匹配（容错2字内）─────────
+    if (score === 0 && intent.strongKeywords) {
+      intent.strongKeywords.forEach(kw => {
+        if (kw.length >= 2) {
+          // 在文本中滑窗匹配
+          for (let i = 0; i <= tCorrected.length - kw.length; i++) {
+            const seg = tCorrected.slice(i, i + kw.length + 1);
+            const dist = editDistance(seg, kw);
+            if (dist <= 1 && kw.length >= 2) score += 2; // 编辑距离1以内视为近似匹配
+          }
+        }
+      });
+    }
+
     scores.push({ id: intent.id, label: intent.label, score });
     if (score > bestScore) { bestScore = score; best = intent; }
   });
 
   if (bestScore === 0) return null;
-  // 使用对数曲线让置信度更合理，避免多关键词堆叠到100%
+
+  // 使用对数曲线让置信度更合理
   const confidence = Math.min(95, Math.round(55 + 20 * Math.log2(bestScore)));
   return { ...best, confidence, allScores: scores };
 }
@@ -1918,45 +2114,114 @@ const DEEPSEEK_CONFIG = {
 };
 
 // 游戏中心垂类 System Prompt —— 告诉 DeepSeek 它的角色和边界
-const SYSTEM_PROMPT = `你是"QQ游戏中心 AI助手"，一个专注于游戏中心垂类场景的意图识别引擎。
+const SYSTEM_PROMPT = `你是"QQ游戏中心 AI助手"，一个专注于游戏中心垂类场景的**模糊语义理解**引擎。
 用户名：蟹柳。
 
+## 🧠 核心能力：模糊语义理解
+
+你必须能理解各种不规范、口语化、模糊的用户输入，包括但不限于：
+
+### 1. 口语化 & 省略表达
+- "看看我打得咋样" → 战绩查询
+- "刚那把啥情况" → AI复盘
+- "有没有人玩" → 找搭子
+- "有好东西领不" → 福利
+- "教教我怎么搞" → 攻略
+- "整个视频" → 高光
+- "这把队友什么玩意" → 情绪互动
+
+### 2. 网络用语 & 缩写 & 黑话
+- "gg了"、"芜湖"、"绝了"、"6"、"nb" → 根据上下文判断
+- "盲僧/瞎子/李青" → 同一个英雄
+- "鹅毛市集" → 皮肤/购买
+- "吃鸡" → 和平精英相关
+- "农药" → 王者荣耀
+- "原" → 原神
+- "三角"、"sjz" → 三角洲行动
+- "kda"、"胜率"、"mvp" → 战绩查询
+
+### 3. 谐音 & 错别字
+- "战机" → "战绩"
+- "付盘" → "复盘"
+- "搭着" → "搭子"
+- "公略" → "攻略"
+- "利包" → "礼包"
+- "皮副" → "皮肤"
+- 即使用户打错字，你也要猜出真实意图
+
+### 4. 模糊 & 含蓄表达
+- "我最近玩得不太行" → 可能想查战绩或求攻略
+- "有意思吗" → 可能在问某游戏值不值得玩
+- "感觉打不过" → 可能想要攻略或复盘
+- "没动力了" → 情绪互动或福利激励
+- "还有救吗" → 可能是复盘或情绪
+- "今天运气不好" → 战绩或情绪
+- "帮帮我" → 根据上下文推断，可能是攻略/搭子/复盘
+
+### 5. 反问 & 质疑式表达
+- "我胜率是不是很低" → 战绩查询
+- "是不是出装有问题" → 攻略查询  
+- "队友能不能正常点" → 情绪互动
+- "这游戏还能玩吗" → 情绪互动
+
 你的核心任务：
-1. 精准识别用户意图，归类到支持的12个游戏中心意图类别
-2. 若用户问的是游戏无关内容，不要拒绝，要用聪明幽默的方式把话题自然拉回游戏——
-   找到用户输入与游戏场景之间的类比或联系，顺势推荐游戏中心的对应功能
+1. 理解用户的真实意图（即使表达很模糊或有错别字），精准归类到12个意图之一
+2. 若用户问的是游戏无关内容，不要拒绝，用幽默的方式把话题拉回游戏——找到类比联系，推荐对应功能
 3. 始终返回结构化 JSON，intentId 永远是12个意图之一，永远不要返回 out_of_scope
 
-## 拉回游戏的策略参考（灵活运用，不要照搬）：
+## 拉回游戏的策略参考（灵活运用）：
 - 用户说"今天好累" → 类比"打游戏解压"，推荐找搭子/情绪互动
 - 用户问"天气怎么样" → "不如把时间花在游戏上"，推荐查看今日福利
 - 用户说"我要吃饭了" → "吃饭前先领个礼包？"，推荐福利
 - 用户问"股票怎么样" → "游戏里的皮肤涨价更猛"，推荐皮肤/鹅毛市集
 - 用户说"我要睡觉了" → "睡前设个提醒，明早登录领限时奖励？"，推荐定时提醒
-- 用户说"好无聊" → "来一把王者？"，推荐找搭子或下载
+- 用户说"好无聊" → "来一把王者？"，推荐找搭子
 - 用户说"最近工作好忙" → "忙里偷闲，看看本周战绩报告？"，推荐周报
-- 用户聊感情/失恋 → "游戏陪你过难关，找个搭子开黑发泄一下？"，推荐找搭子/情绪
-- 用户问知识/历史 → "说到XX，王者荣耀里有个英雄原型就是这个"，推荐攻略/资讯
+- 用户聊感情/失恋 → "游戏陪你过难关，找个搭子开黑发泄一下？"，推荐搭子/情绪
+- 用户问知识 → "说到XX，王者荣耀里有个英雄原型就是这个"，推荐攻略/资讯
 
 ## 回复风格要求：
-- 幽默自然，不生硬，像朋友一样说话
-- 先接住用户的话，再顺势引导，不要直接无视
+- 幽默自然，像朋友一样说话，不生硬
+- 先接住用户的话，再顺势引导
 - replyText 20-50字，可以用 <strong> 加粗关键词
-- 引导要有具体的游戏功能落点，不能只说"来玩游戏吧"
+- 引导要有具体的游戏功能落点
+
+## 关键原则（必须遵守）：
+- **宁可大胆猜测，也不要说"我不确定"** — 给出你最有可能的判断
+- **模糊输入优先匹配最相关的游戏功能** — 比如"帮帮我"在没有更多上下文时，优先推荐攻略或找搭子
+- **对于谐音和错别字，先脑内纠正再理解**
+- **confidence 反映你的判断把握** — 非常确定 85-95，比较确定 70-84，模糊猜测 50-69
 
 支持的意图类别（intentId）：
-- welfare      福利/礼包（领取、兑换、限时奖励）
-- record       战绩查询（胜率、KDA、排位数据）
+- welfare      福利/礼包（领取、兑换、限时奖励、签到）
+- record       战绩查询（胜率、KDA、排位数据、段位）
 - replay       AI复盘（分析对局、失误、改进建议）
-- partner      找搭子（组队、开黑、匹配队友）
-- news         游戏资讯（版本更新、新英雄、公告）
-- guide        攻略查询（出装、技巧、玩法）
-- highlight    高光视频（生成集锦、精彩回放）
-- download     游戏下载/预约
-- skin         皮肤/购买（商城、鹅毛市集）
-- report       日报/周报（游戏统计总结）
-- emotion      情绪互动（发泄、安慰、心态问题）
-- reminder     定时提醒（设置上线提醒）
+- partner      找搭子（组队、开黑、匹配队友、陪玩）
+- news         游戏资讯（版本更新、新英雄、赛事公告）
+- guide        攻略查询（出装、技巧、玩法、教学）
+- highlight    高光视频（生成集锦、精彩回放、五杀超神）
+- download     游戏下载/预约（安装、体验服）
+- skin         皮肤/购买（商城、鹅毛市集、充值、限定）
+- report       日报/周报（游戏统计总结、赛季盘点）
+- emotion      情绪互动（发泄、安慰、心态爆炸、连跪）
+- reminder     定时提醒（设置上线提醒、签到提醒）
+
+## Few-shot 示例：
+
+用户: "有啥好东西"
+{"intentId":"welfare","intentLabel":"🎁 福利/礼包","confidence":78,"replyText":"好东西当然有！<strong>今日福利</strong>等你领，手慢无哦 🎁","needFollowUp":false,"followUpQuestion":"","quickReplies":["看今日福利","王者礼包"]}
+
+用户: "打得怎样啊"
+{"intentId":"record","intentLabel":"🏆 战绩查询","confidence":82,"replyText":"来看看你的<strong>近期战绩</strong>表现如何 📊","needFollowUp":true,"followUpQuestion":"想查哪个游戏的？","quickReplies":["王者荣耀","和平精英","三角洲行动"]}
+
+用户: "刚那把离谱"
+{"intentId":"replay","intentLabel":"🔍 AI复盘","confidence":85,"replyText":"离谱的局？让我帮你<strong>分析一下</strong>到底哪里出了问题 🔍","needFollowUp":false,"followUpQuestion":"","quickReplies":["复盘上一把","查看战绩"]}
+
+用户: "有人一起不"
+{"intentId":"partner","intentLabel":"🤝 找搭子","confidence":88,"replyText":"当然有！帮你<strong>匹配在线搭子</strong>，一起冲 🤝","needFollowUp":true,"followUpQuestion":"想玩什么游戏？","quickReplies":["王者开黑","和平吃鸡","三角洲行动"]}
+
+用户: "芜湖起飞"
+{"intentId":"highlight","intentLabel":"🎬 高光/视频","confidence":72,"replyText":"起飞啦！要不要把<strong>精彩操作</strong>做成高光视频？🎬","needFollowUp":true,"followUpQuestion":"想生成最近哪把的高光？","quickReplies":["生成上一把高光","看看我的精彩时刻"]}
 
 必须严格返回如下 JSON 格式，不要有任何多余文字：
 {
@@ -1980,6 +2245,18 @@ async function callDeepSeek(userText) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
+    // 构建 messages：system prompt + 最近对话历史 + 当前用户输入
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+    ];
+    // 添加历史上下文（帮助理解省略/指代/模糊的后续输入）
+    chatHistory.forEach(h => {
+      if (h.role === 'user' || h.role === 'assistant') {
+        messages.push({ role: h.role, content: h.content });
+      }
+    });
+    messages.push({ role: 'user', content: userText });
+
     const res = await fetch(`${DEEPSEEK_CONFIG.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -1988,10 +2265,7 @@ async function callDeepSeek(userText) {
       },
       body: JSON.stringify({
         model: DEEPSEEK_CONFIG.model,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user',   content: userText },
-        ],
+        messages,
         temperature: 0.3,
         max_tokens: 300,
         response_format: { type: 'json_object' },
@@ -2065,6 +2339,25 @@ let panelOpen = false;
 let chatInited = false;
 let pendingQR = null;
 
+// ============================================================
+// 多轮对话上下文记忆
+// ============================================================
+const chatHistory = [];  // 记录最近N轮对话用于上下文理解
+const MAX_HISTORY = 6;   // 保留最近6条（3轮问答）
+
+function addToHistory(role, content) {
+  chatHistory.push({ role, content });
+  if (chatHistory.length > MAX_HISTORY) chatHistory.shift();
+}
+
+function getLastIntent() {
+  // 从历史中找到最近一次 AI 返回的意图
+  for (let i = chatHistory.length - 1; i >= 0; i--) {
+    if (chatHistory[i]._intentId) return chatHistory[i]._intentId;
+  }
+  return null;
+}
+
 // 页面加载时：如果 URL 带了 key，同步 UI 状态
 (function initKeyFromURL() {
   if (DEEPSEEK_CONFIG.enabled()) {
@@ -2130,6 +2423,7 @@ function sendMessage() {
 
 async function processUserMessage(text) {
   addUserBubble(text);
+  addToHistory('user', text); // 记录用户输入
 
   const analyzingId = addAnalyzing(
     DEEPSEEK_CONFIG.enabled() ? '🤖 DeepSeek 意图理解中…' : '⚡ 本地引擎识别中…'
@@ -2148,8 +2442,13 @@ async function processUserMessage(text) {
   if (dsResult) {
     const { intentId, intentLabel, confidence, replyText, needFollowUp, followUpQuestion, quickReplies } = dsResult;
 
+    // 记录 AI 回复到历史
+    const histEntry = { role: 'assistant', content: replyText || '' };
+    histEntry._intentId = intentId;
+    chatHistory.push(histEntry);
+    if (chatHistory.length > MAX_HISTORY) chatHistory.shift();
+
     if (intentId === 'out_of_scope') {
-      // DeepSeek 误判了，用通用拉回兜底
       showTyping(() => {
         addAIBubble(
           replyText || '哈哈，这个我不太擅长 😄 不过<strong>今日游戏福利</strong>还没领，要不要看看？🎁',
@@ -2162,7 +2461,6 @@ async function processUserMessage(text) {
 
     showTyping(() => {
       if (needFollowUp) {
-        // DeepSeek 判断需要追问
         const qrOptions = quickReplies || [];
         const callbacks = {};
         qrOptions.forEach(opt => {
@@ -2173,7 +2471,6 @@ async function processUserMessage(text) {
         });
         addAIBubble(replyText, intentLabel, confidence, null, qrOptions, callbacks);
       } else {
-        // DeepSeek 已确认意图，直接渲染结果卡片
         const response = buildResponse(intentId, text);
         addAIBubble(
           replyText || response?.text || '',
@@ -2188,20 +2485,50 @@ async function processUserMessage(text) {
     return;
   }
 
-  // ── 降级到本地关键词引擎 ──────────────────────────────────
+  // ── 降级到本地引擎（带模糊语义） ──────────────────────────
+
+  // Step A: 上下文延续 — 短输入(<=4字)可能是对上一轮的回应
+  const shortConfirms = /^(好|行|嗯|ok|可以|来|对|是|要|冲|走|开|试试|好的|行吧|来吧|可以啊|走起|冲冲|开搞|好呀|试试看|整|搞|go|yes|嗯嗯|对对|好好)$/i;
+  if (shortConfirms.test(text.trim())) {
+    const lastIntent = getLastIntent();
+    if (lastIntent) {
+      const intentObj = INTENTS.find(i => i.id === lastIntent);
+      if (intentObj) {
+        showTyping(() => {
+          const response = buildResponse(lastIntent, text);
+          if (response) {
+            addAIBubble(
+              response.text, intentObj.label, 82,
+              response.cardHtml || (response.card ? getPrebuiltCard(response.card) : null),
+              response.quickReplies, response.onQR
+            );
+            const h = { role: 'assistant', content: response.text }; h._intentId = lastIntent;
+            chatHistory.push(h); if (chatHistory.length > MAX_HISTORY) chatHistory.shift();
+          }
+        });
+        return;
+      }
+    }
+  }
+
+  // Step B: 模糊意图识别（关键词+正则+纠错+拼音）
   const result = detectIntent(text);
 
   if (!result) {
-    // 本地引擎识别不到时，也尝试拉回游戏，而不是直接拒绝
+    // Step C: 扩展 pullback — 更多场景拉回游戏
     const pullbacks = [
-      { kw: ['累','困','烦','压力','难受','崩溃','焦虑'],   intentId:'emotion',  label:'😤 情绪互动',  reply:'听起来你需要放松一下 😮‍💨 游戏是个好出口——<strong>找个搭子开黑</strong>发泄一下？', qr:['帮我找搭子','看看我最近战绩'] },
-      { kw: ['无聊','没事干','闲'],                         intentId:'partner',  label:'🤝 找搭子',    reply:'无聊？那正好！<strong>王者荣耀</strong>一把走起，帮你匹配在线搭子 🎮',             qr:['帮我找搭子','看看今日福利'] },
-      { kw: ['吃饭','吃','喝','午饭','晚饭','早饭'],        intentId:'welfare',  label:'🎁 福利/礼包', reply:'吃饭前先领个游戏礼包？<strong>今日福利</strong>限时领，三分钟搞定 🎁',             qr:['看看今日福利','领王者礼包'] },
-      { kw: ['睡觉','睡了','晚安','休息'],                  intentId:'reminder', label:'⏰ 定时提醒',  reply:'睡前帮你设个提醒，<strong>明早登录</strong>领限时奖励不错过 ⏰',                  qr:['帮我设置提醒','先看今日福利'] },
-      { kw: ['天气','下雨','晴','冷','热'],                 intentId:'welfare',  label:'🎁 福利/礼包', reply:'管它天气怎样，<strong>今日游戏福利</strong>不受影响，快来领一波 🎁',              qr:['看看今日福利','今日有什么活动'] },
-      { kw: ['工作','上班','加班','老板','会议'],           intentId:'report',   label:'📅 日报/周报', reply:'打工人辛苦了！忙里偷闲看看<strong>本周游戏战绩报告</strong>充充电 ⚡',            qr:['看我的本周总结','查我的战绩'] },
-      { kw: ['钱','买','价格','贵','便宜','优惠'],          intentId:'skin',     label:'🛍️ 皮肤/购买', reply:'说到买买买，<strong>鹅毛市集</strong>最近有新皮肤上架，性价比超高 👀',             qr:['看看新皮肤','有什么优惠'] },
-      { kw: ['朋友','同学','同事','聚会','约'],             intentId:'partner',  label:'🤝 找搭子',    reply:'约朋友？不如约游戏搭子！<strong>在线玩家</strong>随时等你组队 🤝',                qr:['帮我找搭子','找王者搭子'] },
+      { kw: ['累','困','烦','压力','难受','崩溃','焦虑','emo','不开心','难过','伤心','郁闷','丧','down'],  intentId:'emotion',  label:'😤 情绪互动',  reply:'听起来你需要放松一下 😮‍💨 游戏是个好出口——<strong>找个搭子开黑</strong>发泄一下？', qr:['帮我找搭子','看看我最近战绩'] },
+      { kw: ['无聊','没事干','闲','发呆','摸鱼','没意思','干啥'],  intentId:'partner',  label:'🤝 找搭子',    reply:'无聊？那正好！<strong>王者荣耀</strong>一把走起，帮你匹配在线搭子 🎮',             qr:['帮我找搭子','看看今日福利'] },
+      { kw: ['吃饭','吃','喝','午饭','晚饭','早饭','外卖','奶茶'],  intentId:'welfare',  label:'🎁 福利/礼包', reply:'吃饭前先领个游戏礼包？<strong>今日福利</strong>限时领，三分钟搞定 🎁',             qr:['看看今日福利','领王者礼包'] },
+      { kw: ['睡觉','睡了','晚安','休息','早安','起床','醒了'],  intentId:'reminder', label:'⏰ 定时提醒',  reply:'睡前帮你设个提醒，<strong>明早登录</strong>领限时奖励不错过 ⏰',                  qr:['帮我设置提醒','先看今日福利'] },
+      { kw: ['天气','下雨','晴','冷','热','大风','雾霾'],  intentId:'welfare',  label:'🎁 福利/礼包', reply:'管它天气怎样，<strong>今日游戏福利</strong>不受影响，快来领一波 🎁',              qr:['看看今日福利','今日有什么活动'] },
+      { kw: ['工作','上班','加班','老板','会议','摸鱼','下班','放假','周末'],  intentId:'report',   label:'📅 日报/周报', reply:'打工人辛苦了！忙里偷闲看看<strong>本周游戏战绩报告</strong>充充电 ⚡',            qr:['看我的本周总结','查我的战绩'] },
+      { kw: ['钱','买','价格','贵','便宜','优惠','折扣','打折','省钱','划算'],  intentId:'skin',     label:'🛍️ 皮肤/购买', reply:'说到买买买，<strong>鹅毛市集</strong>最近有新皮肤上架，性价比超高 👀',             qr:['看看新皮肤','有什么优惠'] },
+      { kw: ['朋友','同学','同事','聚会','约','兄弟','姐妹','基友','闺蜜'],  intentId:'partner',  label:'🤝 找搭子',    reply:'约朋友？不如约游戏搭子！<strong>在线玩家</strong>随时等你组队 🤝',                qr:['帮我找搭子','找王者搭子'] },
+      { kw: ['学习','考试','期末','作业','论文','复习','卷','内卷'],  intentId:'partner',  label:'🤝 找搭子',    reply:'学累了就放松一下 📚→🎮 帮你<strong>匹配在线搭子</strong>休息一把？', qr:['帮我找搭子','看看今日福利'] },
+      { kw: ['帅','酷','好看','美','漂亮','颜值','颜'],  intentId:'skin',     label:'🛍️ 皮肤/购买', reply:'爱美之心人皆有之 ✨ 游戏里也要帅，看看<strong>最新皮肤</strong>？', qr:['看看新皮肤','看看限定皮肤'] },
+      { kw: ['赢','牛','厉害','nb','666','强','猛','6','niubi','awesome'],  intentId:'highlight', label:'🎬 高光/视频', reply:'666！要不要把<strong>精彩操作</strong>做成高光视频秀一波？🎬', qr:['生成高光视频','查看战绩'] },
+      { kw: ['新','有什么','有啥','来了','出了','更新了','推出'],  intentId:'news',     label:'📰 游戏资讯', reply:'最新资讯来了！看看<strong>近期更新和活动</strong> 📰', qr:['看最新资讯','今日有什么活动'] },
     ];
 
     let matched = null;
@@ -2218,9 +2545,11 @@ async function processUserMessage(text) {
             return r || { text: q, cardHtml: null };
           }]))
         );
+        const h = { role: 'assistant', content: matched.reply }; h._intentId = matched.intentId;
+        chatHistory.push(h); if (chatHistory.length > MAX_HISTORY) chatHistory.shift();
       });
     } else {
-      // 实在找不到任何关联，随机一个通用拉回
+      // 实在找不到任何关联，随机通用拉回
       const fallbacks = [
         { reply:'说的是！顺便说一句，<strong>今日游戏福利</strong>还没领，要不要看看？🎁', intentId:'welfare', label:'🎁 福利/礼包', qr:['看今日福利','没兴趣'] },
         { reply:'哈哈，不过你知道吗，游戏才是真正的解压神器 🎮 帮你<strong>找个搭子</strong>开一把？', intentId:'partner', label:'🤝 找搭子', qr:['帮我找搭子','算了'] },
@@ -2234,11 +2563,14 @@ async function processUserMessage(text) {
             return r || { text: q, cardHtml: null };
           }]))
         );
+        const h = { role: 'assistant', content: fb.reply }; h._intentId = fb.intentId;
+        chatHistory.push(h); if (chatHistory.length > MAX_HISTORY) chatHistory.shift();
       });
     }
     return;
   }
 
+  // Step D: 本地引擎成功识别意图
   const confPct = result.confidence;
   showTyping(() => {
     const response = buildResponse(result.id, text);
@@ -2251,6 +2583,8 @@ async function processUserMessage(text) {
           response.quickReplies,
           response.onQR
         );
+        const h = { role: 'assistant', content: response.text }; h._intentId = result.id;
+        chatHistory.push(h); if (chatHistory.length > MAX_HISTORY) chatHistory.shift();
       }
     });
 }
