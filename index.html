@@ -821,35 +821,83 @@ function buildWelfareResponse(text) {
   };
 }
 
+// ============================================================
+// 时间范围解析器 — 从用户文本中提取时间意图
+// ============================================================
+function parseTimeRange(text) {
+  const t = text;
+  if (/昨天|昨日|yesterday/.test(t))          return { label:'昨日',      days:1,  tag:'yesterday' };
+  if (/今天|今日|today/.test(t))               return { label:'今日',      days:1,  tag:'today' };
+  if (/上一把|上局|刚才|这把|最近一把/.test(t)) return { label:'最近一局',  days:0,  tag:'last_match' };
+  if (/本周|这周|最近一周|7天|七天/.test(t))   return { label:'本周',      days:7,  tag:'week' };
+  if (/上周/.test(t))                          return { label:'上周',      days:14, tag:'last_week' };
+  if (/本月|这个月|30天|三十天/.test(t))       return { label:'本月',      days:30, tag:'month' };
+  if (/最近三天|近三天|3天/.test(t))           return { label:'近3日',     days:3,  tag:'3days' };
+  if (/最近|近期/.test(t))                     return { label:'近7日',     days:7,  tag:'recent' };
+  return null; // 未指定时间，调用方自己决定默认值
+}
+
+// ============================================================
+// 动态数据生成器 — 根据时间范围生成合理的 mock 数据
+// ============================================================
+function genRecordData(range) {
+  // 时间越短，场次越少；数据有差异感
+  const presets = {
+    today:      { matches:3,  winRate:'67%', winColor:'#22c55e', score:'7.8', heroes:[{i:'⚔️',n:'亚瑟',r:'67%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'50%',c:'#f59e0b'}] },
+    yesterday:  { matches:5,  winRate:'40%', winColor:'#ef4444', score:'6.3', heroes:[{i:'🗡️',n:'兰陵王',r:'40%',c:'#ef4444'},{i:'⚔️',n:'亚瑟',r:'67%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'0%',c:'#ef4444'}] },
+    '3days':    { matches:11, winRate:'55%', winColor:'#22c55e', score:'7.1', heroes:[{i:'⚔️',n:'亚瑟',r:'60%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'55%',c:'#22c55e'},{i:'🗡️',n:'兰陵王',r:'44%',c:'#f59e0b'}] },
+    week:       { matches:24, winRate:'58%', winColor:'#22c55e', score:'7.2', heroes:[{i:'⚔️',n:'亚瑟',r:'63%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'55%',c:'#22c55e'},{i:'🗡️',n:'兰陵王',r:'44%',c:'#ef4444'}] },
+    last_week:  { matches:18, winRate:'44%', winColor:'#ef4444', score:'6.8', heroes:[{i:'🌙',n:'嫦娥',r:'44%',c:'#ef4444'},{i:'⚔️',n:'亚瑟',r:'50%',c:'#f59e0b'},{i:'🗡️',n:'兰陵王',r:'38%',c:'#ef4444'}] },
+    month:      { matches:72, winRate:'52%', winColor:'#f59e0b', score:'7.0', heroes:[{i:'⚔️',n:'亚瑟',r:'55%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'52%',c:'#f59e0b'},{i:'🗡️',n:'兰陵王',r:'46%',c:'#ef4444'}] },
+    recent:     { matches:24, winRate:'58%', winColor:'#22c55e', score:'7.2', heroes:[{i:'⚔️',n:'亚瑟',r:'63%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'55%',c:'#22c55e'},{i:'🗡️',n:'兰陵王',r:'44%',c:'#ef4444'}] },
+  };
+  return presets[range.tag] || presets['week'];
+}
+
+function genReplayData(range) {
+  const presets = {
+    last_match: { hero:'亚瑟', result:'lose', duration:'18:42', time:'2小时前', k:4,  d:6, a:7,  insight:'8-12分钟频繁单独进攻，3次死亡发生在无视野区域。建议中期跟随团队，避免孤立作战。' },
+    today:      { hero:'嫦娥', result:'win',  duration:'22:10', time:'今天下午', k:6,  d:2, a:11, insight:'大招命中率达81%，团战贡献突出。但第15分钟蹲草过久，错失反推机会。' },
+    yesterday:  { hero:'兰陵王',result:'lose',duration:'14:30', time:'昨天晚上', k:2,  d:8, a:3,  insight:'前期抢红BUFF两次失败导致节奏崩盘，建议开局优先刷野保证经济。' },
+  };
+  return presets[range.tag] || presets['last_match'];
+}
+
+function genReportData(range) {
+  const presets = {
+    today:     { title:'今日战报',     period:'今天',         matches:3,  winRate:67, hours:'1.5h', bars:[{l:'王者荣耀',p:100,c:'#c9a227'}], tip:'今天3场赢了2场，发挥不错！继续保持 💪' },
+    yesterday: { title:'昨日战报',     period:'昨天',         matches:5,  winRate:40, hours:'2.3h', bars:[{l:'王者荣耀',p:80,c:'#c9a227'},{l:'和平精英',p:20,c:'#3a8a3a'}], tip:'昨天胜率偏低，今天换个思路试试？' },
+    week:      { title:'本周报告',     period:'3.11-3.17',    matches:38, winRate:55, hours:'14h',  bars:[{l:'王者荣耀',p:70,c:'#c9a227'},{l:'三角洲行动',p:20,c:'#2a6090'},{l:'和平精英',p:10,c:'#3a8a3a'}], tip:'本周胜率比上周提升 +7%，继续加油！' },
+    last_week: { title:'上周报告',     period:'3.4-3.10',     matches:29, winRate:48, hours:'11h',  bars:[{l:'王者荣耀',p:60,c:'#c9a227'},{l:'和平精英',p:40,c:'#3a8a3a'}], tip:'上周整体偏弱，本周已经有进步了 📈' },
+    month:     { title:'本月报告',     period:'3月全月',       matches:112,winRate:53, hours:'42h',  bars:[{l:'王者荣耀',p:65,c:'#c9a227'},{l:'三角洲行动',p:25,c:'#2a6090'},{l:'和平精英',p:10,c:'#3a8a3a'}], tip:'本月共打112场，场均评分7.1，稳步提升！' },
+    '3days':   { title:'近3日战报',    period:'近3天',         matches:11, winRate:55, hours:'4.5h', bars:[{l:'王者荣耀',p:75,c:'#c9a227'},{l:'三角洲行动',p:25,c:'#2a6090'}], tip:'近三天状态不错，胜率稳定在55%以上 👍' },
+    recent:    { title:'近7日战报',    period:'近7天',         matches:24, winRate:58, hours:'9.5h', bars:[{l:'王者荣耀',p:70,c:'#c9a227'},{l:'三角洲行动',p:20,c:'#2a6090'},{l:'和平精英',p:10,c:'#3a8a3a'}], tip:'近期胜率不错，继续保持！' },
+  };
+  return presets[range.tag] || presets['week'];
+}
+
 function buildRecordResponse(text) {
+  const range = parseTimeRange(text) || { label:'近7日', days:7, tag:'week' };
+  const d = genRecordData(range);
   return {
-    text: '这是蟹柳最近的 <strong>王者荣耀战绩</strong> 📊',
+    text: `这是蟹柳 <strong>${range.label}</strong> 的王者荣耀战绩 📊`,
     cardHtml: `
       <div class="result-card">
-        <div class="result-card-header">🏆 近7日战绩 · 王者荣耀</div>
+        <div class="result-card-header">🏆 ${range.label}战绩 · 王者荣耀</div>
         <div style="padding:12px">
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
-            <div class="stat-item"><div class="stat-val" style="color:#22c55e">58%</div><div class="stat-label">胜率</div></div>
-            <div class="stat-item"><div class="stat-val">24</div><div class="stat-label">场次</div></div>
-            <div class="stat-item"><div class="stat-val">7.2</div><div class="stat-label">场均评分</div></div>
+            <div class="stat-item"><div class="stat-val" style="color:${d.winColor}">${d.winRate}</div><div class="stat-label">胜率</div></div>
+            <div class="stat-item"><div class="stat-val">${d.matches}</div><div class="stat-label">场次</div></div>
+            <div class="stat-item"><div class="stat-val">${d.score}</div><div class="stat-label">场均评分</div></div>
           </div>
           <div style="font-size:12px;color:#888;margin-bottom:6px;font-weight:600">最常使用英雄</div>
           <div style="display:flex;gap:8px">
+            ${d.heroes.map(h=>`
             <div style="flex:1;background:#fafbff;border-radius:9px;padding:8px;text-align:center">
-              <div style="font-size:20px">⚔️</div>
-              <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-top:3px">亚瑟</div>
-              <div style="font-size:10px;color:#22c55e">胜率 63%</div>
-            </div>
-            <div style="flex:1;background:#fafbff;border-radius:9px;padding:8px;text-align:center">
-              <div style="font-size:20px">🌙</div>
-              <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-top:3px">嫦娥</div>
-              <div style="font-size:10px;color:#22c55e">胜率 55%</div>
-            </div>
-            <div style="flex:1;background:#fafbff;border-radius:9px;padding:8px;text-align:center">
-              <div style="font-size:20px">🗡️</div>
-              <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-top:3px">兰陵王</div>
-              <div style="font-size:10px;color:#ef4444">胜率 44%</div>
-            </div>
+              <div style="font-size:20px">${h.i}</div>
+              <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-top:3px">${h.n}</div>
+              <div style="font-size:10px;color:${h.c}">胜率 ${h.r}</div>
+            </div>`).join('')}
           </div>
         </div>
       </div>`
@@ -857,30 +905,68 @@ function buildRecordResponse(text) {
 }
 
 function buildReplayResponse(text) {
+  const range = parseTimeRange(text) || { label:'最近一局', days:0, tag:'last_match' };
+  const d = genReplayData(range);
+  const isWin = d.result === 'win';
   return {
-    text: '找到蟹柳 <strong>最近一局</strong> 的数据了，AI分析如下：',
+    text: `找到蟹柳 <strong>${range.label}</strong> 的数据了，AI分析如下：`,
     cardHtml: `
       <div class="result-card">
         <div class="replay-card">
           <div class="replay-header">
-            <div class="replay-hero-icon">⚔️</div>
+            <div class="replay-hero-icon">${d.hero==='亚瑟'?'⚔️':d.hero==='嫦娥'?'🌙':'🗡️'}</div>
             <div class="replay-game-info">
-              <div class="replay-game-name">王者荣耀 · 亚瑟</div>
-              <div class="replay-result lose">● 失败 · 18:42</div>
-              <div class="replay-time">2小时前 · 排位赛</div>
+              <div class="replay-game-name">王者荣耀 · ${d.hero}</div>
+              <div class="replay-result ${d.result}">● ${isWin?'胜利':'失败'} · ${d.duration}</div>
+              <div class="replay-time">${d.time} · 排位赛</div>
             </div>
           </div>
           <div class="replay-stats">
-            <div class="stat-item"><div class="stat-val">4</div><div class="stat-label">击杀</div></div>
-            <div class="stat-item"><div class="stat-val">6</div><div class="stat-label">死亡</div></div>
-            <div class="stat-item"><div class="stat-val">7</div><div class="stat-label">助攻</div></div>
+            <div class="stat-item"><div class="stat-val">${d.k}</div><div class="stat-label">击杀</div></div>
+            <div class="stat-item"><div class="stat-val">${d.d}</div><div class="stat-label">死亡</div></div>
+            <div class="stat-item"><div class="stat-val">${d.a}</div><div class="stat-label">助攻</div></div>
           </div>
           <div class="replay-insight">
-            <span class="replay-insight-label">💡 AI分析：</span>本局8-12分钟频繁单独进攻，3次死亡发生在无视野区域。建议中期跟随团队，避免孤立作战。
+            <span class="replay-insight-label">💡 AI分析：</span>${d.insight}
           </div>
           <div class="replay-btn-row">
             <button class="replay-btn primary">🎬 生成高光视频</button>
             <button class="replay-btn secondary">📊 详细数据</button>
+          </div>
+        </div>
+      </div>`
+  };
+}
+
+function buildReportResponse(text) {
+  const range = parseTimeRange(text) || { label:'本周', days:7, tag:'week' };
+  const d = genReportData(range);
+  const wc = d.winRate >= 55 ? '#22c55e' : d.winRate >= 45 ? '#f59e0b' : '#ef4444';
+  return {
+    text: `这是蟹柳的 <strong>${d.title}</strong> 📅`,
+    cardHtml: `
+      <div class="result-card">
+        <div class="result-card-header">📅 蟹柳的${d.title} · ${d.period}</div>
+        <div class="report-card">
+          <div class="report-row">
+            <div class="report-item"><div class="report-val">${d.matches}</div><div class="report-label">总局数</div></div>
+            <div class="report-divider"></div>
+            <div class="report-item"><div class="report-val" style="color:${wc}">${d.winRate}%</div><div class="report-label">综合胜率</div></div>
+            <div class="report-divider"></div>
+            <div class="report-item"><div class="report-val">${d.hours}</div><div class="report-label">游戏时长</div></div>
+          </div>
+          <div class="report-bar-section">
+            ${d.bars.map(b=>`
+              <div style="margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span class="report-bar-label">${b.l}</span>
+                  <span style="font-size:11px;color:#888">${b.p}%</span>
+                </div>
+                <div class="report-bar-track"><div class="report-bar-fill" style="width:${b.p}%;background:${b.c}"></div></div>
+              </div>`).join('')}
+          </div>
+          <div style="background:#f5fff8;border:1px solid #d0f0d8;border-radius:9px;padding:10px;font-size:12px;color:#1a6a30;margin-top:2px">
+            💡 ${d.tip}
           </div>
         </div>
       </div>`
