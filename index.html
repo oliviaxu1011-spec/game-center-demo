@@ -12,7 +12,7 @@
   --bg-surface2: #1f2438;
   --accent-blue: #4a90ff;
   --accent-cyan: #00d4ff;
-  --accent-purple: #8b5cf6;
+  --accent-purple: #1a6bff;
   --accent-orange: #ff6b35;
   --accent-gold: #ffd700;
   --accent-green: #22c55e;
@@ -53,7 +53,7 @@ body {
 #screen-landing::after {
   content:''; position:absolute;
   width:400px; height:400px;
-  background:radial-gradient(circle,rgba(139,92,246,0.06) 0%,transparent 70%);
+  background:radial-gradient(circle,rgba(26,107,255,0.06) 0%,transparent 70%);
   bottom:-50px; right:-50px; border-radius:50%;
   animation:pulse-glow 4s ease-in-out infinite reverse;
 }
@@ -104,101 +104,176 @@ body {
 
 /* ========== APP ========== */
 #screen-app {
-  background:#f5f6fa;
+  background:#f5f6f8;
   max-width:390px; margin:0 auto; min-height:100vh; position:relative;
 }
 
-/* App Header */
-.app-header { background:white; padding:12px 16px 0; border-bottom:1px solid #eee; }
-.app-header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.app-logo { display:flex; align-items:center; gap:8px; }
-.app-logo-icon {
-  width:32px; height:32px;
-  background:linear-gradient(135deg,#1a6bff,#4a90ff);
-  border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px;
+/* App Header — 模拟QQ游戏中心真实顶栏 */
+.app-header { background:white; padding:0; }
+.app-header-top { display:flex; align-items:center; padding:10px 12px; gap:8px; }
+.app-back-btn {
+  width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+  font-size:20px; color:#333; cursor:pointer; flex-shrink:0; background:none; border:none;
+  font-family:inherit;
 }
-.app-logo-text { font-size:16px; font-weight:700; color:#1a1a2e; }
-.app-header-icons { display:flex; gap:16px; }
-.header-icon { font-size:20px; color:#555; cursor:pointer; }
+.app-search-bar {
+  flex:1; display:flex; align-items:center; gap:6px;
+  background:#f5f5f5; border-radius:20px; padding:8px 14px;
+  cursor:pointer; transition:background .2s;
+}
+.app-search-bar:hover { background:#eeeeee; }
+.app-search-icon { font-size:14px; color:#999; }
+.app-search-text { font-size:14px; color:#999; flex:1; }
+.app-welfare-btn {
+  display:flex; align-items:center; gap:4px;
+  background:#fff5ec; border:1px solid #ffe0c0; border-radius:20px;
+  padding:7px 14px; cursor:pointer; flex-shrink:0;
+  font-size:13px; color:#e67e22; font-weight:600; font-family:inherit;
+  transition:background .2s;
+}
+.app-welfare-btn:hover { background:#ffeddb; }
+.app-welfare-icon { font-size:16px; }
 
-/* Search Bar */
-.search-wrapper { padding:0 0 12px; }
-.search-bar {
-  display:flex; align-items:center;
-  background:linear-gradient(white,white) padding-box,
-             linear-gradient(90deg,#4a90ff,#00d4ff) border-box;
-  border:1.5px solid transparent;
-  border-radius:12px; padding:10px 14px; gap:8px;
-  cursor:pointer; box-shadow:0 2px 12px rgba(74,144,255,.1);
-  transition:box-shadow .2s;
+/* Nav Tabs — 水平滚动标签栏 */
+.app-nav { display:flex; overflow-x:auto; scrollbar-width:none; padding:0 12px; gap:0; border-bottom:1px solid #f0f0f0; }
+.app-nav::-webkit-scrollbar { display:none; }
+.nav-tab { 
+  flex-shrink:0; text-align:center; padding:10px 14px 12px; font-size:14px; 
+  color:#666; cursor:pointer; position:relative; font-weight:400; 
+  white-space:nowrap; transition:color .2s;
 }
-.search-bar:hover { box-shadow:0 4px 20px rgba(74,144,255,.18); }
-.search-icon { font-size:16px; color:#4a90ff; }
-.search-placeholder { font-size:13px; color:#4a90ff; flex:1; }
-.ai-badge {
-  background:linear-gradient(90deg,#4a90ff,#00d4ff);
-  color:white; font-size:10px; font-weight:700;
-  padding:2px 7px; border-radius:10px; letter-spacing:.5px;
-}
-
-/* Nav Tabs */
-.app-nav { display:flex; }
-.nav-tab { flex:1; text-align:center; padding:8px 0 10px; font-size:13px; color:#999; cursor:pointer; position:relative; font-weight:500; }
-.nav-tab.active { color:#1a6bff; font-weight:700; }
+.nav-tab:first-child { padding-left:2px; }
+.nav-tab.active { color:#333; font-weight:700; }
 .nav-tab.active::after {
   content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-  width:20px; height:3px; background:#1a6bff; border-radius:2px;
+  width:18px; height:3px; background:#333; border-radius:2px;
 }
+
+/* Game Recommend Bar — banner上方的游戏推荐条 */
+.game-recommend-bar {
+  display:flex; align-items:center; padding:12px 14px; gap:10px;
+  background:white; margin:0;
+}
+.game-recommend-icon {
+  width:44px; height:44px; border-radius:12px; overflow:hidden; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+  background:linear-gradient(135deg,#2a2820,#4a4030);
+}
+.game-recommend-icon img { width:100%; height:100%; object-fit:cover; }
+.game-recommend-info { flex:1; min-width:0; }
+.game-recommend-name { font-size:15px; font-weight:700; color:#1a1a2e; }
+.game-recommend-desc { font-size:12px; color:#999; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.game-recommend-btn {
+  background:white; border:1px solid #ddd; border-radius:18px; padding:6px 18px;
+  font-size:13px; color:#333; font-weight:600; cursor:pointer; flex-shrink:0;
+  font-family:inherit; transition:all .2s;
+}
+.game-recommend-btn:hover { background:#f5f5f5; border-color:#ccc; }
 
 /* Content */
-.app-content { flex:1; overflow-y:auto; padding-bottom:80px; }
-.banner {
-  margin:12px; height:150px;
-  background:linear-gradient(135deg,#1a2a5e,#2a4090,#1a6bff);
-  border-radius:16px; overflow:hidden; position:relative;
-  display:flex; align-items:flex-end; padding:16px;
-}
-.banner::after { content:'🎮'; position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:72px; opacity:.25; }
-.banner-text { position:relative; z-index:1; }
-.banner-tag {
-  background:rgba(255,255,255,.2); color:white; font-size:10px;
-  padding:2px 8px; border-radius:6px; margin-bottom:6px; display:inline-block;
-}
-.banner-title { font-size:18px; font-weight:900; color:white; }
-.banner-sub { font-size:12px; color:rgba(255,255,255,.7); margin-top:2px; }
+.app-content { flex:1; overflow-y:auto; padding-bottom:72px; }
 
-.section { padding:0 12px; margin-bottom:16px; }
-.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-.section-title { font-size:15px; font-weight:700; color:#1a1a2e; }
+/* Banner — 深色大图卡片 */
+.banner-wrapper { margin:0 14px 6px; }
+.banner {
+  height:260px; border-radius:16px; overflow:hidden; position:relative;
+  background:#1a1a2a; display:flex; flex-direction:column; justify-content:flex-end;
+}
+.banner-bg {
+  position:absolute; inset:0; 
+  background:linear-gradient(180deg, #1a1a2a 0%, #2a2a3a 50%, #3a3a4a 100%);
+  display:flex; align-items:center; justify-content:center;
+}
+.banner-bg-text {
+  font-size:48px; color:rgba(255,255,255,.15); font-weight:900;
+  text-align:center; line-height:1.2;
+}
+.banner-bottom {
+  position:relative; z-index:1; padding:14px 16px;
+  background:linear-gradient(transparent, rgba(0,0,0,.7));
+}
+.banner-bottom-tag { font-size:12px; color:rgba(255,255,255,.75); margin-bottom:4px; }
+.banner-bottom-row { display:flex; align-items:center; justify-content:space-between; }
+.banner-bottom-title { font-size:18px; font-weight:800; color:white; }
+.banner-bottom-btn {
+  background:white; border:none; border-radius:16px; padding:6px 18px;
+  font-size:13px; color:#333; font-weight:600; cursor:pointer; font-family:inherit;
+}
+.banner-bottom-btn:hover { background:#f0f0f0; }
+
+/* 轮播指示点 */
+.banner-dots {
+  display:flex; justify-content:center; gap:6px; padding:10px 0 4px;
+}
+.banner-dot {
+  width:6px; height:6px; border-radius:50%; background:#d0d0d0; transition:all .2s;
+}
+.banner-dot.active { background:#333; width:6px; }
+
+/* Section */
+.section { padding:0 14px; margin-bottom:4px; }
+.section-header { display:flex; align-items:center; justify-content:space-between; padding:16px 0 12px; }
+.section-title { font-size:17px; font-weight:800; color:#1a1a2e; }
 .section-more { font-size:12px; color:#999; }
 
-.games-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-.game-item { text-align:center; cursor:pointer; }
-.game-icon { width:56px; height:56px; border-radius:14px; margin:0 auto 6px; display:flex; align-items:center; justify-content:center; font-size:28px; }
-.game-icon.wzry { background:linear-gradient(135deg,#c9a227,#f0d060); }
-.game-icon.sjz  { background:linear-gradient(135deg,#1a3a5e,#2a6090); }
-.game-icon.hpjy { background:linear-gradient(135deg,#2a5a2a,#3a8a3a); }
-.game-icon.chess{ background:linear-gradient(135deg,#8b0000,#cc2200); }
-.game-name { font-size:11px; color:#444; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Game List — 行式游戏列表 */
+.game-list { display:flex; flex-direction:column; gap:0; }
+.game-list-item {
+  display:flex; align-items:center; gap:12px; padding:10px 0;
+  cursor:pointer;
+}
+.game-list-icon {
+  width:56px; height:56px; border-radius:14px; overflow:hidden; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:28px;
+  position:relative;
+}
+.game-list-icon.wzry { background:linear-gradient(135deg,#c9a227,#f0d060); }
+.game-list-icon.sjz  { background:linear-gradient(135deg,#1a3a5e,#2a6090); }
+.game-list-icon.hpjy { background:linear-gradient(135deg,#2a5a2a,#3a8a3a); }
+.game-list-icon.chess{ background:linear-gradient(135deg,#8b0000,#cc2200); }
+.game-list-icon.sgz  { background:linear-gradient(135deg,#2a2820,#4a4030); }
+/* 小角标 */
+.game-badge {
+  position:absolute; bottom:-2px; right:-2px;
+  width:18px; height:18px; border-radius:50%; background:#22c55e;
+  border:2px solid white; display:flex; align-items:center; justify-content:center;
+  font-size:9px; color:white;
+}
+.game-list-info { flex:1; min-width:0; }
+.game-list-name { font-size:15px; font-weight:700; color:#1a1a2e; }
+.game-list-desc { font-size:12px; color:#999; margin-top:3px; display:flex; align-items:center; gap:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.game-list-hot {
+  display:inline-flex; align-items:center; gap:2px;
+  color:#e67e22; font-size:11px; font-weight:600;
+}
+.game-list-friend {
+  display:inline-flex; align-items:center; gap:2px;
+  color:#22c55e; font-size:11px; font-weight:600;
+}
+.game-list-btn {
+  background:#f5f5f5; border:1px solid #e8e8e8; border-radius:18px; padding:7px 16px;
+  font-size:13px; color:#333; font-weight:600; cursor:pointer; flex-shrink:0;
+  font-family:inherit; transition:all .2s;
+}
+.game-list-btn:hover { background:#eee; }
+.game-list-btn.primary {
+  background:linear-gradient(135deg,#4a90ff,#5a9fff); color:white; border-color:transparent;
+}
 
-.welfare-scroll { display:flex; gap:10px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
-.welfare-scroll::-webkit-scrollbar { display:none; }
-.welfare-card { min-width:140px; background:white; border-radius:14px; overflow:hidden; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.06); }
-.welfare-img { height:80px; background:linear-gradient(135deg,#1a2a5e,#3a60c0); display:flex; align-items:center; justify-content:center; font-size:32px; }
-.welfare-info { padding:8px 10px; }
-.welfare-game { font-size:10px; color:#1a6bff; font-weight:600; }
-.welfare-name { font-size:12px; font-weight:700; color:#1a1a2e; margin:2px 0; }
-.welfare-deadline { font-size:10px; color:#e57c00; }
-
-/* Bottom Nav */
+/* Bottom Nav — 4栏底部导航 */
 .bottom-nav {
   position:fixed; bottom:0; left:50%; transform:translateX(-50%);
-  width:390px; background:white; border-top:1px solid #eee;
-  display:flex; padding:8px 0 20px; z-index:100;
+  width:390px; background:white; border-top:1px solid #f0f0f0;
+  display:flex; padding:6px 0 22px; z-index:100;
 }
-.bottom-nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; font-size:10px; color:#999; }
+.bottom-nav-item { 
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; 
+  cursor:pointer; font-size:10px; color:#999; font-weight:500; 
+  transition:color .2s; padding-top:4px;
+}
 .bottom-nav-item.active { color:#1a6bff; }
-.bottom-nav-icon { font-size:22px; }
+.bottom-nav-icon { font-size:24px; line-height:1; }
+.bottom-nav-label { font-size:10px; }
 
 /* ========== AI PANEL ========== */
 .ai-panel {
@@ -206,9 +281,10 @@ body {
   width:390px; background:white;
   border-radius:24px 24px 0 0;
   box-shadow:0 -8px 40px rgba(0,0,0,.15);
-  z-index:200; max-height:96vh;
+  z-index:200; max-height:90vh;
   display:flex; flex-direction:column;
   transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  overflow:hidden;
 }
 .ai-panel.hidden { transform:translateX(-50%) translateY(100%); }
 .ai-panel-handle { width:36px; height:4px; background:#ddd; border-radius:2px; margin:12px auto 0; flex-shrink:0; }
@@ -219,7 +295,7 @@ body {
 }
 .ai-avatar {
   width:36px; height:36px;
-  background:linear-gradient(135deg,#7c3aed,#9f67ff);
+  background:linear-gradient(135deg,#1a6bff,#4a90ff);
   border-radius:50%; display:flex; align-items:center; justify-content:center;
   font-size:18px; flex-shrink:0;
 }
@@ -241,7 +317,7 @@ body {
 @keyframes msg-in { from{opacity:0;transform:translateY(10px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
 
 .msg-avatar { width:34px; height:34px; border-radius:50%; background:#e0e0e0; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
-.msg-avatar.ai-av { background:linear-gradient(135deg,#7c3aed,#9f67ff); }
+.msg-avatar.ai-av { background:linear-gradient(135deg,#1a6bff,#4a90ff); }
 .msg-content { max-width:78%; display:flex; flex-direction:column; gap:6px; }
 .msg.user .msg-content { align-items:flex-end; }
 
@@ -250,41 +326,21 @@ body {
   font-size:14px; line-height:1.6;
 }
 .msg.ai .msg-bubble { background:#ffffff; border-bottom-left-radius:4px; color:#1a1a2e; box-shadow:0 1px 4px rgba(0,0,0,.06); }
-.msg.user .msg-bubble { background:linear-gradient(135deg,#7c3aed,#9f67ff); color:white; border-bottom-right-radius:4px; }
+.msg.user .msg-bubble { background:linear-gradient(135deg,#1a6bff,#4a90ff); color:white; border-bottom-right-radius:4px; }
 
-/* Intent Tag */
-.intent-tag {
-  display:inline-flex; align-items:center; gap:5px;
-  background:rgba(124,58,237,.08);
-  border:1px solid rgba(124,58,237,.2);
-  border-radius:20px; padding:4px 12px 4px 8px;
-  font-size:11px; color:#7c3aed; font-weight:700;
-  animation:tag-in .4s cubic-bezier(.34,1.56,.64,1);
-}
-@keyframes tag-in { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
-.intent-dot { width:6px; height:6px; background:#7c3aed; border-radius:50%; animation:blink 1.5s ease-in-out infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-/* Confidence bar */
-.confidence-row {
-  display:flex; align-items:center; gap:8px;
-  font-size:11px; color:#888;
-}
-.conf-bar { flex:1; height:4px; background:#e8e8e8; border-radius:2px; overflow:hidden; }
-.conf-fill { height:100%; background:linear-gradient(90deg,#7c3aed,#c084fc); border-radius:2px; transition:width .6s ease; }
-.conf-label { font-size:11px; color:#7c3aed; font-weight:700; min-width:30px; text-align:right; }
+/* Intent Tag & Confidence — 已移除，不再展示 */
 
 /* Quick Replies */
 .quick-replies { display:flex; flex-wrap:wrap; gap:7px; }
 .qr-btn {
-  background:white; border:1.5px solid rgba(124,58,237,.25);
+  background:white; border:1.5px solid rgba(26,107,255,.25);
   border-radius:20px; padding:6px 14px; font-size:13px;
-  color:#7c3aed; cursor:pointer; font-family:inherit; font-weight:600;
+  color:#1a6bff; cursor:pointer; font-family:inherit; font-weight:600;
   transition:all .2s; white-space:nowrap;
   box-shadow:0 1px 4px rgba(0,0,0,.05);
 }
-.qr-btn:hover,.qr-btn:active { background:#f5f0ff; border-color:#7c3aed; transform:scale(.97); }
-.qr-btn.selected { background:#f0e8ff; border-color:#7c3aed; opacity:.7; pointer-events:none; }
+.qr-btn:hover,.qr-btn:active { background:#eef3ff; border-color:#1a6bff; transform:scale(.97); }
+.qr-btn.selected { background:#e5eeff; border-color:#1a6bff; opacity:.7; pointer-events:none; }
 
 /* Result Cards — 嵌在白色气泡内，无边框，轻阴影 */
 .result-card {
@@ -293,9 +349,9 @@ body {
 }
 .result-card-header {
   padding:9px 14px;
-  background:linear-gradient(90deg,#f5f0ff,#ede8ff);
-  border-bottom:1px solid #e8e0ff;
-  font-size:12px; font-weight:700; color:#7c3aed;
+  background:linear-gradient(90deg,#eef3ff,#e0ebff);
+  border-bottom:1px solid #d0dfff;
+  font-size:12px; font-weight:700; color:#1a6bff;
   display:flex; align-items:center; gap:6px;
 }
 
@@ -316,7 +372,7 @@ body {
 .wi-name { font-size:13px; font-weight:700; color:#1a1a2e; }
 .wi-deadline { font-size:10px; color:#e57c00; }
 .wi-action {
-  background:linear-gradient(135deg,#7c3aed,#9f67ff); color:white;
+  background:linear-gradient(135deg,#1a6bff,#4a90ff); color:white;
   border:none; border-radius:8px; padding:5px 11px;
   font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; flex-shrink:0;
 }
@@ -330,13 +386,13 @@ body {
 .emotion-actions { display:flex; gap:7px; flex-wrap:wrap; }
 .emotion-btn {
   flex:1; min-width:70px;
-  background:#faf8ff; border:1.5px solid rgba(124,58,237,.2);
+  background:#f5f8ff; border:1.5px solid rgba(26,107,255,.2);
   border-radius:10px; padding:9px 6px; text-align:center;
   cursor:pointer; transition:all .2s;
 }
-.emotion-btn:hover { background:#eef2ff; border-color:#7c3aed; }
+.emotion-btn:hover { background:#eef3ff; border-color:#1a6bff; }
 .emotion-btn-icon { font-size:18px; margin-bottom:3px; }
-.emotion-btn-text { font-size:11px; color:#7c3aed; font-weight:600; }
+.emotion-btn-text { font-size:11px; color:#1a6bff; font-weight:600; }
 
 /* Partner list */
 .partner-list { padding:8px; display:flex; flex-direction:column; gap:7px; }
@@ -354,9 +410,9 @@ body {
 .partner-name { font-size:13px; font-weight:700; color:#1a1a2e; }
 .partner-rank { font-size:11px; color:#888; }
 .partner-tag-row { display:flex; gap:4px; margin-top:3px; }
-.partner-tag { background:#f5f0ff; color:#7c3aed; font-size:10px; font-weight:600; padding:1px 6px; border-radius:5px; }
+.partner-tag { background:#eef3ff; color:#1a6bff; font-size:10px; font-weight:600; padding:1px 6px; border-radius:5px; }
 .partner-btn {
-  background:linear-gradient(135deg,#7c3aed,#9f67ff); color:white;
+  background:linear-gradient(135deg,#1a6bff,#4a90ff); color:white;
   border:none; border-radius:9px; padding:6px 13px;
   font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
 }
@@ -383,8 +439,8 @@ body {
 .replay-insight-label { font-weight:700; color:#c87000; }
 .replay-btn-row { display:flex; gap:8px; }
 .replay-btn { flex:1; padding:9px; border:none; border-radius:9px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; }
-.replay-btn.primary { background:linear-gradient(135deg,#7c3aed,#9f67ff); color:white; }
-.replay-btn.secondary { background:#f5f0ff; color:#7c3aed; }
+.replay-btn.primary { background:linear-gradient(135deg,#1a6bff,#4a90ff); color:white; }
+.replay-btn.secondary { background:#eef3ff; color:#1a6bff; }
 
 /* News card */
 .news-list { padding:8px; display:flex; flex-direction:column; gap:7px; }
@@ -400,7 +456,7 @@ body {
 .dl-info { flex:1; }
 .dl-name { font-size:14px; font-weight:700; color:#1a1a2e; }
 .dl-meta { font-size:11px; color:#888; margin-top:2px; }
-.dl-btn { background:linear-gradient(135deg,#7c3aed,#9f67ff); color:white; border:none; border-radius:10px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+.dl-btn { background:linear-gradient(135deg,#1a6bff,#4a90ff); color:white; border:none; border-radius:10px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
 
 /* Skin card */
 .skin-scroll { display:flex; gap:8px; overflow-x:auto; padding:8px; scrollbar-width:none; }
@@ -409,7 +465,7 @@ body {
 .skin-img { height:70px; display:flex; align-items:center; justify-content:center; font-size:30px; }
 .skin-info { padding:7px 9px; }
 .skin-name { font-size:11px; font-weight:700; color:#1a1a2e; }
-.skin-price { font-size:11px; color:#7c3aed; font-weight:700; margin-top:2px; }
+.skin-price { font-size:11px; color:#1a6bff; font-weight:700; margin-top:2px; }
 .skin-tag { font-size:9px; color:#e57c00; background:#fff3e0; padding:1px 5px; border-radius:4px; display:inline-block; margin-top:2px; }
 
 /* Weekly report */
@@ -417,7 +473,7 @@ body {
 .report-title { font-size:14px; font-weight:700; color:#1a1a2e; margin-bottom:12px; }
 .report-row { display:flex; justify-content:space-between; margin-bottom:8px; }
 .report-item { text-align:center; flex:1; }
-.report-val { font-size:20px; font-weight:900; color:#7c3aed; }
+.report-val { font-size:20px; font-weight:900; color:#1a6bff; }
 .report-label { font-size:10px; color:#888; margin-top:2px; }
 .report-divider { width:1px; background:#eee; }
 .report-bar-section { margin-top:12px; padding-top:12px; border-top:1px solid #f0f0f0; }
@@ -431,8 +487,8 @@ body {
 .reminder-icon { font-size:26px; }
 .reminder-title { font-size:13px; font-weight:700; color:#1a1a2e; }
 .reminder-sub { font-size:11px; color:#888; }
-.reminder-time { background:#faf8ff; border:1.5px solid rgba(124,58,237,.25); border-radius:10px; padding:10px 14px; font-size:13px; color:#7c3aed; font-weight:600; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
-.reminder-confirm { background:linear-gradient(135deg,#7c3aed,#9f67ff); color:white; border:none; border-radius:9px; padding:10px; width:100%; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+.reminder-time { background:#f5f8ff; border:1.5px solid rgba(26,107,255,.25); border-radius:10px; padding:10px 14px; font-size:13px; color:#1a6bff; font-weight:600; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.reminder-confirm { background:linear-gradient(135deg,#1a6bff,#4a90ff); color:white; border:none; border-radius:9px; padding:10px; width:100%; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
 
 /* Typing */
 .typing-indicator { display:flex; align-items:center; gap:8px; padding:8px 0; animation:msg-in .3s ease; }
@@ -444,8 +500,8 @@ body {
 @keyframes typing { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-6px);opacity:1} }
 
 /* Analyzing */
-.analyzing-wrap { display:flex; align-items:center; gap:8px; padding:8px 12px; background:linear-gradient(90deg,#faf8ff,#f5f0ff); border-radius:10px; font-size:12px; color:#7c3aed; font-weight:600; animation:msg-in .3s ease; }
-.analyzing-spinner { width:13px; height:13px; border:2px solid rgba(124,58,237,.25); border-top-color:#7c3aed; border-radius:50%; animation:spin .8s linear infinite; }
+.analyzing-wrap { display:flex; align-items:center; gap:8px; padding:8px 12px; background:linear-gradient(90deg,#f5f8ff,#eef3ff); border-radius:10px; font-size:12px; color:#1a6bff; font-weight:600; animation:msg-in .3s ease; }
+.analyzing-spinner { width:13px; height:13px; border:2px solid rgba(26,107,255,.25); border-top-color:#1a6bff; border-radius:50%; animation:spin .8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
 
 /* Input Area */
@@ -454,30 +510,33 @@ body {
 /* Input hint chips (pre-fill suggestions) */
 .input-hints {
   display:flex; gap:7px; overflow-x:auto; scrollbar-width:none;
-  padding-bottom:8px;
+  padding-bottom:8px; padding-right:14px;
+}
+.input-hints::after {
+  content:''; flex-shrink:0; width:1px;
 }
 .input-hints::-webkit-scrollbar { display:none; }
 .input-hint-chip {
   display:flex; align-items:center; gap:5px;
-  background:#faf8ff; border:1px solid rgba(124,58,237,.2);
+  background:#f5f8ff; border:1px solid rgba(26,107,255,.2);
   border-radius:16px; padding:5px 11px;
-  font-size:12px; color:#7c3aed; cursor:pointer;
+  font-size:12px; color:#1a6bff; cursor:pointer;
   white-space:nowrap; transition:all .18s; font-family:inherit;
   flex-shrink:0;
 }
-.input-hint-chip:hover { background:#f5f0ff; border-color:#7c3aed; transform:scale(.97); }
+.input-hint-chip:hover { background:#eef3ff; border-color:#1a6bff; transform:scale(.97); }
 
 .chat-input-row {
   display:flex; align-items:center; gap:9px;
   background:#f8f8f8; border-radius:24px; padding:9px 13px;
   border:1.5px solid #e8e8e8; transition:border-color .2s;
 }
-.chat-input-row:focus-within { border-color:#7c3aed; }
+.chat-input-row:focus-within { border-color:#1a6bff; }
 .chat-input { flex:1; border:none; background:transparent; font-size:14px; color:#1a1a2e; outline:none; font-family:inherit; }
 .chat-input::placeholder { color:#bbb; }
 .send-btn {
   width:32px; height:32px;
-  background:linear-gradient(135deg,#7c3aed,#9f67ff);
+  background:linear-gradient(135deg,#1a6bff,#4a90ff);
   border:none; border-radius:50%; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   font-size:14px; flex-shrink:0; transition:transform .15s;
@@ -492,14 +551,8 @@ body {
 }
 .overlay.active { background:rgba(0,0,0,.35); pointer-events:all; }
 
-/* Reset button */
-.reset-btn {
-  position:fixed; top:14px; right:14px;
-  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2);
-  border-radius:20px; padding:6px 14px; color:white; font-size:12px;
-  cursor:pointer; z-index:500; font-family:inherit;
-  backdrop-filter:blur(8px); display:none;
-}
+/* Reset button — 已改用App内的返回箭头 */
+.reset-btn { display:none !important; }
 
 /* Unknown intent */
 .unknown-card { padding:14px; text-align:center; }
@@ -508,8 +561,8 @@ body {
 .unknown-text strong { color:#1a1a2e; }
 
 @media (min-width:450px) {
-  body { background:#1a1e2e; }
-  #screen-app { box-shadow:0 0 60px rgba(0,0,0,.5); }
+  body { background:#f0f1f3; }
+  #screen-app { box-shadow:0 0 60px rgba(0,0,0,.15); }
   .bottom-nav,.ai-panel { max-width:390px; }
 }
 .hidden { display:none !important; }
@@ -551,71 +604,151 @@ body {
 <div id="screen-app" class="screen">
   <div class="app-header">
     <div class="app-header-top">
-      <div class="app-logo">
-        <div class="app-logo-icon">🎮</div>
-        <div class="app-logo-text">游戏中心</div>
+      <button class="app-back-btn" onclick="goToLanding()">‹</button>
+      <div class="app-search-bar" onclick="openAIPanel()">
+        <span class="app-search-icon">🔍</span>
+        <span class="app-search-text">三国志异闻录</span>
       </div>
-      <div class="app-header-icons">
-        <span class="header-icon">🔔</span>
-        <span class="header-icon">⚙️</span>
-      </div>
-    </div>
-    <div class="search-wrapper">
-      <div class="search-bar" onclick="openAIPanel()">
-        <span class="search-icon">✨</span>
-        <span class="search-placeholder">问我任何游戏问题…</span>
-        <span class="ai-badge">AI</span>
-      </div>
+      <button class="app-welfare-btn">
+        <span class="app-welfare-icon">🎁</span>
+        <span>福利</span>
+      </button>
     </div>
     <div class="app-nav">
       <div class="nav-tab active">推荐</div>
-      <div class="nav-tab">游戏</div>
-      <div class="nav-tab">福利</div>
-      <div class="nav-tab">搭子</div>
+      <div class="nav-tab">新游榜</div>
+      <div class="nav-tab">热游榜</div>
+      <div class="nav-tab">预约榜</div>
+      <div class="nav-tab">试玩</div>
+      <div class="nav-tab">分类</div>
     </div>
   </div>
 
   <div class="app-content">
-    <div class="banner">
-      <div class="banner-text">
-        <div class="banner-tag">限时活动</div>
-        <div class="banner-title">王者荣耀 · 马年皮肤</div>
-        <div class="banner-sub">限定战令·春节版 限时开放</div>
+    <!-- 游戏推荐条 -->
+    <div class="game-recommend-bar">
+      <div class="game-recommend-icon">🏯</div>
+      <div class="game-recommend-info">
+        <div class="game-recommend-name">三国志异闻录</div>
+        <div class="game-recommend-desc">无职业束缚,以战术翻盘</div>
+      </div>
+      <button class="game-recommend-btn">进入</button>
+    </div>
+
+    <!-- Banner -->
+    <div class="banner-wrapper">
+      <div class="banner">
+        <div class="banner-bg">
+          <div class="banner-bg-text">三国志<br><span style="font-size:20px;opacity:.5">异闻录</span></div>
+        </div>
+        <div class="banner-bottom">
+          <div class="banner-bottom-tag">三国志异闻录震撼首发!</div>
+          <div class="banner-bottom-row">
+            <div class="banner-bottom-title">来QQ抢37Q币，领神将!</div>
+            <button class="banner-bottom-btn">查看</button>
+          </div>
+        </div>
+      </div>
+      <div class="banner-dots">
+        <div class="banner-dot active"></div>
+        <div class="banner-dot"></div>
+        <div class="banner-dot"></div>
+        <div class="banner-dot"></div>
       </div>
     </div>
+
+    <!-- 你的专属游戏库 -->
     <div class="section">
-      <div class="section-header"><span class="section-title">我的游戏</span><span class="section-more">全部 ›</span></div>
-      <div class="games-grid">
-        <div class="game-item"><div class="game-icon wzry">⚔️</div><div class="game-name">王者荣耀</div></div>
-        <div class="game-item"><div class="game-icon sjz">🔫</div><div class="game-name">三角洲行动</div></div>
-        <div class="game-item"><div class="game-icon hpjy">🪂</div><div class="game-name">和平精英</div></div>
-        <div class="game-item"><div class="game-icon chess">♟️</div><div class="game-name">欢乐斗地主</div></div>
-      </div>
-    </div>
-    <div class="section">
-      <div class="section-header"><span class="section-title">🎁 今日可领福利</span><span class="section-more">更多 ›</span></div>
-      <div class="welfare-scroll">
-        <div class="welfare-card">
-          <div class="welfare-img">⚔️</div>
-          <div class="welfare-info"><div class="welfare-game">王者荣耀</div><div class="welfare-name">英雄碎片×20</div><div class="welfare-deadline">今日23:59截止</div></div>
+      <div class="section-header"><span class="section-title">你的专属游戏库</span></div>
+      <div class="game-list">
+        <div class="game-list-item">
+          <div class="game-list-icon" style="background:linear-gradient(135deg,#e8d4a0,#c9a855);border-radius:14px;">
+            <span style="font-size:26px">🏪</span>
+            <div class="game-badge">⚡</div>
+          </div>
+          <div class="game-list-info">
+            <div class="game-list-name">时尚百货城</div>
+            <div class="game-list-desc">
+              <span class="game-list-hot">🔥 热游榜第20名</span>
+              <span style="color:#999">· 轻松不费脑，逆袭当…</span>
+            </div>
+          </div>
+          <button class="game-list-btn primary">立即玩</button>
         </div>
-        <div class="welfare-card">
-          <div class="welfare-img" style="background:linear-gradient(135deg,#1a3a5e,#2a6090)">🔫</div>
-          <div class="welfare-info"><div class="welfare-game">三角洲行动</div><div class="welfare-name">补给箱×3</div><div class="welfare-deadline">明日12:00截止</div></div>
+        <div class="game-list-item">
+          <div class="game-list-icon" style="background:linear-gradient(135deg,#3a2a1a,#6a5a40);border-radius:14px;">
+            <span style="font-size:26px">⚔️</span>
+            <div class="game-badge">⚡</div>
+          </div>
+          <div class="game-list-info">
+            <div class="game-list-name">寻道大千</div>
+            <div class="game-list-desc">
+              <span class="game-list-friend">👥 1个好友在玩</span>
+              <span style="color:#999">· 一斧在手，修仙无忧</span>
+            </div>
+          </div>
+          <button class="game-list-btn primary">立即玩</button>
         </div>
-        <div class="welfare-card">
-          <div class="welfare-img" style="background:linear-gradient(135deg,#2a5a2a,#3a8a3a)">🪂</div>
-          <div class="welfare-info"><div class="welfare-game">和平精英</div><div class="welfare-name">金币×188</div><div class="welfare-deadline">3天后截止</div></div>
+        <div class="game-list-item">
+          <div class="game-list-icon" style="background:linear-gradient(135deg,#2a3a5a,#4a6090);border-radius:14px;">
+            <span style="font-size:26px">🌍</span>
+          </div>
+          <div class="game-list-info">
+            <div class="game-list-name">原神</div>
+            <div class="game-list-desc">
+              <span class="game-list-hot">🔥 热游榜第2名</span>
+              <span style="color:#999">· 跨越少女出征奇幻大陆</span>
+            </div>
+          </div>
+          <button class="game-list-btn">进入</button>
+        </div>
+        <div class="game-list-item">
+          <div class="game-list-icon wzry">
+            <span style="font-size:26px">⚔️</span>
+          </div>
+          <div class="game-list-info">
+            <div class="game-list-name">王者荣耀</div>
+            <div class="game-list-desc">
+              <span class="game-list-friend">👥 12个好友在玩</span>
+              <span style="color:#999">· 5v5公平竞技</span>
+            </div>
+          </div>
+          <button class="game-list-btn">进入</button>
+        </div>
+        <div class="game-list-item">
+          <div class="game-list-icon hpjy">
+            <span style="font-size:26px">🪂</span>
+          </div>
+          <div class="game-list-info">
+            <div class="game-list-name">和平精英</div>
+            <div class="game-list-desc">
+              <span class="game-list-friend">👥 5个好友在玩</span>
+              <span style="color:#999">· 大吉大利，今晚吃鸡</span>
+            </div>
+          </div>
+          <button class="game-list-btn">进入</button>
         </div>
       </div>
     </div>
   </div>
 
   <div class="bottom-nav">
-    <div class="bottom-nav-item active"><span class="bottom-nav-icon">🎮</span>游戏</div>
-    <div class="bottom-nav-item"><span class="bottom-nav-icon">🪶</span>鹅毛</div>
-    <div class="bottom-nav-item"><span class="bottom-nav-icon">🤝</span>搭子</div>
-    <div class="bottom-nav-item"><span class="bottom-nav-icon">👤</span>我的</div>
+    <div class="bottom-nav-item active">
+      <span class="bottom-nav-icon">🎮</span>
+      <span class="bottom-nav-label">游戏</span>
+    </div>
+    <div class="bottom-nav-item">
+      <span class="bottom-nav-icon">🪶</span>
+      <span class="bottom-nav-label">鹅毛</span>
+    </div>
+    <div class="bottom-nav-item">
+      <span class="bottom-nav-icon">👥</span>
+      <span class="bottom-nav-label">搭子</span>
+    </div>
+    <div class="bottom-nav-item">
+      <span class="bottom-nav-icon">👤</span>
+      <span class="bottom-nav-label">我的</span>
+    </div>
   </div>
 </div>
 
@@ -648,11 +781,11 @@ body {
     <div style="display:flex;gap:8px;margin-bottom:8px">
       <input id="apiKeyInput" type="password" placeholder="sk-xxxxxxxxxxxxxxxx"
         style="flex:1;border:1.5px solid #d0dcff;border-radius:9px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;color:#1a1a2e;background:white"
-        onfocus="this.style.borderColor='#7c3aed'"
+        onfocus="this.style.borderColor='#1a6bff'"
         onblur="this.style.borderColor='#d0dcff'"
       />
       <button onclick="saveApiKey()" style="
-        background:linear-gradient(135deg,#7c3aed,#9f67ff);color:white;
+        background:linear-gradient(135deg,#1a6bff,#4a90ff);color:white;
         border:none;border-radius:9px;padding:8px 16px;
         font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap
       ">保存</button>
@@ -666,12 +799,13 @@ body {
   <div class="chat-input-area">
     <div class="input-hints" id="inputHints">
       <button class="input-hint-chip" onclick="fillInput('有什么礼包可以领')">🎁 有什么礼包可以领</button>
-      <button class="input-hint-chip" onclick="fillInput('帮我复盘上一把')">🔍 帮我复盘上一把</button>
+      <button class="input-hint-chip" onclick="fillInput('昨日的三角洲战绩')">🏆 昨日三角洲战绩</button>
+      <button class="input-hint-chip" onclick="fillInput('帮我复盘上一把和平精英')">🔍 复盘和平精英</button>
       <button class="input-hint-chip" onclick="fillInput('连跪五把好烦')">😤 连跪五把好烦</button>
       <button class="input-hint-chip" onclick="fillInput('帮我找王者上分搭子')">🤝 找王者上分搭子</button>
-      <button class="input-hint-chip" onclick="fillInput('王者荣耀最近有什么更新')">📰 王者最近有什么更新</button>
-      <button class="input-hint-chip" onclick="fillInput('朵莉亚怎么出装')">📖 朵莉亚怎么出装</button>
-      <button class="input-hint-chip" onclick="fillInput('帮我生成昨天的高光视频')">🎬 生成昨天高光视频</button>
+      <button class="input-hint-chip" onclick="fillInput('原神最近有什么更新')">📰 原神最近更新</button>
+      <button class="input-hint-chip" onclick="fillInput('英雄联盟亚索怎么出装')">📖 LOL亚索出装</button>
+      <button class="input-hint-chip" onclick="fillInput('帮我生成和平精英高光视频')">🎬 和平精英高光</button>
       <button class="input-hint-chip" onclick="fillInput('三国志异闻录怎么下载')">⬇️ 三国志异闻录下载</button>
       <button class="input-hint-chip" onclick="fillInput('最近有什么新皮肤')">🛍️ 最近有什么新皮肤</button>
       <button class="input-hint-chip" onclick="fillInput('看看我的本周总结')">📅 看看我的本周总结</button>
@@ -684,8 +818,6 @@ body {
   </div>
 </div>
 
-<button class="reset-btn" id="resetBtn" onclick="goToLanding()">← 返回</button>
-
 <script>
 // ============================================================
 // INTENT ENGINE
@@ -694,76 +826,241 @@ const INTENTS = [
   {
     id: 'welfare',
     label: '🎁 福利/礼包',
-    keywords: ['礼包','福利','领取','领','奖励','兑换','可以领','能领','有啥福利','什么福利','今天福利','限时礼'],
+    keywords: ['礼包','福利','领取','奖励','兑换','可以领','能领','有啥福利','什么福利','今天福利','限时礼'],
+    // 高权重词：出现即可高置信
+    strongKeywords: ['礼包','福利','领取','兑换'],
     confidence: 0,
   },
   {
     id: 'record',
     label: '🏆 战绩查询',
     keywords: ['战绩','战报','最近打','胜率','赢了多少','输了多少','kda','KDA','我的数据','排位数据','局数','胜负'],
+    strongKeywords: ['战绩','战报','胜率','kda','KDA'],
     confidence: 0,
   },
   {
     id: 'replay',
     label: '🔍 AI复盘',
     keywords: ['复盘','分析','上一把','上局','刚才那把','这把','怎么输的','为什么输','打得怎么样','AI分析','复盘一下'],
+    strongKeywords: ['复盘','上一把','上局','怎么输的','为什么输'],
     confidence: 0,
   },
   {
     id: 'partner',
     label: '🤝 找搭子',
-    keywords: ['搭子','搭一搭','队友','找人','一起玩','组队','开黑','上分','找个人','陪玩','匹配','找搭'],
+    keywords: ['搭子','搭一搭','队友','找人','一起玩','组队','开黑','上分','找个人','陪玩','匹配','找搭','国服','来个','带我','一起'],
+    strongKeywords: ['搭子','开黑','组队','陪玩','国服'],
     confidence: 0,
   },
   {
     id: 'news',
     label: '📰 游戏资讯',
-    keywords: ['资讯','更新','新版本','新英雄','新角色','活动','最近','公告','新地图','改动','新增','版本'],
+    keywords: ['资讯','更新','新版本','新英雄','新角色','活动','公告','新地图','改动','新增','版本'],
+    strongKeywords: ['资讯','新版本','新英雄','公告','更新'],
     confidence: 0,
   },
   {
     id: 'guide',
     label: '📖 攻略查询',
-    keywords: ['怎么玩','攻略','出装','加点','技巧','套路','怎么打','如何','玩法','推荐装备','铭文','符文','怎么用'],
+    // 移除了过于宽泛的 "如何"，只保留游戏相关的攻略词
+    keywords: ['怎么玩','攻略','出装','加点','技巧','套路','怎么打','玩法','推荐装备','铭文','符文','怎么用','连招'],
+    strongKeywords: ['攻略','出装','铭文','符文','加点','连招'],
     confidence: 0,
   },
   {
     id: 'highlight',
     label: '🎬 高光/视频',
-    keywords: ['高光','视频','精彩','战报','回放','生成','录像','精彩时刻','集锦','highlight'],
+    keywords: ['高光','视频','精彩','回放','生成','录像','精彩时刻','集锦','highlight'],
+    strongKeywords: ['高光','集锦','精彩时刻','highlight'],
     confidence: 0,
   },
   {
     id: 'download',
     label: '⬇️ 游戏下载',
-    keywords: ['下载','安装','预约','怎么下','哪里下','下载链接','客户端','app','游戏包'],
+    keywords: ['下载','安装','预约','怎么下','哪里下','下载链接','客户端','游戏包'],
+    strongKeywords: ['下载','安装','预约'],
     confidence: 0,
   },
   {
     id: 'skin',
     label: '🛍️ 皮肤/购买',
-    keywords: ['皮肤','购买','买','新皮','限定','多少钱','价格','商城','市集','鹅毛','在卖','上架'],
+    keywords: ['皮肤','购买','新皮','限定','多少钱','价格','商城','市集','鹅毛','在卖','上架'],
+    strongKeywords: ['皮肤','新皮','限定','商城','鹅毛'],
     confidence: 0,
   },
   {
     id: 'report',
     label: '📅 日报/周报',
-    keywords: ['日报','周报','总结','本周','今天','每日','统计','报告','数据总览','回顾'],
+    keywords: ['日报','周报','总结','本周','每日','统计','报告','数据总览','回顾'],
+    strongKeywords: ['日报','周报','总结','报告'],
     confidence: 0,
   },
   {
     id: 'emotion',
     label: '😤 情绪互动',
-    keywords: ['好烦','烦死','气死','连跪','一直输','菜','坑','队友','垃圾','太难了','好难','放弃','崩溃','心态','想退坑','不想玩了'],
+    keywords: ['好烦','烦死','气死','连跪','一直输','菜','坑','垃圾','太难了','好难','放弃','崩溃','心态','想退坑','不想玩了'],
+    strongKeywords: ['连跪','想退坑','不想玩了','崩溃','心态'],
     confidence: 0,
   },
   {
     id: 'reminder',
     label: '⏰ 定时提醒',
     keywords: ['提醒','定时','到时候','帮我记','点钟','点提醒','点上线','打卡','提示我','alarm'],
+    strongKeywords: ['提醒','定时','alarm'],
     confidence: 0,
   },
 ];
+
+// ============================================================
+// GAME DETECTION — 从用户文本中识别游戏
+// ============================================================
+const GAMES = {
+  wzry: {
+    id: 'wzry', name: '王者荣耀', icon: '⚔️', emoji: '👑',
+    color: '#c9a227', gradient: 'linear-gradient(135deg,#c9a227,#f0d060)',
+    keywords: ['王者','荣耀','王者荣耀','wzry','农药'],
+  },
+  hpjy: {
+    id: 'hpjy', name: '和平精英', icon: '🪂', emoji: '🔫',
+    color: '#3a8a3a', gradient: 'linear-gradient(135deg,#2a5a2a,#3a8a3a)',
+    keywords: ['和平','精英','和平精英','吃鸡','hpjy','绝地'],
+  },
+  sjz: {
+    id: 'sjz', name: '三角洲行动', icon: '🔫', emoji: '🎯',
+    color: '#2a6090', gradient: 'linear-gradient(135deg,#1a3a5e,#2a6090)',
+    keywords: ['三角','三角洲','行动','sjz','三角洲行动','delta'],
+  },
+  lol: {
+    id: 'lol', name: '英雄联盟手游', icon: '🏰', emoji: '⚡',
+    color: '#c0392b', gradient: 'linear-gradient(135deg,#8b0000,#cc2200)',
+    keywords: ['英雄联盟','lol','LOL','撸啊撸','联盟'],
+  },
+  ys: {
+    id: 'ys', name: '原神', icon: '🌍', emoji: '✨',
+    color: '#5a7abf', gradient: 'linear-gradient(135deg,#2a3a5a,#4a6090)',
+    keywords: ['原神','genshin','提瓦特'],
+  },
+};
+
+// ============================================================
+// HERO / CHARACTER DATABASE — 每个游戏的角色识别
+// ============================================================
+const HERO_DB = {
+  wzry: [
+    { name:'李白', aliases:['李白','国服李白'], role:'打野', icon:'⚔️' },
+    { name:'韩信', aliases:['韩信','国服韩信'], role:'打野', icon:'🗡️' },
+    { name:'兰陵王', aliases:['兰陵王','小兰'], role:'打野', icon:'🗡️' },
+    { name:'赵云', aliases:['赵云','子龙'], role:'打野', icon:'🐉' },
+    { name:'露娜', aliases:['露娜','月光'], role:'打野', icon:'🌙' },
+    { name:'孙悟空', aliases:['悟空','猴子','孙悟空'], role:'打野', icon:'🐵' },
+    { name:'亚瑟', aliases:['亚瑟'], role:'上单', icon:'🛡️' },
+    { name:'关羽', aliases:['关羽','关二爷'], role:'上单', icon:'⚔️' },
+    { name:'花木兰', aliases:['花木兰','木兰'], role:'上单', icon:'🌸' },
+    { name:'吕布', aliases:['吕布','奉先'], role:'上单', icon:'🔥' },
+    { name:'诸葛亮', aliases:['诸葛亮','诸葛','村长'], role:'中单', icon:'📖' },
+    { name:'嫦娥', aliases:['嫦娥'], role:'中单', icon:'🌙' },
+    { name:'王昭君', aliases:['王昭君','昭君'], role:'中单', icon:'❄️' },
+    { name:'貂蝉', aliases:['貂蝉'], role:'中单', icon:'💃' },
+    { name:'安琪拉', aliases:['安琪拉','安其拉'], role:'中单', icon:'🔥' },
+    { name:'后羿', aliases:['后羿'], role:'射手', icon:'🏹' },
+    { name:'鲁班七号', aliases:['鲁班','鲁班七号','鲁班7号'], role:'射手', icon:'🔧' },
+    { name:'孙尚香', aliases:['孙尚香','香香'], role:'射手', icon:'🔫' },
+    { name:'马可波罗', aliases:['马可','马可波罗'], role:'射手', icon:'🎯' },
+    { name:'瑶', aliases:['瑶','瑶妹'], role:'辅助', icon:'🦌' },
+    { name:'蔡文姬', aliases:['蔡文姬','文姬'], role:'辅助', icon:'🎵' },
+    { name:'张飞', aliases:['张飞','翼德'], role:'辅助', icon:'🛡️' },
+    { name:'鬼谷子', aliases:['鬼谷子','鬼谷'], role:'辅助', icon:'👻' },
+  ],
+  hpjy: [
+    { name:'M416', aliases:['m416','m4','M416','M4'], role:'步枪', icon:'🔫' },
+    { name:'AWM', aliases:['awm','AWM','马格南'], role:'狙击枪', icon:'🎯' },
+    { name:'AKM', aliases:['akm','AKM','ak','AK'], role:'步枪', icon:'🔫' },
+    { name:'UMP45', aliases:['ump','UMP','ump45','UMP45'], role:'冲锋枪', icon:'🔫' },
+    { name:'S12K', aliases:['s12k','S12K','喷子'], role:'霰弹枪', icon:'💥' },
+    { name:'Kar98k', aliases:['kar98','98k','Kar98k','98K'], role:'狙击枪', icon:'🎯' },
+    { name:'SKS', aliases:['sks','SKS'], role:'射手步枪', icon:'🎯' },
+    { name:'DP-28', aliases:['dp28','DP28','大盘鸡'], role:'轻机枪', icon:'🔫' },
+  ],
+  sjz: [
+    { name:'突击兵', aliases:['突击兵','突击','步兵'], role:'突击', icon:'🔫' },
+    { name:'狙击手', aliases:['狙击手','狙击','狙'], role:'狙击', icon:'🎯' },
+    { name:'重装兵', aliases:['重装兵','重装','坦克'], role:'重装', icon:'🛡️' },
+    { name:'医疗兵', aliases:['医疗兵','医疗','奶妈'], role:'支援', icon:'💊' },
+    { name:'工程兵', aliases:['工程兵','工程','修理'], role:'支援', icon:'🔧' },
+    { name:'侦察兵', aliases:['侦察兵','侦察','侦查'], role:'侦察', icon:'👁️' },
+  ],
+  lol: [
+    { name:'亚索', aliases:['亚索','快乐风男','哈撒给'], role:'中单', icon:'⚡' },
+    { name:'永恩', aliases:['永恩'], role:'中单', icon:'⚔️' },
+    { name:'阿狸', aliases:['阿狸','狐狸'], role:'中单', icon:'🔮' },
+    { name:'劫', aliases:['劫','影流之主'], role:'中单', icon:'🌑' },
+    { name:'李青', aliases:['李青','盲僧','瞎子'], role:'打野', icon:'👊' },
+    { name:'赵信', aliases:['赵信','菊花信'], role:'打野', icon:'🐉' },
+    { name:'螳螂', aliases:['螳螂','卡兹克'], role:'打野', icon:'🦗' },
+    { name:'盖伦', aliases:['盖伦','德玛','德玛西亚'], role:'上单', icon:'🛡️' },
+    { name:'锐雯', aliases:['锐雯','瑞文','兔女'], role:'上单', icon:'⚔️' },
+    { name:'薇恩', aliases:['薇恩','VN','暗夜猎手'], role:'射手', icon:'🏹' },
+    { name:'金克丝', aliases:['金克丝','jinx'], role:'射手', icon:'💥' },
+    { name:'EZ', aliases:['ez','EZ','伊泽瑞尔','探险家'], role:'射手', icon:'✨' },
+    { name:'璐璐', aliases:['璐璐','露露'], role:'辅助', icon:'🧚' },
+    { name:'锤石', aliases:['锤石','魂锁典狱长'], role:'辅助', icon:'⛓️' },
+    { name:'琴女', aliases:['琴女','娑娜'], role:'辅助', icon:'🎵' },
+  ],
+  ys: [
+    { name:'胡桃', aliases:['胡桃','桃子','堂主'], role:'主C', icon:'🔥' },
+    { name:'雷电将军', aliases:['雷电将军','雷神','将军','雷军'], role:'副C', icon:'⚡' },
+    { name:'甘雨', aliases:['甘雨','椰羊','羊'], role:'主C', icon:'❄️' },
+    { name:'钟离', aliases:['钟离','岩王爷','钟爷'], role:'辅助', icon:'🪨' },
+    { name:'万叶', aliases:['万叶','枫原万叶','叶天帝'], role:'辅助', icon:'🍃' },
+    { name:'纳西妲', aliases:['纳西妲','草神','小吉祥草王'], role:'辅助', icon:'🌿' },
+    { name:'行秋', aliases:['行秋','秋秋'], role:'辅助', icon:'💧' },
+    { name:'夜兰', aliases:['夜兰','夜姐'], role:'副C', icon:'💧' },
+    { name:'班尼特', aliases:['班尼特','班神','六星真神'], role:'辅助', icon:'🔥' },
+    { name:'香菱', aliases:['香菱','锅巴'], role:'副C', icon:'🌶️' },
+    { name:'芙宁娜', aliases:['芙宁娜','芙芙','水神'], role:'辅助', icon:'🌊' },
+  ],
+};
+
+function detectHero(text, game) {
+  if (!game) return null;
+  const db = HERO_DB[game.id];
+  if (!db) return null;
+  const t = text.toLowerCase();
+  for (const hero of db) {
+    for (const alias of hero.aliases) {
+      if (t.includes(alias.toLowerCase())) return hero;
+    }
+  }
+  return null;
+}
+
+// 也支持从文本中同时识别游戏和英雄（未指定游戏时遍历所有游戏）
+function detectHeroAcrossGames(text) {
+  const t = text.toLowerCase();
+  for (const [gameId, heroes] of Object.entries(HERO_DB)) {
+    for (const hero of heroes) {
+      for (const alias of hero.aliases) {
+        if (t.includes(alias.toLowerCase())) {
+          return { hero, game: GAMES[gameId] };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function detectGame(text) {
+  const t = text.toLowerCase();
+  for (const [key, game] of Object.entries(GAMES)) {
+    for (const kw of game.keywords) {
+      if (t.includes(kw.toLowerCase())) return game;
+    }
+  }
+  return null; // 未识别到具体游戏
+}
+
+// 默认游戏（未指定时使用）
+const DEFAULT_GAME = GAMES.wzry;
 
 function detectIntent(text) {
   const t = text.toLowerCase();
@@ -772,15 +1069,23 @@ function detectIntent(text) {
 
   INTENTS.forEach(intent => {
     let score = 0;
+    // 普通关键词 +2
     intent.keywords.forEach(kw => {
       if (t.includes(kw.toLowerCase())) score += 2;
     });
+    // 强关键词额外 +3（总计 +5）
+    if (intent.strongKeywords) {
+      intent.strongKeywords.forEach(kw => {
+        if (t.includes(kw.toLowerCase())) score += 3;
+      });
+    }
     scores.push({ id: intent.id, label: intent.label, score });
     if (score > bestScore) { bestScore = score; best = intent; }
   });
 
   if (bestScore === 0) return null;
-  const confidence = Math.min(95, 60 + bestScore * 8);
+  // 使用对数曲线让置信度更合理，避免多关键词堆叠到100%
+  const confidence = Math.min(95, Math.round(55 + 20 * Math.log2(bestScore)));
   return { ...best, confidence, allScores: scores };
 }
 
@@ -807,17 +1112,51 @@ function buildResponse(intentId, userText) {
 }
 
 function buildWelfareResponse(text) {
-  const hasGame = text.includes('王者') ? 'wzry' : text.includes('三角') ? 'sjz' : text.includes('和平') ? 'hpjy' : null;
-  if (hasGame) {
+  const game = detectGame(text);
+  const showAll = text === '_all';
+  if (game) {
+    const welfareByGame = {
+      wzry: [{icon:'⚔️',cls:'wzry',game:'王者荣耀',name:'英雄碎片 ×20',dl:'今日23:59截止'},{icon:'💎',cls:'wzry',game:'王者荣耀',name:'点券 ×18',dl:'明日12:00截止'},{icon:'🏆',cls:'wzry',game:'王者荣耀',name:'铭文碎片 ×50 + 金币 ×2000',dl:'3天后截止'}],
+      hpjy: [{icon:'🪂',cls:'hpjy',game:'和平精英',name:'金币 ×188',dl:'3天后截止'},{icon:'🎒',cls:'hpjy',game:'和平精英',name:'精英补给箱',dl:'今日截止'},{icon:'🔫',cls:'hpjy',game:'和平精英',name:'枪械皮肤碎片 ×30',dl:'明日截止'}],
+      sjz: [{icon:'🔫',cls:'sjz',game:'三角洲行动',name:'补给箱 ×3',dl:'今日23:59截止'},{icon:'🎖️',cls:'sjz',game:'三角洲行动',name:'战术物资包',dl:'明日截止'},{icon:'🛡️',cls:'sjz',game:'三角洲行动',name:'干员经验卡 ×500',dl:'3天后截止'}],
+      lol: [{icon:'🏰',cls:'wzry',game:'英雄联盟手游',name:'英雄体验卡 ×3',dl:'今日23:59截止'},{icon:'💎',cls:'wzry',game:'英雄联盟手游',name:'蓝色精粹 ×200',dl:'明日截止'},{icon:'🎭',cls:'wzry',game:'英雄联盟手游',name:'随机皮肤碎片',dl:'3天后截止'}],
+      ys: [{icon:'✨',cls:'wzry',game:'原神',name:'原石 ×60',dl:'今日截止'},{icon:'🌟',cls:'wzry',game:'原神',name:'摩拉 ×20000',dl:'明日截止'},{icon:'📦',cls:'wzry',game:'原神',name:'大英雄的经验 ×5',dl:'3天后截止'}],
+    };
+    const items = welfareByGame[game.id] || welfareByGame.wzry;
     return {
-      text: `${hasGame === 'wzry' ? '王者荣耀' : hasGame === 'sjz' ? '三角洲行动' : '和平精英'}今天有 <strong>3个福利</strong> 可以领，快去领吧！`,
-      card: 'welfare_' + hasGame
+      text: `${game.name}今天有 <strong>${items.length}个福利</strong> 可以领，快去领吧！`,
+      card: 'welfare_' + game.id,
+      cardHtml: `
+        <div class="result-card">
+          <div class="result-card-header">🎁 今日可领福利 · ${game.name}</div>
+          <div class="welfare-list">
+            ${items.map(i=>`
+              <div class="welfare-item">
+                <div class="wi-icon ${i.cls}">${i.icon}</div>
+                <div class="wi-info"><div class="wi-game">${i.game}</div><div class="wi-name">${i.name}</div><div class="wi-deadline">⏰ ${i.dl}</div></div>
+                <button class="wi-action">立即领</button>
+              </div>`).join('')}
+          </div>
+        </div>`
+    };
+  }
+  if (showAll) {
+    return {
+      text: '帮你汇总了 <strong>全部游戏的今日福利</strong> 🎉',
+      card: 'welfare__all'
     };
   }
   return {
     text: '我帮你找到了 <strong>今日全部可领福利</strong> 🎉<br>想先看哪个游戏的？',
-    quickReplies: ['⚔️ 王者荣耀', '🔫 三角洲行动', '🪂 和平精英', '全部游戏'],
-    onQR: { '⚔️ 王者荣耀': () => buildWelfareResponse('王者'), '🔫 三角洲行动': () => buildWelfareResponse('三角'), '🪂 和平精英': () => buildWelfareResponse('和平'), '全部游戏': () => buildWelfareResponse('_all') }
+    quickReplies: ['⚔️ 王者荣耀', '🔫 三角洲行动', '🪂 和平精英', '🏰 英雄联盟', '🌍 原神', '全部游戏'],
+    onQR: {
+      '⚔️ 王者荣耀': () => buildWelfareResponse('王者'),
+      '🔫 三角洲行动': () => buildWelfareResponse('三角'),
+      '🪂 和平精英': () => buildWelfareResponse('和平'),
+      '🏰 英雄联盟': () => buildWelfareResponse('英雄联盟'),
+      '🌍 原神': () => buildWelfareResponse('原神'),
+      '全部游戏': () => buildWelfareResponse('_all')
+    }
   };
 }
 
@@ -840,26 +1179,92 @@ function parseTimeRange(text) {
 // ============================================================
 // 动态数据生成器 — 根据时间范围生成合理的 mock 数据
 // ============================================================
-function genRecordData(range) {
-  // 时间越短，场次越少；数据有差异感
-  const presets = {
-    today:      { matches:3,  winRate:'67%', winColor:'#22c55e', score:'7.8', heroes:[{i:'⚔️',n:'亚瑟',r:'67%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'50%',c:'#f59e0b'}] },
-    yesterday:  { matches:5,  winRate:'40%', winColor:'#ef4444', score:'6.3', heroes:[{i:'🗡️',n:'兰陵王',r:'40%',c:'#ef4444'},{i:'⚔️',n:'亚瑟',r:'67%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'0%',c:'#ef4444'}] },
-    '3days':    { matches:11, winRate:'55%', winColor:'#22c55e', score:'7.1', heroes:[{i:'⚔️',n:'亚瑟',r:'60%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'55%',c:'#22c55e'},{i:'🗡️',n:'兰陵王',r:'44%',c:'#f59e0b'}] },
-    week:       { matches:24, winRate:'58%', winColor:'#22c55e', score:'7.2', heroes:[{i:'⚔️',n:'亚瑟',r:'63%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'55%',c:'#22c55e'},{i:'🗡️',n:'兰陵王',r:'44%',c:'#ef4444'}] },
-    last_week:  { matches:18, winRate:'44%', winColor:'#ef4444', score:'6.8', heroes:[{i:'🌙',n:'嫦娥',r:'44%',c:'#ef4444'},{i:'⚔️',n:'亚瑟',r:'50%',c:'#f59e0b'},{i:'🗡️',n:'兰陵王',r:'38%',c:'#ef4444'}] },
-    month:      { matches:72, winRate:'52%', winColor:'#f59e0b', score:'7.0', heroes:[{i:'⚔️',n:'亚瑟',r:'55%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'52%',c:'#f59e0b'},{i:'🗡️',n:'兰陵王',r:'46%',c:'#ef4444'}] },
-    recent:     { matches:24, winRate:'58%', winColor:'#22c55e', score:'7.2', heroes:[{i:'⚔️',n:'亚瑟',r:'63%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'55%',c:'#22c55e'},{i:'🗡️',n:'兰陵王',r:'44%',c:'#ef4444'}] },
+function genRecordData(range, game) {
+  const gid = game?.id || 'wzry';
+  // 各游戏的角色数据
+  const gameHeroes = {
+    wzry: {
+      today:     [{i:'⚔️',n:'亚瑟',r:'67%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'50%',c:'#f59e0b'}],
+      yesterday: [{i:'🗡️',n:'兰陵王',r:'40%',c:'#ef4444'},{i:'⚔️',n:'亚瑟',r:'67%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'0%',c:'#ef4444'}],
+      week:      [{i:'⚔️',n:'亚瑟',r:'63%',c:'#22c55e'},{i:'🌙',n:'嫦娥',r:'55%',c:'#22c55e'},{i:'🗡️',n:'兰陵王',r:'44%',c:'#ef4444'}],
+    },
+    hpjy: {
+      today:     [{i:'🔫',n:'M416',r:'55%',c:'#22c55e'},{i:'🎯',n:'AWM',r:'100%',c:'#22c55e'}],
+      yesterday: [{i:'🔫',n:'M416',r:'33%',c:'#ef4444'},{i:'💣',n:'手雷',r:'50%',c:'#f59e0b'},{i:'🎯',n:'AWM',r:'25%',c:'#ef4444'}],
+      week:      [{i:'🔫',n:'M416',r:'52%',c:'#f59e0b'},{i:'🎯',n:'AWM',r:'60%',c:'#22c55e'},{i:'🚗',n:'载具击杀',r:'40%',c:'#ef4444'}],
+    },
+    sjz: {
+      today:     [{i:'🔫',n:'突击兵',r:'60%',c:'#22c55e'},{i:'🛡️',n:'重装兵',r:'50%',c:'#f59e0b'}],
+      yesterday: [{i:'🔫',n:'突击兵',r:'38%',c:'#ef4444'},{i:'🎯',n:'狙击手',r:'50%',c:'#f59e0b'},{i:'🛡️',n:'重装兵',r:'25%',c:'#ef4444'}],
+      week:      [{i:'🔫',n:'突击兵',r:'55%',c:'#22c55e'},{i:'🎯',n:'狙击手',r:'58%',c:'#22c55e'},{i:'🛡️',n:'重装兵',r:'42%',c:'#ef4444'}],
+    },
+    lol: {
+      today:     [{i:'⚡',n:'亚索',r:'75%',c:'#22c55e'},{i:'🐉',n:'赵信',r:'50%',c:'#f59e0b'}],
+      yesterday: [{i:'⚡',n:'亚索',r:'40%',c:'#ef4444'},{i:'🔮',n:'阿狸',r:'60%',c:'#22c55e'},{i:'🐉',n:'赵信',r:'33%',c:'#ef4444'}],
+      week:      [{i:'⚡',n:'亚索',r:'58%',c:'#22c55e'},{i:'🔮',n:'阿狸',r:'55%',c:'#22c55e'},{i:'🐉',n:'赵信',r:'45%',c:'#ef4444'}],
+    },
+    ys: {
+      today:     [{i:'⚡',n:'雷电将军',r:'—',c:'#888'},{i:'❄️',n:'甘雨',r:'—',c:'#888'}],
+      yesterday: [{i:'🔥',n:'胡桃',r:'—',c:'#888'},{i:'⚡',n:'雷电将军',r:'—',c:'#888'},{i:'💧',n:'行秋',r:'—',c:'#888'}],
+      week:      [{i:'🔥',n:'胡桃',r:'—',c:'#888'},{i:'⚡',n:'雷电将军',r:'—',c:'#888'},{i:'❄️',n:'甘雨',r:'—',c:'#888'}],
+    },
   };
-  return presets[range.tag] || presets['week'];
+  const heroLabel = (gid === 'hpjy' || gid === 'sjz') ? '常用武器/兵种' : gid === 'ys' ? '最常使用角色' : '最常使用英雄';
+  const scoreLabel = gid === 'ys' ? '探索度' : '场均评分';
+
+  const basePresets = {
+    today:      { matches:3,  winRate:'67%', winColor:'#22c55e', score:'7.8' },
+    yesterday:  { matches:5,  winRate:'40%', winColor:'#ef4444', score:'6.3' },
+    '3days':    { matches:11, winRate:'55%', winColor:'#22c55e', score:'7.1' },
+    week:       { matches:24, winRate:'58%', winColor:'#22c55e', score:'7.2' },
+    last_week:  { matches:18, winRate:'44%', winColor:'#ef4444', score:'6.8' },
+    month:      { matches:72, winRate:'52%', winColor:'#f59e0b', score:'7.0' },
+    recent:     { matches:24, winRate:'58%', winColor:'#22c55e', score:'7.2' },
+  };
+  // 原神用特别的度量
+  if (gid === 'ys') {
+    Object.keys(basePresets).forEach(k => {
+      basePresets[k].winRate = '—'; basePresets[k].winColor = '#888';
+      basePresets[k].score = k === 'today' ? '82%' : k === 'yesterday' ? '78%' : '85%';
+    });
+  }
+
+  const base = basePresets[range.tag] || basePresets['week'];
+  const heroSet = (gameHeroes[gid] || gameHeroes.wzry);
+  const heroes = heroSet[range.tag] || heroSet.week || heroSet[Object.keys(heroSet)[0]];
+  return { ...base, heroes, heroLabel, scoreLabel };
 }
 
-function genReplayData(range) {
-  const presets = {
-    last_match: { hero:'亚瑟', result:'lose', duration:'18:42', time:'2小时前', k:4,  d:6, a:7,  insight:'8-12分钟频繁单独进攻，3次死亡发生在无视野区域。建议中期跟随团队，避免孤立作战。' },
-    today:      { hero:'嫦娥', result:'win',  duration:'22:10', time:'今天下午', k:6,  d:2, a:11, insight:'大招命中率达81%，团战贡献突出。但第15分钟蹲草过久，错失反推机会。' },
-    yesterday:  { hero:'兰陵王',result:'lose',duration:'14:30', time:'昨天晚上', k:2,  d:8, a:3,  insight:'前期抢红BUFF两次失败导致节奏崩盘，建议开局优先刷野保证经济。' },
+function genReplayData(range, game) {
+  const gid = game?.id || 'wzry';
+  const gamePresets = {
+    wzry: {
+      last_match: { hero:'亚瑟',  heroIcon:'⚔️', result:'lose', duration:'18:42', time:'2小时前', k:4,d:6,a:7,  mode:'排位赛', insight:'8-12分钟频繁单独进攻，3次死亡发生在无视野区域。建议中期跟随团队，避免孤立作战。' },
+      today:      { hero:'嫦娥',  heroIcon:'🌙', result:'win',  duration:'22:10', time:'今天下午', k:6,d:2,a:11, mode:'排位赛', insight:'大招命中率达81%，团战贡献突出。但第15分钟蹲草过久，错失反推机会。' },
+      yesterday:  { hero:'兰陵王',heroIcon:'🗡️', result:'lose', duration:'14:30', time:'昨天晚上', k:2,d:8,a:3,  mode:'排位赛', insight:'前期抢红BUFF两次失败导致节奏崩盘，建议开局优先刷野保证经济。' },
+    },
+    hpjy: {
+      last_match: { hero:'M416主武器', heroIcon:'🔫', result:'lose', duration:'24:18', time:'1小时前', k:5,d:1,a:2,  mode:'经典模式', insight:'决赛圈选位偏高，被对手卡毒边击杀。建议决赛圈提前转移到安全区中心附近掩体。', kLabel:'击杀', dLabel:'排名', aLabel:'伤害', dVal:'#12', aVal:'1,850' },
+      today:      { hero:'AWM狙击',   heroIcon:'🎯', result:'win',  duration:'28:05', time:'今天中午', k:11,d:0,a:3, mode:'经典模式', insight:'狙击命中率78%，决赛圈3连杀锁定吃鸡！前期可以更积极搜索空投。', kLabel:'击杀', dLabel:'排名', aLabel:'伤害', dVal:'#1', aVal:'2,680' },
+      yesterday:  { hero:'手雷高光',   heroIcon:'💣', result:'lose', duration:'19:50', time:'昨天下午', k:3,d:1,a:1,  mode:'经典模式', insight:'中期过于保守缩圈，最终因装备劣势落败。建议中期适当攻楼获取更好装备。', kLabel:'击杀', dLabel:'排名', aLabel:'伤害', dVal:'#8', aVal:'980' },
+    },
+    sjz: {
+      last_match: { hero:'突击兵', heroIcon:'🔫', result:'lose', duration:'12:35', time:'3小时前', k:8,d:5,a:6,  mode:'据点争夺', insight:'A点进攻时多次正面硬刚导致死亡，建议利用烟雾弹绕后包抄。' },
+      today:      { hero:'狙击手', heroIcon:'🎯', result:'win',  duration:'15:20', time:'今天上午', k:14,d:2,a:4, mode:'据点争夺', insight:'远距离压制非常出色，MVP！中距离交战可以考虑切换副武器提高效率。' },
+      yesterday:  { hero:'重装兵', heroIcon:'🛡️', result:'lose', duration:'10:48', time:'昨天晚上', k:3,d:7,a:8,  mode:'拆弹模式', insight:'频繁冲锋导致血量不足，重装兵应利用盾牌掩护队友推进而非单独冲锋。' },
+    },
+    lol: {
+      last_match: { hero:'亚索',  heroIcon:'⚡', result:'lose', duration:'25:30', time:'2小时前', k:7,d:8,a:5,  mode:'排位赛', insight:'中期频繁单带被抓，建议团战期跟团输出而非分推。0/10/0定律提醒：别送了！' },
+      today:      { hero:'阿狸',  heroIcon:'🔮', result:'win',  duration:'28:15', time:'今天下午', k:9,d:3,a:12, mode:'排位赛', insight:'团战E技能命中率极高，多次成功勾引敌方C位。继续保持！' },
+      yesterday:  { hero:'赵信',  heroIcon:'🐉', result:'lose', duration:'20:10', time:'昨天晚上', k:4,d:6,a:7,  mode:'排位赛', insight:'前期入侵野区被反蹲2次，建议先确认敌方打野位置再入侵。' },
+    },
+    ys: {
+      last_match: { hero:'胡桃',    heroIcon:'🔥', result:'win',  duration:'— ',   time:'2小时前', k:0,d:0,a:0, mode:'深渊12层', insight:'12-3上半间胡桃蒸发流伤害可观，但下半间切人时机偏慢，可以优化轴序。', kLabel:'星数', dLabel:'用时', aLabel:'阵容', dVal:'3★', aVal:'胡行钟夜' },
+      today:      { hero:'雷电将军',heroIcon:'⚡', result:'win',  duration:'—',    time:'今天',   k:0,d:0,a:0, mode:'深渊12层', insight:'雷神国家队输出稳定，全星通关！可以尝试更换圣遗物提升15%伤害。', kLabel:'星数', dLabel:'用时', aLabel:'阵容', dVal:'3★', aVal:'雷万班香' },
+      yesterday:  { hero:'甘雨',    heroIcon:'❄️', result:'lose', duration:'—',    time:'昨天',   k:0,d:0,a:0, mode:'深渊12层', insight:'甘雨冻结队在12-2遇到无法冻结的BOSS，建议换融化甘雨或胡桃队。', kLabel:'星数', dLabel:'用时', aLabel:'阵容', dVal:'2★', aVal:'甘莫迪万' },
+    },
   };
+  const presets = gamePresets[gid] || gamePresets.wzry;
   return presets[range.tag] || presets['last_match'];
 }
 
@@ -878,25 +1283,99 @@ function genReportData(range) {
 
 function buildRecordResponse(text) {
   const range = parseTimeRange(text) || { label:'近7日', days:7, tag:'week' };
-  const d = genRecordData(range);
+  const game = detectGame(text);
+
+  // 未指定具体游戏 → 展示所有在玩游戏的概览，让用户选择
+  if (!game) {
+    // 用户在玩的游戏列表及昨日/近期概要数据
+    const userGames = [
+      { id:'wzry', name:'王者荣耀', icon:'⚔️', color:'#c9a227', gradient:'linear-gradient(135deg,#c9a227,#f0d060)', matches:5, winRate:'40%', winColor:'#ef4444' },
+      { id:'hpjy', name:'和平精英', icon:'🪂', color:'#3a8a3a', gradient:'linear-gradient(135deg,#2a5a2a,#3a8a3a)', matches:3, winRate:'33%', winColor:'#ef4444' },
+      { id:'sjz',  name:'三角洲行动', icon:'🔫', color:'#2a6090', gradient:'linear-gradient(135deg,#1a3a5e,#2a6090)', matches:4, winRate:'50%', winColor:'#f59e0b' },
+      { id:'lol',  name:'英雄联盟手游', icon:'🏰', color:'#c0392b', gradient:'linear-gradient(135deg,#8b0000,#cc2200)', matches:2, winRate:'50%', winColor:'#f59e0b' },
+      { id:'ys',   name:'原神', icon:'🌍', color:'#5a7abf', gradient:'linear-gradient(135deg,#2a3a5a,#4a6090)', desc:'深渊12层 · 探索度 85%' },
+    ];
+    const gameCardsHtml = userGames.map(g => {
+      const summary = g.desc || (range.label + ' ' + g.matches + '场 · 胜率 <span style="color:' + g.winColor + '">' + g.winRate + '</span>');
+      return `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8faff;border-radius:10px;cursor:pointer;transition:all 0.2s;border:1px solid #e8eef8" onmouseover="this.style.background='#eef3ff';this.style.borderColor='#1a6bff'" onmouseout="this.style.background='#f8faff';this.style.borderColor='#e8eef8'">
+        <div style="width:36px;height:36px;border-radius:10px;background:${g.gradient};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${g.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:#1a1a2e">${g.name}</div>
+          <div style="font-size:11px;color:#888;margin-top:1px">${summary}</div>
+        </div>
+        <div style="font-size:11px;color:#1a6bff;font-weight:600;flex-shrink:0">查看 ›</div>
+      </div>`;
+    }).join('');
+
+    const qrOptions = userGames.map(g => `${g.icon} ${g.name}`);
+    const callbacks = {};
+    userGames.forEach(g => {
+      callbacks[`${g.icon} ${g.name}`] = () => {
+        const gameObj = GAMES[g.id];
+        const d = genRecordData(range, gameObj);
+        const winRateLabel = gameObj.id === 'ys' ? '探索度' : '胜率';
+        return {
+          text: `这是蟹柳 <strong>${range.label}</strong> 的${gameObj.name}战绩 📊`,
+          cardHtml: `
+            <div class="result-card">
+              <div class="result-card-header">🏆 ${range.label}战绩 · ${gameObj.name}</div>
+              <div style="padding:12px">
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+                  <div class="stat-item"><div class="stat-val" style="color:${d.winColor}">${d.winRate}</div><div class="stat-label">${winRateLabel}</div></div>
+                  <div class="stat-item"><div class="stat-val">${d.matches}</div><div class="stat-label">场次</div></div>
+                  <div class="stat-item"><div class="stat-val">${d.score}</div><div class="stat-label">${d.scoreLabel}</div></div>
+                </div>
+                <div style="font-size:12px;color:#888;margin-bottom:6px;font-weight:600">${d.heroLabel}</div>
+                <div style="display:flex;gap:8px">
+                  ${d.heroes.map(h=>`
+                  <div style="flex:1;background:#fafbff;border-radius:9px;padding:8px;text-align:center">
+                    <div style="font-size:20px">${h.i}</div>
+                    <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-top:3px">${h.n}</div>
+                    <div style="font-size:10px;color:${h.c}">${gameObj.id === 'ys' ? '' : '胜率 '}${h.r}</div>
+                  </div>`).join('')}
+                </div>
+              </div>
+            </div>`
+        };
+      };
+    });
+
+    return {
+      text: `蟹柳${range.label}玩了好几款游戏呢 🎮 你想看哪个游戏的战绩？`,
+      cardHtml: `
+        <div class="result-card">
+          <div class="result-card-header">🎮 ${range.label}在玩的游戏</div>
+          <div style="padding:10px;display:flex;flex-direction:column;gap:6px">
+            ${gameCardsHtml}
+          </div>
+        </div>`,
+      quickReplies: qrOptions,
+      onQR: callbacks
+    };
+  }
+
+  // 指定了具体游戏 → 直接展示该游戏战绩
+  const d = genRecordData(range, game);
+  const winRateLabel = game.id === 'ys' ? '探索度' : '胜率';
   return {
-    text: `这是蟹柳 <strong>${range.label}</strong> 的王者荣耀战绩 📊`,
+    text: `这是蟹柳 <strong>${range.label}</strong> 的${game.name}战绩 📊`,
     cardHtml: `
       <div class="result-card">
-        <div class="result-card-header">🏆 ${range.label}战绩 · 王者荣耀</div>
+        <div class="result-card-header">🏆 ${range.label}战绩 · ${game.name}</div>
         <div style="padding:12px">
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
-            <div class="stat-item"><div class="stat-val" style="color:${d.winColor}">${d.winRate}</div><div class="stat-label">胜率</div></div>
+            <div class="stat-item"><div class="stat-val" style="color:${d.winColor}">${d.winRate}</div><div class="stat-label">${winRateLabel}</div></div>
             <div class="stat-item"><div class="stat-val">${d.matches}</div><div class="stat-label">场次</div></div>
-            <div class="stat-item"><div class="stat-val">${d.score}</div><div class="stat-label">场均评分</div></div>
+            <div class="stat-item"><div class="stat-val">${d.score}</div><div class="stat-label">${d.scoreLabel}</div></div>
           </div>
-          <div style="font-size:12px;color:#888;margin-bottom:6px;font-weight:600">最常使用英雄</div>
+          <div style="font-size:12px;color:#888;margin-bottom:6px;font-weight:600">${d.heroLabel}</div>
           <div style="display:flex;gap:8px">
             ${d.heroes.map(h=>`
             <div style="flex:1;background:#fafbff;border-radius:9px;padding:8px;text-align:center">
               <div style="font-size:20px">${h.i}</div>
               <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-top:3px">${h.n}</div>
-              <div style="font-size:10px;color:${h.c}">胜率 ${h.r}</div>
+              <div style="font-size:10px;color:${h.c}">${game.id === 'ys' ? '' : '胜率 '}${h.r}</div>
             </div>`).join('')}
           </div>
         </div>
@@ -906,25 +1385,31 @@ function buildRecordResponse(text) {
 
 function buildReplayResponse(text) {
   const range = parseTimeRange(text) || { label:'最近一局', days:0, tag:'last_match' };
-  const d = genReplayData(range);
+  const game = detectGame(text) || DEFAULT_GAME;
+  const d = genReplayData(range, game);
   const isWin = d.result === 'win';
+  const kLabel = d.kLabel || '击杀';
+  const dLabel = d.dLabel || '死亡';
+  const aLabel = d.aLabel || '助攻';
+  const dVal   = d.dVal || d.d;
+  const aVal   = d.aVal || d.a;
   return {
-    text: `找到蟹柳 <strong>${range.label}</strong> 的数据了，AI分析如下：`,
+    text: `找到蟹柳 <strong>${range.label}</strong> 的${game.name}数据了，AI分析如下：`,
     cardHtml: `
       <div class="result-card">
         <div class="replay-card">
           <div class="replay-header">
-            <div class="replay-hero-icon">${d.hero==='亚瑟'?'⚔️':d.hero==='嫦娥'?'🌙':'🗡️'}</div>
+            <div class="replay-hero-icon" style="background:${game.gradient}">${d.heroIcon || game.icon}</div>
             <div class="replay-game-info">
-              <div class="replay-game-name">王者荣耀 · ${d.hero}</div>
+              <div class="replay-game-name">${game.name} · ${d.hero}</div>
               <div class="replay-result ${d.result}">● ${isWin?'胜利':'失败'} · ${d.duration}</div>
-              <div class="replay-time">${d.time} · 排位赛</div>
+              <div class="replay-time">${d.time} · ${d.mode || '排位赛'}</div>
             </div>
           </div>
           <div class="replay-stats">
-            <div class="stat-item"><div class="stat-val">${d.k}</div><div class="stat-label">击杀</div></div>
-            <div class="stat-item"><div class="stat-val">${d.d}</div><div class="stat-label">死亡</div></div>
-            <div class="stat-item"><div class="stat-val">${d.a}</div><div class="stat-label">助攻</div></div>
+            <div class="stat-item"><div class="stat-val">${d.k}</div><div class="stat-label">${kLabel}</div></div>
+            <div class="stat-item"><div class="stat-val">${dVal}</div><div class="stat-label">${dLabel}</div></div>
+            <div class="stat-item"><div class="stat-val">${aVal}</div><div class="stat-label">${aLabel}</div></div>
           </div>
           <div class="replay-insight">
             <span class="replay-insight-label">💡 AI分析：</span>${d.insight}
@@ -974,74 +1459,226 @@ function buildReportResponse(text) {
 }
 
 function buildPartnerResponse(text) {
-  const hasRole = text.includes('打野') ? '打野' : text.includes('辅助') ? '辅助' : text.includes('中单') ? '中单' : null;
+  // 先尝试从英雄名反推游戏（如"给我来个国服李白"→识别出王者荣耀+李白）
+  let game = detectGame(text);
+  let hero = game ? detectHero(text, game) : null;
+
+  // 未通过游戏关键词识别到游戏，尝试通过英雄名跨游戏识别
+  if (!game && !hero) {
+    const crossResult = detectHeroAcrossGames(text);
+    if (crossResult) {
+      game = crossResult.game;
+      hero = crossResult.hero;
+    }
+  }
+  if (!game) game = DEFAULT_GAME;
+  if (!hero) hero = detectHero(text, game);
+
+  // 位置关键词（兜底）
+  const roleKeywords = {
+    '打野':['打野','野区','刷野'], '上单':['上单','上路','对抗路'],
+    '中单':['中单','中路','法师'], '射手':['射手','ADC','adc','下路'],
+    '辅助':['辅助','辅','奶妈','保护'], '狙击':['狙击','狙','远程'],
+    '突击':['突击','步兵','冲锋'], '重装':['重装','坦克','肉'],
+    '主C':['主C','主c','输出','站场'], '副C':['副C','副c','挂机','脱手'],
+  };
+  let detectedRole = null;
+  if (!hero) {
+    const lower = text.toLowerCase();
+    for (const [role, kws] of Object.entries(roleKeywords)) {
+      if (kws.some(kw => lower.includes(kw.toLowerCase()))) { detectedRole = role; break; }
+    }
+  }
+
+  // 搭子数据库 — 每个搭子有擅长英雄和位置
+  const partnerData = {
+    wzry: [
+      { avatar:'🦁', bg:'linear-gradient(135deg,#1a5090,#4a8adf)', name:'暗影刀锋', rank:'铂金II', role:'打野', heroes:['李白','韩信','赵云','兰陵王'], tags:['上分型','语音开黑'], desc:'国服李白2000场 胜率62%' },
+      { avatar:'🌸', bg:'linear-gradient(135deg,#c0392b,#e74c3c)', name:'樱花剑士', rank:'钻石V', role:'中单', heroes:['诸葛亮','貂蝉','王昭君','嫦娥'], tags:['教学耐心','不倾诉'], desc:'诸葛亮1500场 胜率58%' },
+      { avatar:'🐉', bg:'linear-gradient(135deg,#1a5276,#2e86c1)', name:'龙腾四海', rank:'铂金V', role:'辅助', heroes:['瑶','张飞','鬼谷子','蔡文姬'], tags:['稳健型','不开麦'], desc:'瑶妹800场 胜率55%' },
+      { avatar:'🏹', bg:'linear-gradient(135deg,#8b6914,#c9a227)', name:'百步穿杨', rank:'钻石III', role:'射手', heroes:['后羿','马可波罗','孙尚香','鲁班七号'], tags:['补刀精准','走A流'], desc:'后羿1200场 胜率60%' },
+      { avatar:'⚔️', bg:'linear-gradient(135deg,#2a5a2a,#3a8a3a)', name:'战神归来', rank:'星耀II', role:'上单', heroes:['花木兰','关羽','吕布','亚瑟'], tags:['单带型','会切后排'], desc:'花木兰900场 胜率57%' },
+      { avatar:'🌙', bg:'linear-gradient(135deg,#1a3a5e,#5ab0ff)', name:'月下独酌', rank:'钻石I', role:'打野', heroes:['露娜','李白','孙悟空'], tags:['秀操作','carry型'], desc:'露娜2200场 胜率65%' },
+    ],
+    hpjy: [
+      { avatar:'🦅', bg:'linear-gradient(135deg,#2a5a2a,#3a8a3a)', name:'丛林猎鹰', rank:'王牌II', role:'突击手', heroes:['M416','AKM','UMP45'], tags:['压枪稳','会指挥'], desc:'M416压枪王 吃鸡率18%' },
+      { avatar:'🎯', bg:'linear-gradient(135deg,#8b6914,#c9a227)', name:'百步穿杨', rank:'无敌战神', role:'狙击手', heroes:['AWM','Kar98k','SKS'], tags:['神枪手','不苟'], desc:'AWM爆头率42% 千米狙神' },
+      { avatar:'🚁', bg:'linear-gradient(135deg,#1a3a5e,#2a6090)', name:'钢铁之翼', rank:'王牌V', role:'载具手', heroes:['DP-28','M416'], tags:['会开车','接人稳'], desc:'载具击杀王 场均跑毒0次' },
+      { avatar:'💣', bg:'linear-gradient(135deg,#333,#666)', name:'爆破专家', rank:'王牌III', role:'突击手', heroes:['S12K','AKM','M416'], tags:['近战猛','投雷准'], desc:'手雷击杀200+ 决赛圈之王' },
+    ],
+    sjz: [
+      { avatar:'🔫', bg:'linear-gradient(135deg,#333,#666)', name:'铁血战士', rank:'黄金I', role:'突击兵', heroes:['突击兵'], tags:['配合好','打法凶'], desc:'突击兵3000场 MVP率28%' },
+      { avatar:'🛡️', bg:'linear-gradient(135deg,#1a3a5e,#2a6090)', name:'钢铁堡垒', rank:'铂金III', role:'重装兵', heroes:['重装兵','工程兵'], tags:['能抗伤','会报点'], desc:'重装专精 场均承伤最高' },
+      { avatar:'🎯', bg:'linear-gradient(135deg,#1a5090,#4a8adf)', name:'暗夜之眼', rank:'黄金II', role:'狙击手', heroes:['狙击手','侦察兵'], tags:['精准射击','不抢人头'], desc:'狙击手爆头率38%' },
+      { avatar:'💊', bg:'linear-gradient(135deg,#2a5a2a,#3a8a3a)', name:'生命之手', rank:'铂金I', role:'医疗兵', heroes:['医疗兵'], tags:['奶量足','走位安全'], desc:'医疗兵 场均治疗量2400' },
+    ],
+    lol: [
+      { avatar:'⚡', bg:'linear-gradient(135deg,#c0392b,#e74c3c)', name:'疾风剑客', rank:'钻石III', role:'中单', heroes:['亚索','永恩','劫'], tags:['carry型','补刀好'], desc:'亚索1800场 胜率56%' },
+      { avatar:'🐉', bg:'linear-gradient(135deg,#1a5276,#2e86c1)', name:'龙骑士', rank:'铂金I', role:'打野', heroes:['李青','赵信','螳螂'], tags:['gank准','抢龙稳'], desc:'李青盲僧 2500场 胜率58%' },
+      { avatar:'🌟', bg:'linear-gradient(135deg,#8b6914,#c9a227)', name:'星光辅助', rank:'钻石V', role:'辅助', heroes:['璐璐','锤石','琴女'], tags:['视野好','保护型'], desc:'辅助之王 场均视野分87' },
+      { avatar:'🏹', bg:'linear-gradient(135deg,#1a5090,#4a8adf)', name:'影刃射手', rank:'钻石II', role:'射手', heroes:['薇恩','金克丝','EZ'], tags:['走A丝滑','团战稳'], desc:'薇恩1200场 胜率61%' },
+      { avatar:'🛡️', bg:'linear-gradient(135deg,#2a5a2a,#3a8a3a)', name:'不灭磐石', rank:'铂金III', role:'上单', heroes:['盖伦','锐雯'], tags:['抗压强','TP支援快'], desc:'上单之王 对线压制率72%' },
+    ],
+    ys: [
+      { avatar:'🔥', bg:'linear-gradient(135deg,#c0392b,#e74c3c)', name:'胡桃主C', rank:'深渊满星', role:'主C', heroes:['胡桃','宵宫'], tags:['蒸发流','输出爆炸'], desc:'胡桃蒸发流 满星速通' },
+      { avatar:'❄️', bg:'linear-gradient(135deg,#1a5276,#5ab0ff)', name:'冰原旅人', rank:'56级', role:'辅助', heroes:['钟离','班尼特','行秋'], tags:['会奶','盾很厚'], desc:'钟离6命 班尼特13精' },
+      { avatar:'⚡', bg:'linear-gradient(135deg,#1a5090,#4a8adf)', name:'雷神之怒', rank:'深渊满星', role:'副C', heroes:['雷电将军','夜兰','香菱'], tags:['国家队','配合好'], desc:'雷神国家队 36秒满星' },
+      { avatar:'🌿', bg:'linear-gradient(135deg,#2a5a2a,#3a8a3a)', name:'须弥学者', rank:'深渊满星', role:'辅助', heroes:['纳西妲','万叶','芙宁娜'], tags:['绽放流','元素精通'], desc:'纳西妲绽放 全队增伤王' },
+      { avatar:'❄️', bg:'linear-gradient(135deg,#3a6a9a,#5ab0ff)', name:'璃月仙人', rank:'58级', role:'主C', heroes:['甘雨','神里绫华'], tags:['冻结队','永冻流'], desc:'甘雨冻结 操作简单' },
+    ],
+  };
+
+  const allPartners = partnerData[game.id] || partnerData.wzry;
+  let partners, matchInfo;
+
+  if (hero) {
+    // 识别到具体英雄 → 筛选擅长该英雄的搭子 + 推荐互补位置的搭子
+    const heroMatched = allPartners.filter(p => p.heroes.includes(hero.name));
+    const roleComplement = allPartners.filter(p => p.role !== hero.role && !heroMatched.includes(p));
+    partners = [...heroMatched, ...roleComplement].slice(0, 4);
+    if (partners.length === 0) partners = allPartners.slice(0, 3);
+    matchInfo = `<strong>${game.name}</strong>擅长<strong>${hero.name}</strong>的搭子`;
+  } else if (detectedRole) {
+    partners = allPartners.filter(p => p.role === detectedRole || p.heroes.some(h => {
+      const db = HERO_DB[game.id];
+      const heroData = db?.find(d => d.name === h);
+      return heroData && heroData.role === detectedRole;
+    }));
+    if (partners.length === 0) partners = allPartners.slice(0, 3);
+    else partners = partners.slice(0, 4);
+    matchInfo = `<strong>${game.name}</strong>${detectedRole}位的搭子`;
+  } else {
+    partners = allPartners.slice(0, 3);
+    matchInfo = `<strong>${game.name}</strong>实力相当的搭子`;
+  }
+
+  // 构建搭子卡片
+  const partnerCards = partners.map(p => {
+    // 如果识别了英雄，高亮搭子中与该英雄相关的信息
+    const heroHighlight = hero && p.heroes.includes(hero.name)
+      ? `<div style="font-size:10px;color:#1a6bff;margin-top:2px">🎯 擅长${hero.name}</div>`
+      : '';
+    const heroListStr = p.heroes.slice(0, 3).join(' / ');
+    return `
+          <div class="partner-item">
+            <div class="partner-avatar" style="background:${p.bg}">${p.avatar}<div class="partner-online-dot"></div></div>
+            <div class="partner-info">
+              <div class="partner-name">${p.name}</div>
+              <div class="partner-rank">⭐ ${p.rank} · ${p.role}</div>
+              ${heroHighlight}
+              <div style="font-size:10px;color:#999;margin-top:1px">常用：${heroListStr}</div>
+              <div class="partner-tag-row">${p.tags.map(t=>`<span class="partner-tag">${t}</span>`).join('')}</div>
+            </div>
+            <button class="partner-btn">搭一搭</button>
+          </div>`;
+  }).join('');
+
   return {
-    text: `为蟹柳匹配 <strong>${hasRole ? hasRole + '位' : '实力相当'}的当前在线搭子</strong> ✨`,
+    text: `为蟹柳匹配 ${matchInfo} ✨`,
     cardHtml: `
       <div class="result-card">
-        <div class="result-card-header">🤝 为你匹配的搭子 · 当前在线</div>
+        <div class="result-card-header">🤝 为你匹配的搭子 · ${game.name}${hero ? ' · ' + hero.name : ''}</div>
         <div class="partner-list">
-          <div class="partner-item">
-            <div class="partner-avatar" style="background:linear-gradient(135deg,#6a4c93,#9b72cf)">🦁<div class="partner-online-dot"></div></div>
-            <div class="partner-info"><div class="partner-name">暗影刀锋</div><div class="partner-rank">⭐ 铂金II · 打野</div><div class="partner-tag-row"><span class="partner-tag">上分型</span><span class="partner-tag">语音开黑</span></div></div>
-            <button class="partner-btn">搭一搭</button>
-          </div>
-          <div class="partner-item">
-            <div class="partner-avatar" style="background:linear-gradient(135deg,#c0392b,#e74c3c)">🌸<div class="partner-online-dot"></div></div>
-            <div class="partner-info"><div class="partner-name">樱花剑士</div><div class="partner-rank">⭐ 钻石V · 中单</div><div class="partner-tag-row"><span class="partner-tag">教学耐心</span><span class="partner-tag">不倾诉</span></div></div>
-            <button class="partner-btn">搭一搭</button>
-          </div>
-          <div class="partner-item">
-            <div class="partner-avatar" style="background:linear-gradient(135deg,#1a5276,#2e86c1)">🐉<div class="partner-online-dot"></div></div>
-            <div class="partner-info"><div class="partner-name">龙腾四海</div><div class="partner-rank">⭐ 铂金V · 辅助</div><div class="partner-tag-row"><span class="partner-tag">稳健型</span><span class="partner-tag">不开麦</span></div></div>
-            <button class="partner-btn">搭一搭</button>
-          </div>
+          ${partnerCards}
         </div>
       </div>`
   };
 }
 
 function buildNewsResponse(text) {
+  const game = detectGame(text) || DEFAULT_GAME;
+  const newsData = {
+    wzry: [
+      {icon:'⚔️',title:'S37赛季新英雄「逐梦者」正式上线',meta:'官方公告 · 3小时前'},
+      {icon:'🏆',title:'排位赛调整：新段位体系全面更新',meta:'版本说明 · 1天前'},
+      {icon:'🎭',title:'限定皮肤「花月夜」即将下架，仅剩3天',meta:'活动通知 · 2天前'},
+    ],
+    hpjy: [
+      {icon:'🪂',title:'新地图「极寒雪原」正式开放',meta:'官方公告 · 5小时前'},
+      {icon:'🔫',title:'新武器ACE32加入空投，伤害数据曝光',meta:'版本说明 · 1天前'},
+      {icon:'🏆',title:'PEL季后赛即将开赛，参赛队伍公布',meta:'赛事资讯 · 2天前'},
+    ],
+    sjz: [
+      {icon:'🔫',title:'新赛季"暗夜行动"今日开启',meta:'官方公告 · 2小时前'},
+      {icon:'🛡️',title:'新干员「铁壁」技能详解，防御型首选',meta:'版本说明 · 1天前'},
+      {icon:'🗺️',title:'新地图"港湾工厂"即将上线',meta:'版本预告 · 3天前'},
+    ],
+    lol: [
+      {icon:'⚡',title:'14.6版本更新：亚索/永恩大改',meta:'官方公告 · 4小时前'},
+      {icon:'🏆',title:'MSI季中赛参赛队伍揭晓',meta:'赛事资讯 · 1天前'},
+      {icon:'🎭',title:'新英雄「织梦者」即将上线体验服',meta:'版本预告 · 2天前'},
+    ],
+    ys: [
+      {icon:'✨',title:'5.0版本「纳塔」全新地区开放',meta:'官方公告 · 6小时前'},
+      {icon:'🌟',title:'新5星角色「玛薇卡」立绘公开',meta:'角色预告 · 1天前'},
+      {icon:'🎉',title:'周年庆活动开启，免费领取5星角色',meta:'活动通知 · 2天前'},
+    ],
+  };
+  const items = newsData[game.id] || newsData.wzry;
   return {
-    text: '王者荣耀最近的 <strong>版本更新内容</strong> 📰',
+    text: `${game.name}最近的 <strong>版本更新内容</strong> 📰`,
     cardHtml: `
       <div class="result-card">
-        <div class="result-card-header">📰 王者荣耀 · 近期资讯</div>
+        <div class="result-card-header">📰 ${game.name} · 近期资讯</div>
         <div class="news-list">
+          ${items.map(n=>`
           <div class="news-item">
-            <div class="news-img">⚔️</div>
-            <div class="news-info"><div class="news-title">S37赛季新英雄「逐梦者」正式上线</div><div class="news-meta">官方公告 · 3小时前</div></div>
-          </div>
-          <div class="news-item">
-            <div class="news-img">🏆</div>
-            <div class="news-info"><div class="news-title">排位赛调整：新段位体系全面更新</div><div class="news-meta">版本说明 · 1天前</div></div>
-          </div>
-          <div class="news-item">
-            <div class="news-img">🎭</div>
-            <div class="news-info"><div class="news-title">限定皮肤「花月夜」即将下架，仅剩3天</div><div class="news-meta">活动通知 · 2天前</div></div>
-          </div>
+            <div class="news-img">${n.icon}</div>
+            <div class="news-info"><div class="news-title">${n.title}</div><div class="news-meta">${n.meta}</div></div>
+          </div>`).join('')}
         </div>
       </div>`
   };
 }
 
 function buildGuideResponse(text) {
-  const hero = text.includes('朵莉亚') ? '朵莉亚' : text.includes('亚瑟') ? '亚瑟' : text.includes('嫦娥') ? '嫦娥' : '该英雄';
+  const game = detectGame(text) || DEFAULT_GAME;
+  const guideData = {
+    wzry: {
+      hero: text.includes('朵莉亚') ? '朵莉亚' : text.includes('亚瑟') ? '亚瑟' : text.includes('嫦娥') ? '嫦娥' : '该英雄',
+      equipLabel: '🛡️ 推荐出装顺序',
+      equips: ['破军','不祥征兆','暗影战斧','影刃','名刀·司命','影忍之足'],
+      tips: ['开局先补兵，5级后开始抢红蓝BUFF','二技能切入，大招开启后立即普攻叠层','优先击杀敌方脆皮，拉开对局优势'],
+    },
+    hpjy: {
+      hero: text.includes('M416') ? 'M416' : text.includes('AWM') ? 'AWM' : text.includes('冲锋') ? '冲锋打法' : '生存技巧',
+      equipLabel: '🔫 推荐配件搭配',
+      equips: ['红点瞄准','垂直握把','消焰器','扩容弹夹','枪托','消音器'],
+      tips: ['跳伞选择偏远资源点，前期避免正面交火','转圈时优先进屋搜索，保证载具和药品','决赛圈找好掩体，不要在空地暴露位置'],
+    },
+    sjz: {
+      hero: text.includes('突击') ? '突击兵' : text.includes('狙击') ? '狙击手' : text.includes('重装') ? '重装兵' : '战术指南',
+      equipLabel: '🔫 推荐武器配置',
+      equips: ['HK416','烟雾弹×2','闪光弹','急救包','防弹插板','战术背心'],
+      tips: ['攻楼前先投烟雾弹遮蔽视线，减少伤亡','利用掩体交替掩护推进，不要扎堆','据点防守时注意多个入口，分散站位'],
+    },
+    lol: {
+      hero: text.includes('亚索') ? '亚索' : text.includes('阿狸') ? '阿狸' : text.includes('赵信') ? '赵信' : '该英雄',
+      equipLabel: '🛡️ 推荐出装顺序',
+      equips: ['无尽之刃','狂战士胫甲','幻舞','凡性之提醒','守护天使','死亡之舞'],
+      tips: ['对线期注意补兵，经济领先是关键','团战注意走位，找机会切入敌方后排','野区视野控制很重要，多做眼位'],
+    },
+    ys: {
+      hero: text.includes('胡桃') ? '胡桃' : text.includes('甘雨') ? '甘雨' : text.includes('雷') ? '雷电将军' : '角色培养',
+      equipLabel: '📦 推荐圣遗物/武器',
+      equips: ['护摩之杖','魔女四件套','攻击沙漏','火伤杯','暴击头','精通副词条'],
+      tips: ['E技能进入后靠普攻和重击输出，保持低血量','配合行秋/夜兰蒸发打法伤害最大化','大招留到换队时使用，不要浪费无敌帧'],
+    },
+  };
+  const gd = guideData[game.id] || guideData.wzry;
   return {
-    text: `这是 <strong>${hero}</strong> 的推荐出装和核心玩法 📖`,
+    text: `这是 <strong>${gd.hero}</strong> 的${game.name}推荐配置和核心玩法 📖`,
     cardHtml: `
       <div class="result-card">
-        <div class="result-card-header">📖 ${hero} · 攻略指南</div>
+        <div class="result-card-header">📖 ${gd.hero} · ${game.name}攻略</div>
         <div style="padding:12px">
-          <div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:8px">🛡️ 推荐出装顺序</div>
+          <div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:8px">${gd.equipLabel}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-            ${['破军','不祥征兆','暗影战斧','影刃','名刀·司命','影忍之足'].map((i,idx)=>`<div style="background:#f5f0ff;border:1px solid rgba(124,58,237,.2);border-radius:8px;padding:5px 10px;font-size:11px;color:#7c3aed;font-weight:600">${idx+1}. ${i}</div>`).join('')}
+            ${gd.equips.map((i,idx)=>`<div style="background:#eef3ff;border:1px solid rgba(26,107,255,.2);border-radius:8px;padding:5px 10px;font-size:11px;color:#1a6bff;font-weight:600">${idx+1}. ${i}</div>`).join('')}
           </div>
           <div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:6px">⚡ 核心技巧</div>
           <div style="font-size:12px;color:#555;line-height:1.7">
-            • 开局先补兵，5级后开始抢红蓝BUFF<br>
-            • 二技能切入，大招开启后立即普攻叠层<br>
-            • 优先击杀敌方脆皮，拉开对局优势
+            ${gd.tips.map(t=>`• ${t}`).join('<br>')}
           </div>
         </div>
       </div>`
@@ -1049,26 +1686,51 @@ function buildGuideResponse(text) {
 }
 
 function buildHighlightResponse(text) {
+  const game = detectGame(text) || DEFAULT_GAME;
+  const highlightData = {
+    wzry: [
+      {t:'⚔️ 亚瑟 · 三杀',d:'8:32 · 中路团战逆转',tag:'团战高光'},
+      {t:'🌙 嫦娥 · 完美大招',d:'14:20 · 一技能+大招双杀',tag:'操作秀'},
+      {t:'🏆 逆风翻盘',d:'18:00 · 最终团战MVP',tag:'逆风局'},
+    ],
+    hpjy: [
+      {t:'🔫 M416 · 四连杀',d:'12:45 · 城区巷战清队',tag:'灭队高光'},
+      {t:'🎯 AWM · 超远狙',d:'18:30 · 800米爆头击杀',tag:'神枪手'},
+      {t:'🏆 决赛圈吃鸡',d:'24:10 · 1v3反杀吃鸡',tag:'绝地翻盘'},
+    ],
+    sjz: [
+      {t:'🔫 突击兵 · ACE',d:'5:20 · A点突破五杀',tag:'突破高光'},
+      {t:'🎯 狙击手 · 连续爆头',d:'8:15 · 三连爆头锁定回合',tag:'精准射击'},
+      {t:'🛡️ 拆弹成功',d:'11:40 · 最后3秒拆弹绝杀',tag:'极限操作'},
+    ],
+    lol: [
+      {t:'⚡ 亚索 · 五杀',d:'22:15 · 团战五杀翻盘',tag:'五杀高光'},
+      {t:'🔮 阿狸 · 极限逃生',d:'15:30 · 残血三段R逃生',tag:'操作秀'},
+      {t:'🏆 偷大龙',d:'28:00 · 惩戒抢龙成功',tag:'关键操作'},
+    ],
+    ys: [
+      {t:'🔥 胡桃 · 蒸发大招',d:'深渊12-3 · 一招秒杀BOSS',tag:'秒杀高光'},
+      {t:'⚡ 雷神 · 无限大招',d:'深渊12-1 · 雷神国家队速通',tag:'速通'},
+      {t:'❄️ 甘雨 · 融化重击',d:'深渊12-2 · 单人输出全场',tag:'输出秀'},
+    ],
+  };
+  const items = highlightData[game.id] || highlightData.wzry;
   return {
-    text: '正在为蟹柳生成 <strong>昨日高光视频</strong>，提取到3个精彩时刻 🎬',
+    text: `正在为蟹柳生成 <strong>${game.name}昨日高光视频</strong>，提取到${items.length}个精彩时刻 🎬`,
     cardHtml: `
       <div class="result-card">
-        <div class="result-card-header">🎬 蟹柳的高光时刻 · 昨日</div>
+        <div class="result-card-header">🎬 蟹柳的高光时刻 · ${game.name}</div>
         <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
-          ${[
-            {t:'⚔️ 亚瑟 · 三杀','d':'8:32 · 中路团战逆转','tag':'团战高光'},
-            {t:'🌙 嫦娥 · 完美大招','d':'14:20 · 一技能+大招双杀','tag':'操作秀'},
-            {t:'🏆 逆风翻盘','d':'18:00 · 最终团战MVP','tag':'逆风局'},
-          ].map(item=>`
+          ${items.map(item=>`
             <div style="display:flex;align-items:center;gap:10px;padding:9px;background:#fafbff;border-radius:10px">
-              <div style="width:52px;height:36px;background:linear-gradient(135deg,#1a2a5e,#2a4090);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">▶️</div>
+              <div style="width:52px;height:36px;background:${game.gradient};border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">▶️</div>
               <div style="flex:1;min-width:0">
                 <div style="font-size:12px;font-weight:700;color:#1a1a2e">${item.t}</div>
                 <div style="font-size:10px;color:#888;margin-top:2px">${item.d}</div>
               </div>
-              <div style="background:#f5f0ff;color:#7c3aed;font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;flex-shrink:0">${item.tag}</div>
+              <div style="background:#eef3ff;color:#1a6bff;font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;flex-shrink:0">${item.tag}</div>
             </div>`).join('')}
-          <button style="width:100%;padding:10px;background:linear-gradient(135deg,#7c3aed,#9f67ff);color:white;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:2px">✨ 一键生成合集视频</button>
+          <button style="width:100%;padding:10px;background:linear-gradient(135deg,#1a6bff,#4a90ff);color:white;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:2px">✨ 一键生成合集视频</button>
         </div>
       </div>`
   };
@@ -1091,15 +1753,15 @@ function buildDownloadResponse(text) {
           <button class="dl-btn">立即下载</button>
         </div>
         <div style="padding:0 14px 12px;display:flex;gap:8px">
-          <div style="flex:1;background:#faf8ff;border-radius:9px;padding:9px;text-align:center">
+          <div style="flex:1;background:#f5f8ff;border-radius:9px;padding:9px;text-align:center">
             <div style="font-size:11px;color:#888">已预约</div>
-            <div style="font-size:16px;font-weight:900;color:#7c3aed">12,830</div>
+            <div style="font-size:16px;font-weight:900;color:#1a6bff">12,830</div>
           </div>
-          <div style="flex:1;background:#faf8ff;border-radius:9px;padding:9px;text-align:center">
+          <div style="flex:1;background:#f5f8ff;border-radius:9px;padding:9px;text-align:center">
             <div style="font-size:11px;color:#888">好评率</div>
             <div style="font-size:16px;font-weight:900;color:#22c55e">96%</div>
           </div>
-          <div style="flex:1;background:#faf8ff;border-radius:9px;padding:9px;text-align:center">
+          <div style="flex:1;background:#f5f8ff;border-radius:9px;padding:9px;text-align:center">
             <div style="font-size:11px;color:#888">大小</div>
             <div style="font-size:16px;font-weight:900;color:#1a1a2e">${game.size}</div>
           </div>
@@ -1116,7 +1778,7 @@ function buildSkinResponse(text) {
         <div class="result-card-header">🛍️ 鹅毛市集 · 热卖皮肤</div>
         <div class="skin-scroll">
           ${[
-            {name:'花月夜·嫦娥',game:'王者荣耀',price:'648点券',tag:'限时',bg:'linear-gradient(135deg,#4a1a6e,#9b72cf)',icon:'🌙'},
+            {name:'花月夜·嫦娥',game:'王者荣耀',price:'648点券',tag:'限时',bg:'linear-gradient(135deg,#0a3a7e,#4a8adf)',icon:'🌙'},
             {name:'星际迷途',game:'王者荣耀',price:'328点券',tag:'新品',bg:'linear-gradient(135deg,#0a2a5e,#1a5abf)',icon:'⭐'},
             {name:'暗夜骑士',game:'三角洲',price:'酷玩币×88',tag:'折扣',bg:'linear-gradient(135deg,#1a1a2e,#2a2a5e)',icon:'🌑'},
             {name:'传说系列',game:'和平精英',price:'金币×1888',tag:'热卖',bg:'linear-gradient(135deg,#2a5a2a,#3a8a3a)',icon:'🌿'},
@@ -1134,41 +1796,7 @@ function buildSkinResponse(text) {
   };
 }
 
-function buildReportResponse(text) {
-  return {
-    text: '这是蟹柳的 <strong>本周游戏总结</strong> 📅',
-    cardHtml: `
-      <div class="result-card">
-        <div class="result-card-header">📅 蟹柳的本周报告 · 3.11-3.17</div>
-        <div class="report-card">
-          <div class="report-row">
-            <div class="report-item"><div class="report-val">38</div><div class="report-label">总局数</div></div>
-            <div class="report-divider"></div>
-            <div class="report-item"><div class="report-val" style="color:#22c55e">55%</div><div class="report-label">综合胜率</div></div>
-            <div class="report-divider"></div>
-            <div class="report-item"><div class="report-val">14h</div><div class="report-label">游戏时长</div></div>
-          </div>
-          <div class="report-bar-section">
-            ${[
-              {label:'王者荣耀',pct:70,color:'#c9a227'},
-              {label:'三角洲行动',pct:20,color:'#2a6090'},
-              {label:'和平精英',pct:10,color:'#3a8a3a'},
-            ].map(b=>`
-              <div style="margin-bottom:8px">
-                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                  <span class="report-bar-label">${b.label}</span>
-                  <span style="font-size:11px;color:#888">${b.pct}%</span>
-                </div>
-                <div class="report-bar-track"><div class="report-bar-fill" style="width:${b.pct}%;background:${b.color}"></div></div>
-              </div>`).join('')}
-          </div>
-          <div style="background:#f5fff8;border:1px solid #d0f0d8;border-radius:9px;padding:10px;font-size:12px;color:#1a6a30;margin-top:2px">
-            💡 本周胜率比上周提升 <strong>+7%</strong>，继续加油！推荐多练习辅助位。
-          </div>
-        </div>
-      </div>`
-  };
-}
+/* buildReportResponse 已在上方定义（支持时间解析），此处不再重复 */
 
 function buildEmotionResponse(text) {
   return {
@@ -1192,10 +1820,13 @@ function buildEmotionResponse(text) {
 }
 
 function buildReminderResponse(text) {
+  const game = detectGame(text) || DEFAULT_GAME;
   const timeMatch = text.match(/(\d+)点/);
   const timeStr = timeMatch ? `今天 ${timeMatch[1]}:00` : '设定时间';
+  const modeMap = { wzry:'排位', hpjy:'经典模式', sjz:'据点争夺', lol:'排位', ys:'每日委托' };
+  const mode = modeMap[game.id] || '排位';
   return {
-    text: `好的！我来帮你设置提醒 ⏰`,
+    text: `好的！我来帮你设置${game.name}提醒 ⏰`,
     cardHtml: `
       <div class="result-card">
         <div class="reminder-card">
@@ -1203,7 +1834,7 @@ function buildReminderResponse(text) {
             <div class="reminder-icon">⏰</div>
             <div><div class="reminder-title">提醒已设置</div><div class="reminder-sub">到时间我会通知你</div></div>
           </div>
-          <div class="reminder-time">📅 ${timeStr} &nbsp;·&nbsp; 🎮 王者荣耀排位</div>
+          <div class="reminder-time">📅 ${timeStr} &nbsp;·&nbsp; ${game.icon} ${game.name} · ${mode}</div>
           <button class="reminder-confirm" onclick="this.textContent='✅ 已确认'">确认提醒</button>
         </div>
       </div>`
@@ -1219,7 +1850,7 @@ function buildReminderResponse(text) {
 // 留空则使用本地关键词匹配引擎（离线可用）
 // ============================================================
 const DEEPSEEK_CONFIG = {
-  apiKey: 'sk-bc78fcee9c484e70a8ca747a70bab465',
+  apiKey: '',   // 不要在前端代码中硬编码 API Key，用户可通过设置面板输入
   baseUrl: 'https://api.deepseek.com/v1',
   model: 'deepseek-chat',
   enabled() { return !!this.apiKey.trim(); },
@@ -1284,6 +1915,10 @@ async function callDeepSeek(userText) {
   if (!DEEPSEEK_CONFIG.enabled()) return null;
 
   try {
+    // 添加 10 秒超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     const res = await fetch(`${DEEPSEEK_CONFIG.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -1300,7 +1935,10 @@ async function callDeepSeek(userText) {
         max_tokens: 300,
         response_format: { type: 'json_object' },
       }),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       console.warn('[DeepSeek] API error:', res.status, await res.text());
@@ -1312,9 +1950,18 @@ async function callDeepSeek(userText) {
     if (!raw) return null;
 
     const parsed = JSON.parse(raw);
+    // 校验必要字段
+    if (!parsed.intentId || !parsed.intentLabel) {
+      console.warn('[DeepSeek] 返回格式不完整:', parsed);
+      return null;
+    }
     return parsed;
   } catch (e) {
-    console.warn('[DeepSeek] 调用失败，降级到本地引擎:', e.message);
+    if (e.name === 'AbortError') {
+      console.warn('[DeepSeek] 请求超时(10s)，降级到本地引擎');
+    } else {
+      console.warn('[DeepSeek] 调用失败，降级到本地引擎:', e.message);
+    }
     return null;
   }
 }
@@ -1349,7 +1996,7 @@ function updateModeLabel() {
     label.textContent = DEEPSEEK_CONFIG.enabled() ? 'DeepSeek' : '本地引擎';
     label.style.background = DEEPSEEK_CONFIG.enabled()
       ? 'linear-gradient(90deg,#22c55e,#16a34a)'
-      : 'linear-gradient(135deg,#7c3aed,#9f67ff)';
+      : 'linear-gradient(135deg,#1a6bff,#4a90ff)';
   }
 }
 
@@ -1360,7 +2007,6 @@ let pendingQR = null;
 function startDemo() {
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-app').classList.add('active');
-  document.getElementById('resetBtn').style.display = 'block';
   setTimeout(openAIPanel, 600);
 }
 
@@ -1368,7 +2014,6 @@ function goToLanding() {
   closeAIPanel();
   document.getElementById('screen-app').classList.remove('active');
   document.getElementById('screen-landing').classList.add('active');
-  document.getElementById('resetBtn').style.display = 'none';
   chatInited = false;
   pendingQR = null;
   document.getElementById('chatArea').innerHTML = '';
@@ -1405,6 +2050,9 @@ function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
   input.value = '';
+  // 防止连续点击重复发送
+  const sendBtn = document.querySelector('.send-btn');
+  if (sendBtn) { sendBtn.disabled = true; setTimeout(() => sendBtn.disabled = false, 1500); }
   processUserMessage(text);
 }
 
@@ -1575,7 +2223,9 @@ function addUserBubble(text) {
   const area = document.getElementById('chatArea');
   const el = document.createElement('div');
   el.className = 'msg user';
-  el.innerHTML = `<div class="msg-avatar">👤</div><div class="msg-content"><div class="msg-bubble">${text}</div></div>`;
+  // 转义用户输入防止XSS
+  const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  el.innerHTML = `<div class="msg-avatar">👤</div><div class="msg-content"><div class="msg-bubble">${safe}</div></div>`;
   area.appendChild(el);
   scrollChat();
 }
@@ -1587,12 +2237,7 @@ function addAIBubble(text, intentLabel, confidence, cardHtml, quickReplies, qrCa
 
   let inner = `<div class="msg-avatar ai-av">✨</div><div class="msg-content">`;
 
-  if (intentLabel) {
-    inner += `<div class="intent-tag"><div class="intent-dot"></div>识别意图：${intentLabel}</div>`;
-    if (confidence) {
-      inner += `<div class="confidence-row"><span>置信度</span><div class="conf-bar"><div class="conf-fill" style="width:0%" data-target="${confidence}"></div></div><span class="conf-label">${confidence}%</span></div>`;
-    }
-  }
+  // 意图标签和置信度已移除，不再展示
 
   inner += `<div class="msg-bubble">${text}</div>`;
 
@@ -1611,13 +2256,6 @@ function addAIBubble(text, intentLabel, confidence, cardHtml, quickReplies, qrCa
   el.innerHTML = inner;
   area.appendChild(el);
 
-  // Animate confidence bar
-  const fill = el.querySelector('.conf-fill');
-  if (fill) {
-    const target = fill.dataset.target;
-    setTimeout(() => { fill.style.width = target + '%'; }, 100);
-  }
-
   // Bind quick reply buttons
   if (quickReplies && qrCallbacks) {
     el.querySelectorAll('.qr-btn').forEach((btn, i) => {
@@ -1630,7 +2268,8 @@ function addAIBubble(text, intentLabel, confidence, cardHtml, quickReplies, qrCa
           const resp = cb();
           setTimeout(() => {
             showTyping(() => {
-              addAIBubble(resp.text, null, null, resp.cardHtml || getPrebuiltCard(resp.card));
+              const html = resp.cardHtml || (resp.card ? getPrebuiltCard(resp.card) : null);
+              addAIBubble(resp.text, null, null, html);
             });
           }, 300);
         }
