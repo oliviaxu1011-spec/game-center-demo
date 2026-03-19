@@ -564,6 +564,190 @@ body {
 .unknown-text { font-size:13px; color:#888; line-height:1.6; }
 .unknown-text strong { color:#1a1a2e; }
 
+/* ========== VIDEO CARD STYLES ========== */
+/* 视频推送卡片 — 点播态 & 直接播放态 */
+.video-card { padding:0; overflow:hidden; }
+
+/* 直接播放态 — 大封面 + 播放按钮 */
+.video-card-hero {
+  position:relative; width:100%; aspect-ratio:16/9;
+  background:#1a1a2e; overflow:hidden; cursor:pointer;
+}
+.video-card-hero-img {
+  width:100%; height:100%; object-fit:cover;
+  display:flex; align-items:center; justify-content:center;
+  font-size:60px; background:linear-gradient(135deg,#1a2a5e,#3a4a8e);
+}
+.video-card-hero .play-btn-overlay {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:56px; height:56px; background:rgba(0,0,0,.5);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  backdrop-filter:blur(4px); transition:all .2s;
+}
+.video-card-hero .play-btn-overlay::after {
+  content:''; width:0; height:0;
+  border-top:10px solid transparent; border-bottom:10px solid transparent;
+  border-left:16px solid white; margin-left:3px;
+}
+.video-card-hero:hover .play-btn-overlay { background:rgba(26,107,255,.7); transform:translate(-50%,-50%) scale(1.1); }
+.video-card-hero-tag {
+  position:absolute; top:10px; left:10px;
+  background:rgba(0,0,0,.55); backdrop-filter:blur(4px);
+  color:white; font-size:10px; font-weight:600;
+  padding:3px 8px; border-radius:6px;
+}
+.video-card-hero-duration {
+  position:absolute; bottom:10px; right:10px;
+  background:rgba(0,0,0,.6); color:white;
+  font-size:10px; font-weight:600;
+  padding:2px 7px; border-radius:4px;
+}
+.video-card-info {
+  padding:12px 14px;
+}
+.video-card-title {
+  font-size:14px; font-weight:700; color:#1a1a2e;
+  line-height:1.4; margin-bottom:4px;
+}
+.video-card-desc {
+  font-size:11px; color:#888; line-height:1.5;
+}
+.video-card-action-row {
+  display:flex; gap:8px; padding:0 14px 12px;
+}
+.video-card-action-btn {
+  flex:1; padding:9px; border-radius:9px;
+  font-size:12px; font-weight:700; cursor:pointer;
+  font-family:inherit; border:none; text-align:center;
+  transition:all .2s;
+}
+.video-card-action-btn.primary {
+  background:linear-gradient(135deg,#1a6bff,#4a90ff); color:white;
+}
+.video-card-action-btn.primary:hover { box-shadow:0 4px 12px rgba(26,107,255,.3); }
+.video-card-action-btn.secondary {
+  background:#eef3ff; color:#1a6bff;
+}
+
+/* 点播态 — 左图右信息 + 多视频列表 */
+.video-ondemand-header {
+  padding:12px 14px; font-size:13px; font-weight:700; color:#1a1a2e;
+}
+.video-ondemand-list {
+  padding:0 12px 12px; display:flex; flex-direction:column; gap:10px;
+}
+.video-ondemand-item {
+  display:flex; gap:10px; align-items:flex-start;
+  padding:10px; background:#fafbff; border-radius:12px;
+  cursor:pointer; transition:all .15s; border:1px solid #e8eef8;
+}
+.video-ondemand-item:hover { background:#eef3ff; border-color:#1a6bff; }
+.video-ondemand-thumb {
+  width:120px; height:72px; border-radius:8px; overflow:hidden;
+  flex-shrink:0; position:relative; background:#1a1a2e;
+}
+.video-ondemand-thumb-img {
+  width:100%; height:100%; display:flex;
+  align-items:center; justify-content:center;
+  font-size:32px; background:linear-gradient(135deg,#2a3a6e,#4a5aae);
+}
+.video-ondemand-thumb .play-mini {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:28px; height:28px; background:rgba(0,0,0,.5);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+}
+.video-ondemand-thumb .play-mini::after {
+  content:''; width:0; height:0;
+  border-top:5px solid transparent; border-bottom:5px solid transparent;
+  border-left:9px solid white; margin-left:2px;
+}
+.video-ondemand-thumb-tag {
+  position:absolute; top:4px; left:4px;
+  background:linear-gradient(135deg,#ff6b35,#ff8f60);
+  color:white; font-size:9px; font-weight:700;
+  padding:2px 6px; border-radius:4px;
+}
+.video-ondemand-thumb-duration {
+  position:absolute; bottom:4px; right:4px;
+  background:rgba(0,0,0,.6); color:white;
+  font-size:9px; font-weight:600;
+  padding:1px 5px; border-radius:3px;
+}
+.video-ondemand-info {
+  flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:4px;
+}
+.video-ondemand-title {
+  font-size:13px; font-weight:700; color:#1a1a2e;
+  line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.video-ondemand-meta {
+  font-size:10px; color:#888; line-height:1.4;
+}
+.video-ondemand-btn {
+  align-self:center; flex-shrink:0;
+  background:#f5f5f5; border:1px solid #e0e0e0;
+  border-radius:16px; padding:6px 14px;
+  font-size:11px; font-weight:600; color:#333;
+  cursor:pointer; font-family:inherit; transition:all .2s;
+}
+.video-ondemand-btn:hover { background:#eef3ff; color:#1a6bff; border-color:#1a6bff; }
+.video-ondemand-btn.play-now {
+  background:linear-gradient(135deg,#1a6bff,#4a90ff);
+  color:white; border-color:transparent;
+}
+
+/* 生成进度动画 */
+.video-generating {
+  padding:16px; text-align:center;
+}
+.video-gen-anim {
+  display:flex; justify-content:center; gap:4px; margin-bottom:12px;
+}
+.video-gen-bar {
+  width:4px; height:20px; background:linear-gradient(180deg,#1a6bff,#4a90ff);
+  border-radius:2px; animation:gen-bar 1.2s ease-in-out infinite;
+}
+.video-gen-bar:nth-child(1) { animation-delay:0s; }
+.video-gen-bar:nth-child(2) { animation-delay:.15s; }
+.video-gen-bar:nth-child(3) { animation-delay:.3s; }
+.video-gen-bar:nth-child(4) { animation-delay:.45s; }
+.video-gen-bar:nth-child(5) { animation-delay:.6s; }
+@keyframes gen-bar {
+  0%,100% { height:12px; opacity:.4; }
+  50% { height:28px; opacity:1; }
+}
+.video-gen-text {
+  font-size:12px; color:#1a6bff; font-weight:600;
+}
+.video-gen-progress {
+  width:60%; height:4px; background:#e0e8ff; border-radius:2px;
+  margin:8px auto 0; overflow:hidden;
+}
+.video-gen-progress-fill {
+  height:100%; background:linear-gradient(90deg,#1a6bff,#4a90ff);
+  border-radius:2px; animation:gen-progress 3s ease-in-out forwards;
+}
+@keyframes gen-progress { 0%{width:0} 30%{width:45%} 60%{width:72%} 80%{width:88%} 100%{width:100%} }
+
+/* 视频右侧小图列表 — 点播态多模板 */
+.video-templates-row {
+  display:flex; gap:6px; padding:0 12px 10px;
+  overflow-x:auto; scrollbar-width:none;
+}
+.video-templates-row::-webkit-scrollbar { display:none; }
+.video-template-mini {
+  width:72px; height:48px; border-radius:6px; overflow:hidden;
+  flex-shrink:0; position:relative; cursor:pointer;
+  border:2px solid transparent; transition:all .2s;
+}
+.video-template-mini:hover { border-color:#1a6bff; }
+.video-template-mini.active { border-color:#1a6bff; }
+.video-template-mini-img {
+  width:100%; height:100%; display:flex;
+  align-items:center; justify-content:center;
+  font-size:18px;
+}
+
 /* ========== MOBILE FIRST RESPONSIVE ========== */
 
 /* 触摸设备优化 */
@@ -1666,8 +1850,8 @@ function buildReplayResponse(text) {
             <span class="replay-insight-label">💡 AI分析：</span>${d.insight}
           </div>
           <div class="replay-btn-row">
-            <button class="replay-btn primary">🎬 生成高光视频</button>
-            <button class="replay-btn secondary">📊 详细数据</button>
+            <button class="replay-btn primary" onclick="handleGenerateHighlightVideo('${game.id}','${d.hero}','${d.result}')">🎬 生成高光视频</button>
+            <button class="replay-btn secondary" onclick="handleViewDetailData('${game.id}','${d.hero}','${range.label}')">📊 详细数据</button>
           </div>
         </div>
       </div>`
@@ -2717,6 +2901,308 @@ function removeEl(id) {
 function scrollChat() {
   const area = document.getElementById('chatArea');
   setTimeout(() => { area.scrollTop = area.scrollHeight; }, 60);
+}
+
+// ============================================================
+// 内层按钮点击处理 — 生成高光视频 & 详细数据
+// ============================================================
+
+// 视频模板数据库
+const VIDEO_TEMPLATES = {
+  wzry: {
+    direct: { title:'击杀集锦·热血版', cover:'⚔️🔥', tag:'效果预览', duration:'00:45', desc:'AI自动剪辑你的精彩击杀瞬间，配上热血BGM' },
+    ondemand: [
+      { title:'击杀集锦·复古风', cover:'⚔️🎬', tag:'效果预览', duration:'00:52', desc:'每次点播耗时约15分钟，不消耗流量', style:'复古胶片风格' },
+      { title:'团战高光·史诗版', cover:'👑💥', tag:'推荐', duration:'01:15', desc:'完整团战视角，震撼慢动作回放', style:'电影级特效' },
+      { title:'操作秀·节奏快剪', cover:'⚡✨', tag:'热门', duration:'00:30', desc:'快节奏剪辑，适合分享到动态', style:'短视频风格' },
+    ],
+  },
+  hpjy: {
+    direct: { title:'吃鸡高光·战场纪录', cover:'🔫🎯', tag:'效果预览', duration:'01:02', desc:'从跳伞到决赛圈，记录你的精彩瞬间' },
+    ondemand: [
+      { title:'击杀集锦·复古风', cover:'🔫🎬', tag:'效果预览', duration:'00:48', desc:'每次点播耗时约15分钟，不消耗流量', style:'复古胶片风格' },
+      { title:'枪法秀·精准狙击', cover:'🎯💥', tag:'推荐', duration:'00:35', desc:'高光狙击击杀瞬间合集', style:'慢动作回放' },
+      { title:'吃鸡全程·纪录片', cover:'🏆🎥', tag:'完整版', duration:'02:30', desc:'完整对局精华浓缩，从跳伞到吃鸡', style:'纪录片风格' },
+    ],
+  },
+  sjz: {
+    direct: { title:'据点突破·战术高光', cover:'🔫💥', tag:'效果预览', duration:'00:38', desc:'战术配合精彩瞬间，AI智能剪辑' },
+    ondemand: [
+      { title:'ACE集锦·硬核版', cover:'🔫🎬', tag:'效果预览', duration:'00:42', desc:'每次点播耗时约15分钟，不消耗流量', style:'硬核军事风' },
+      { title:'团队配合·战术版', cover:'🛡️💊', tag:'推荐', duration:'00:55', desc:'完美团队配合瞬间，展示战术默契', style:'战术分析视角' },
+      { title:'爆头集锦·精准版', cover:'🎯⚡', tag:'热门', duration:'00:25', desc:'连续爆头精彩操作，快节奏剪辑', style:'短视频风格' },
+    ],
+  },
+  lol: {
+    direct: { title:'五杀集锦·传奇版', cover:'⚡🏆', tag:'效果预览', duration:'00:55', desc:'多杀击杀、团战翻盘等精彩操作' },
+    ondemand: [
+      { title:'操作秀·极限操作', cover:'⚡🎬', tag:'效果预览', duration:'00:40', desc:'每次点播耗时约15分钟，不消耗流量', style:'高帧率慢放' },
+      { title:'团战回放·全视角', cover:'🏰💥', tag:'推荐', duration:'01:20', desc:'完整团战上帝视角回放', style:'OB解说风格' },
+      { title:'走位集锦·丝滑版', cover:'🌟✨', tag:'热门', duration:'00:28', desc:'极限走位、闪避技能等丝滑操作', style:'短视频风格' },
+    ],
+  },
+  ys: {
+    direct: { title:'深渊速通·满星纪录', cover:'🔥⚡', tag:'效果预览', duration:'01:10', desc:'深渊满星通关全过程精彩浓缩' },
+    ondemand: [
+      { title:'大招集锦·华丽版', cover:'✨🎬', tag:'效果预览', duration:'00:45', desc:'每次点播耗时约15分钟，不消耗流量', style:'华丽特效风' },
+      { title:'元素反应·连锁版', cover:'🌊🔥', tag:'推荐', duration:'00:50', desc:'精彩元素反应连锁瞬间', style:'慢动作解析' },
+      { title:'探索集锦·风景版', cover:'🌍🌸', tag:'唯美', duration:'01:30', desc:'提瓦特最美风景与战斗瞬间', style:'唯美风格' },
+    ],
+  },
+};
+
+function handleGenerateHighlightVideo(gameId, hero, result) {
+  const game = GAMES[gameId] || DEFAULT_GAME;
+  const templates = VIDEO_TEMPLATES[gameId] || VIDEO_TEMPLATES.wzry;
+
+  // Step 1: 先推送"正在生成"消息 + 进度动画
+  addAIBubble(
+    `正在为蟹柳生成 <strong>${game.name} · ${hero}</strong> 的高光视频 🎬<br>AI正在分析精彩片段…`,
+    null, null,
+    `<div class="result-card">
+      <div class="video-generating" id="videoGenProgress">
+        <div class="video-gen-anim">
+          <div class="video-gen-bar"></div>
+          <div class="video-gen-bar"></div>
+          <div class="video-gen-bar"></div>
+          <div class="video-gen-bar"></div>
+          <div class="video-gen-bar"></div>
+        </div>
+        <div class="video-gen-text">🎬 AI智能剪辑中…正在提取精彩瞬间</div>
+        <div class="video-gen-progress"><div class="video-gen-progress-fill"></div></div>
+      </div>
+    </div>`
+  );
+
+  // Step 2: 3秒后替换为"直接播放态"视频卡片
+  setTimeout(() => {
+    const genEl = document.getElementById('videoGenProgress');
+    if (genEl) {
+      const card = genEl.closest('.result-card');
+      if (card) card.remove();
+    }
+
+    // 推送直接播放态视频
+    const d = templates.direct;
+    addAIBubble(
+      `<strong>高光视频已生成！</strong>🎉 有大神带飞真的很爽`,
+      null, null,
+      `<div class="result-card">
+        <div class="video-card">
+          <div class="video-card-hero" onclick="playVideo(this)">
+            <div class="video-card-hero-img" style="background:${game.gradient}">${d.cover}</div>
+            <div class="play-btn-overlay"></div>
+            <div class="video-card-hero-tag">${d.tag}</div>
+            <div class="video-card-hero-duration">${d.duration}</div>
+          </div>
+          <div class="video-card-info">
+            <div class="video-card-title">${d.title} · ${hero}</div>
+            <div class="video-card-desc">${d.desc}</div>
+          </div>
+          <div class="video-card-action-row">
+            <button class="video-card-action-btn primary" onclick="shareVideo()">📤 去炫耀</button>
+            <button class="video-card-action-btn secondary" onclick="handleShowOndemandVideos('${gameId}','${hero}')">🎬 更多模板</button>
+          </div>
+        </div>
+      </div>`
+    );
+
+    // Step 3: 0.8秒后推送点播态视频列表
+    setTimeout(() => {
+      showTyping(() => {
+        const items = templates.ondemand;
+        addAIBubble(
+          `点播你和好友开黑的<strong>高光视频</strong>，还有更多风格可选 👇`,
+          null, null,
+          buildOndemandCardHtml(gameId, hero, items)
+        );
+      });
+    }, 800);
+
+  }, 3000);
+}
+
+function buildOndemandCardHtml(gameId, hero, items) {
+  const game = GAMES[gameId] || DEFAULT_GAME;
+  return `<div class="result-card">
+    <div class="result-card-header">🎬 点播更多高光视频 · ${game.name}</div>
+    <div class="video-ondemand-list">
+      ${items.map((item, i) => `
+        <div class="video-ondemand-item" onclick="ondemandPlay(this, '${item.title}')">
+          <div class="video-ondemand-thumb">
+            <div class="video-ondemand-thumb-img" style="background:${game.gradient}">${item.cover}</div>
+            <div class="play-mini"></div>
+            ${item.tag ? `<div class="video-ondemand-thumb-tag">${item.tag}</div>` : ''}
+            <div class="video-ondemand-thumb-duration">${item.duration}</div>
+          </div>
+          <div class="video-ondemand-info">
+            <div class="video-ondemand-title">${item.title}</div>
+            <div class="video-ondemand-meta">${item.desc}</div>
+          </div>
+          <button class="video-ondemand-btn" onclick="event.stopPropagation();ondemandPlay(this.closest('.video-ondemand-item'), '${item.title}')">点播</button>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function handleShowOndemandVideos(gameId, hero) {
+  const templates = VIDEO_TEMPLATES[gameId] || VIDEO_TEMPLATES.wzry;
+  const items = templates.ondemand;
+  showTyping(() => {
+    addAIBubble(
+      `为蟹柳推荐更多<strong>视频风格模板</strong>，点播即可生成 🎬`,
+      null, null,
+      buildOndemandCardHtml(gameId, hero, items)
+    );
+  });
+}
+
+function playVideo(el) {
+  // 模拟播放效果 — 替换封面为播放状态
+  const overlay = el.querySelector('.play-btn-overlay');
+  if (overlay) {
+    overlay.style.background = 'rgba(26,107,255,.8)';
+    overlay.style.width = '40px';
+    overlay.style.height = '40px';
+    overlay.innerHTML = '<div style="width:10px;height:12px;border-left:3px solid white;border-right:3px solid white"></div>';
+    setTimeout(() => {
+      overlay.innerHTML = '';
+      overlay.style.width = '56px';
+      overlay.style.height = '56px';
+      overlay.style.background = 'rgba(0,0,0,.5)';
+    }, 2000);
+  }
+  // 添加正在播放提示
+  const info = el.closest('.video-card')?.querySelector('.video-card-info');
+  if (info && !info.querySelector('.video-playing-badge')) {
+    const badge = document.createElement('div');
+    badge.className = 'video-playing-badge';
+    badge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;background:#eef3ff;color:#1a6bff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;margin-top:6px';
+    badge.innerHTML = '🔊 正在播放';
+    info.appendChild(badge);
+    setTimeout(() => badge.remove(), 3000);
+  }
+}
+
+function ondemandPlay(el, title) {
+  // 模拟点播效果
+  const btn = el.querySelector('.video-ondemand-btn');
+  if (btn) {
+    btn.textContent = '生成中…';
+    btn.style.background = '#f0f3ff';
+    btn.style.color = '#1a6bff';
+    btn.style.pointerEvents = 'none';
+    setTimeout(() => {
+      btn.textContent = '▶ 播放';
+      btn.className = 'video-ondemand-btn play-now';
+      btn.style.pointerEvents = 'auto';
+      // 推送一条AI消息通知
+      showTyping(() => {
+        addAIBubble(
+          `<strong>${title}</strong> 已生成完毕 ✅ 点击即可播放，也可以分享到动态～`,
+          null, null, null,
+          ['📤 分享到动态', '🎬 生成更多'],
+          {
+            '📤 分享到动态': () => ({ text: '正在打开分享页面，选择你想分享的好友或动态 📤', cardHtml: null }),
+            '🎬 生成更多': () => ({ text: '还想要什么风格的视频？告诉我就好 🎬', cardHtml: null }),
+          }
+        );
+      });
+    }, 2500);
+  }
+}
+
+function shareVideo() {
+  showTyping(() => {
+    addAIBubble(
+      '正在打开分享页面 📤 你可以分享到<strong>QQ动态、好友聊天</strong>或保存到手机相册～',
+      null, null, null,
+      ['分享到QQ动态', '保存到相册'],
+      {
+        '分享到QQ动态': () => ({ text: '已为你打开QQ动态分享页面 ✅ 选个好友圈一起看！', cardHtml: null }),
+        '保存到相册': () => ({ text: '视频已保存到手机相册 📱 随时可以回看！', cardHtml: null }),
+      }
+    );
+  });
+}
+
+// 详细数据按钮处理
+function handleViewDetailData(gameId, hero, timeLabel) {
+  const game = GAMES[gameId] || DEFAULT_GAME;
+  showTyping(() => {
+    // 构建详细数据卡片
+    const detailData = genDetailData(gameId, hero);
+    addAIBubble(
+      `这是蟹柳 <strong>${hero}</strong> 在${game.name}的<strong>详细数据</strong> 📊`,
+      null, null,
+      `<div class="result-card">
+        <div class="result-card-header">📊 详细数据 · ${game.name} · ${hero}</div>
+        <div style="padding:12px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">
+            ${detailData.stats.map(s => `
+              <div class="stat-item">
+                <div class="stat-val" style="color:${s.color}">${s.val}</div>
+                <div class="stat-label">${s.label}</div>
+              </div>`).join('')}
+          </div>
+          <div style="background:#f5f8ff;border:1px solid #d0dfff;border-radius:9px;padding:10px;font-size:12px;color:#1a6bff;line-height:1.6;margin-bottom:10px">
+            <span style="font-weight:700">📈 趋势分析：</span>${detailData.trend}
+          </div>
+          <div style="display:flex;gap:6px">
+            <button style="flex:1;padding:8px;background:linear-gradient(135deg,#1a6bff,#4a90ff);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit" onclick="handleGenerateHighlightVideo('${gameId}','${hero}','')">🎬 生成高光视频</button>
+            <button style="flex:1;padding:8px;background:#eef3ff;color:#1a6bff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📋 完整对局记录</button>
+          </div>
+        </div>
+      </div>`
+    );
+  });
+}
+
+function genDetailData(gameId, hero) {
+  const presets = {
+    wzry: {
+      stats: [
+        {val:'4/6/7',label:'KDA',color:'#f59e0b'}, {val:'18:42',label:'时长',color:'#1a1a2e'},
+        {val:'67%',label:'参团率',color:'#22c55e'}, {val:'8,420',label:'输出',color:'#1a6bff'},
+        {val:'3,210',label:'承伤',color:'#ef4444'}, {val:'12.3k',label:'经济',color:'#f59e0b'},
+      ],
+      trend: '近5场KDA呈上升趋势，参团率高于段位均值。建议减少独行，提高视野控制。',
+    },
+    hpjy: {
+      stats: [
+        {val:'5',label:'击杀',color:'#1a6bff'}, {val:'#12',label:'排名',color:'#f59e0b'},
+        {val:'1,850',label:'伤害',color:'#ef4444'}, {val:'24:18',label:'存活时长',color:'#22c55e'},
+        {val:'380m',label:'最远击杀',color:'#1a6bff'}, {val:'2',label:'急救',color:'#22c55e'},
+      ],
+      trend: '中远距离交战优秀，但决赛圈选位需优化。建议提前占据有利地形。',
+    },
+    sjz: {
+      stats: [
+        {val:'8/5/6',label:'KDA',color:'#f59e0b'}, {val:'12:35',label:'时长',color:'#1a1a2e'},
+        {val:'MVP',label:'表现',color:'#22c55e'}, {val:'2,400',label:'输出',color:'#1a6bff'},
+        {val:'1,800',label:'承伤',color:'#ef4444'}, {val:'3',label:'据点攻占',color:'#22c55e'},
+      ],
+      trend: '突破力强但存活率偏低，建议多利用烟雾弹掩护推进。',
+    },
+    lol: {
+      stats: [
+        {val:'7/8/5',label:'KDA',color:'#ef4444'}, {val:'25:30',label:'时长',color:'#1a1a2e'},
+        {val:'180',label:'补刀',color:'#22c55e'}, {val:'18.5k',label:'输出',color:'#1a6bff'},
+        {val:'12.2k',label:'承伤',color:'#ef4444'}, {val:'14.8k',label:'经济',color:'#f59e0b'},
+      ],
+      trend: '补刀数据优秀，但死亡次数偏高。中期团战注意走位，避免被先手控制。',
+    },
+    ys: {
+      stats: [
+        {val:'3★',label:'星数',color:'#f59e0b'}, {val:'1:42',label:'用时',color:'#1a1a2e'},
+        {val:'87%',label:'元素反应',color:'#22c55e'}, {val:'280k',label:'总伤害',color:'#1a6bff'},
+        {val:'15s',label:'最快半场',color:'#22c55e'}, {val:'A',label:'评级',color:'#1a6bff'},
+      ],
+      trend: '元素反应覆盖率高，但轴序切换有延迟。优化E→Q衔接可提升15%输出。',
+    },
+  };
+  return presets[gameId] || presets.wzry;
 }
 
 // Emotion card callbacks
