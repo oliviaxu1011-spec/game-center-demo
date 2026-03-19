@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>QQ游戏中心 · AI意图识别Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0a0c14;
+  --bg-surface: #1a1e2e;
+  --bg-surface2: #1f2438;
+  --accent-blue: #4a90ff;
+  --accent-cyan: #00d4ff;
+  --accent-purple: #8b5cf6;
+  --accent-orange: #ff6b35;
+  --accent-gold: #ffd700;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --text-primary: #f0f2ff;
+  --text-secondary: #8b92b5;
+  --text-muted: #4a5080;
+  --border: #232845;
+  --border-glow: rgba(74,144,255,0.3);
+  --shadow-blue: 0 0 20px rgba(74,144,255,0.15);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Noto Sans SC',-apple-system,sans-serif;
+  background:var(--bg-deep);
+  color:var(--text-primary);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ========== SCREENS ========== */
+.screen { display:none; min-height:100vh; flex-direction:column; }
+.screen.active { display:flex; }
+
+/* ========== LANDING ========== */
+#screen-landing {
+  background:linear-gradient(135deg,#0a0c14 0%,#0d1020 50%,#0a0e1a 100%);
+  align-items:center; justify-content:center;
+  padding:40px 20px; position:relative; overflow:hidden;
+}
+#screen-landing::before {
+  content:''; position:absolute;
+  width:600px; height:600px;
+  background:radial-gradient(circle,rgba(74,144,255,0.08) 0%,transparent 70%);
+  top:-100px; left:-100px; border-radius:50%;
+  animation:pulse-glow 4s ease-in-out infinite;
+}
+#screen-landing::after {
+  content:''; position:absolute;
+  width:400px; height:400px;
+  background:radial-gradient(circle,rgba(139,92,246,0.06) 0%,transparent 70%);
+  bottom:-50px; right:-50px; border-radius:50%;
+  animation:pulse-glow 4s ease-in-out infinite reverse;
+}
+@keyframes pulse-glow { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:.7} }
+
+.landing-content { position:relative; z-index:1; text-align:center; max-width:480px; }
+
+.logo-icon {
+  width:80px; height:80px;
+  background:linear-gradient(135deg,#1a2040,#2a3060);
+  border-radius:24px; border:1px solid var(--border-glow);
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:36px; margin-bottom:16px;
+  box-shadow:var(--shadow-blue),inset 0 1px 0 rgba(255,255,255,.05);
+  animation:float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.logo-title {
+  font-size:26px; font-weight:900;
+  background:linear-gradient(135deg,#fff,#8ab4ff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.logo-sub { font-size:12px; color:var(--text-secondary); margin-top:6px; letter-spacing:2px; text-transform:uppercase; }
+
+.landing-title { font-size:34px; font-weight:900; line-height:1.2; margin:28px 0 14px; letter-spacing:-1px; }
+.landing-title .hl { background:linear-gradient(90deg,#4a90ff,#00d4ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.landing-desc { font-size:14px; color:var(--text-secondary); line-height:1.7; margin-bottom:32px; }
+
+.start-btn {
+  width:100%; padding:16px;
+  background:linear-gradient(135deg,#3a7bd5,#4a90ff);
+  border:none; border-radius:14px; color:white;
+  font-size:16px; font-weight:700; cursor:pointer;
+  letter-spacing:.5px; font-family:inherit;
+  box-shadow:0 4px 20px rgba(74,144,255,.3);
+  transition:all .2s;
+}
+.start-btn:hover { transform:translateY(-1px); box-shadow:0 8px 28px rgba(74,144,255,.4); }
+
+/* intent showcase pills on landing */
+.intent-pills { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:28px; }
+.intent-pill {
+  background:var(--bg-surface); border:1px solid var(--border);
+  border-radius:20px; padding:6px 14px; font-size:12px; color:var(--text-secondary);
+  cursor:default;
+}
+.intent-pill span { color:var(--accent-blue); font-weight:600; }
+
+/* ========== APP ========== */
+#screen-app {
+  background:#f5f6fa;
+  max-width:390px; margin:0 auto; min-height:100vh; position:relative;
+}
+
+/* App Header */
+.app-header { background:white; padding:12px 16px 0; border-bottom:1px solid #eee; }
+.app-header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.app-logo { display:flex; align-items:center; gap:8px; }
+.app-logo-icon {
+  width:32px; height:32px;
+  background:linear-gradient(135deg,#1a6bff,#4a90ff);
+  border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px;
+}
+.app-logo-text { font-size:16px; font-weight:700; color:#1a1a2e; }
+.app-header-icons { display:flex; gap:16px; }
+.header-icon { font-size:20px; color:#555; cursor:pointer; }
+
+/* Search Bar */
+.search-wrapper { padding:0 0 12px; }
+.search-bar {
+  display:flex; align-items:center;
+  background:linear-gradient(white,white) padding-box,
+             linear-gradient(90deg,#4a90ff,#00d4ff) border-box;
+  border:1.5px solid transparent;
+  border-radius:12px; padding:10px 14px; gap:8px;
+  cursor:pointer; box-shadow:0 2px 12px rgba(74,144,255,.1);
+  transition:box-shadow .2s;
+}
+.search-bar:hover { box-shadow:0 4px 20px rgba(74,144,255,.18); }
+.search-icon { font-size:16px; color:#4a90ff; }
+.search-placeholder { font-size:13px; color:#4a90ff; flex:1; }
+.ai-badge {
+  background:linear-gradient(90deg,#4a90ff,#00d4ff);
+  color:white; font-size:10px; font-weight:700;
+  padding:2px 7px; border-radius:10px; letter-spacing:.5px;
+}
+
+/* Nav Tabs */
+.app-nav { display:flex; }
+.nav-tab { flex:1; text-align:center; padding:8px 0 10px; font-size:13px; color:#999; cursor:pointer; position:relative; font-weight:500; }
+.nav-tab.active { color:#1a6bff; font-weight:700; }
+.nav-tab.active::after {
+  content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+  width:20px; height:3px; background:#1a6bff; border-radius:2px;
+}
+
+/* Content */
+.app-content { flex:1; overflow-y:auto; padding-bottom:80px; }
+.banner {
+  margin:12px; height:150px;
+  background:linear-gradient(135deg,#1a2a5e,#2a4090,#1a6bff);
+  border-radius:16px; overflow:hidden; position:relative;
+  display:flex; align-items:flex-end; padding:16px;
+}
+.banner::after { content:'🎮'; position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:72px; opacity:.25; }
+.banner-text { position:relative; z-index:1; }
+.banner-tag {
+  background:rgba(255,255,255,.2); color:white; font-size:10px;
+  padding:2px 8px; border-radius:6px; margin-bottom:6px; display:inline-block;
+}
+.banner-title { font-size:18px; font-weight:900; color:white; }
+.banner-sub { font-size:12px; color:rgba(255,255,255,.7); margin-top:2px; }
+
+.section { padding:0 12px; margin-bottom:16px; }
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.section-title { font-size:15px; font-weight:700; color:#1a1a2e; }
+.section-more { font-size:12px; color:#999; }
+
+.games-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.game-item { text-align:center; cursor:pointer; }
+.game-icon { width:56px; height:56px; border-radius:14px; margin:0 auto 6px; display:flex; align-items:center; justify-content:center; font-size:28px; }
+.game-icon.wzry { background:linear-gradient(135deg,#c9a227,#f0d060); }
+.game-icon.sjz  { background:linear-gradient(135deg,#1a3a5e,#2a6090); }
+.game-icon.hpjy { background:linear-gradient(135deg,#2a5a2a,#3a8a3a); }
+.game-icon.chess{ background:linear-gradient(135deg,#8b0000,#cc2200); }
+.game-name { font-size:11px; color:#444; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.welfare-scroll { display:flex; gap:10px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.welfare-scroll::-webkit-scrollbar { display:none; }
+.welfare-card { min-width:140px; background:white; border-radius:14px; overflow:hidden; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.welfare-img { height:80px; background:linear-gradient(135deg,#1a2a5e,#3a60c0); display:flex; align-items:center; justify-content:center; font-size:32px; }
+.welfare-info { padding:8px 10px; }
+.welfare-game { font-size:10px; color:#1a6bff; font-weight:600; }
+.welfare-name { font-size:12px; font-weight:700; color:#1a1a2e; margin:2px 0; }
+.welfare-deadline { font-size:10px; color:#e57c00; }
+
+/* Bottom Nav */
+.bottom-nav {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:390px; background:white; border-top:1px solid #eee;
+  display:flex; padding:8px 0 20px; z-index:100;
+}
+.bottom-nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; font-size:10px; color:#999; }
+.bottom-nav-item.active { color:#1a6bff; }
+.bottom-nav-icon { font-size:22px; }
+
+/* ========== AI PANEL ========== */
+.ai-panel {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:390px; background:white;
+  border-radius:24px 24px 0 0;
+  box-shadow:0 -8px 40px rgba(0,0,0,.15);
+  z-index:200; max-height:88vh;
+  display:flex; flex-direction:column;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.ai-panel.hidden { transform:translateX(-50%) translateY(100%); }
+.ai-panel-handle { width:36px; height:4px; background:#ddd; border-radius:2px; margin:12px auto 0; flex-shrink:0; }
+
+.ai-panel-header {
+  padding:12px 20px 12px; display:flex; align-items:center; gap:10px;
+  border-bottom:1px solid #f0f0f0; flex-shrink:0;
+}
+.ai-avatar {
+  width:36px; height:36px;
+  background:linear-gradient(135deg,#3a7bd5,#4a90ff);
+  border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:18px; flex-shrink:0;
+}
+.ai-header-text { flex:1; }
+.ai-name { font-size:14px; font-weight:700; color:#1a1a2e; }
+.ai-tagline { font-size:11px; color:#999; margin-top:1px; }
+.ai-close-btn {
+  width:28px; height:28px; background:#f5f5f5; border:none; border-radius:50%;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:#666; flex-shrink:0;
+}
+
+/* Chat Area */
+.chat-area { flex:1; overflow-y:auto; padding:14px 16px 8px; display:flex; flex-direction:column; gap:12px; min-height:160px; }
+
+/* Messages */
+.msg { display:flex; align-items:flex-start; gap:8px; animation:msg-in .3s cubic-bezier(.34,1.56,.64,1); }
+.msg.user { flex-direction:row-reverse; }
+@keyframes msg-in { from{opacity:0;transform:translateY(10px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+.msg-avatar { width:30px; height:30px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+.msg-avatar.ai-av { background:linear-gradient(135deg,#3a7bd5,#4a90ff); }
+.msg-content { max-width:78%; display:flex; flex-direction:column; gap:6px; }
+.msg.user .msg-content { align-items:flex-end; }
+
+.msg-bubble {
+  padding:10px 14px; border-radius:18px;
+  font-size:14px; line-height:1.6;
+}
+.msg.ai .msg-bubble { background:#f5f7ff; border-bottom-left-radius:4px; color:#1a1a2e; }
+.msg.user .msg-bubble { background:linear-gradient(135deg,#3a7bd5,#4a90ff); color:white; border-bottom-right-radius:4px; }
+
+/* Intent Tag */
+.intent-tag {
+  display:inline-flex; align-items:center; gap:5px;
+  background:linear-gradient(90deg,rgba(74,144,255,.1),rgba(0,212,255,.1));
+  border:1px solid rgba(74,144,255,.25);
+  border-radius:20px; padding:4px 12px 4px 8px;
+  font-size:11px; color:#3a7bd5; font-weight:700;
+  animation:tag-in .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes tag-in { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
+.intent-dot { width:6px; height:6px; background:#4a90ff; border-radius:50%; animation:blink 1.5s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* Confidence bar */
+.confidence-row {
+  display:flex; align-items:center; gap:8px;
+  font-size:11px; color:#888;
+}
+.conf-bar { flex:1; height:4px; background:#eee; border-radius:2px; overflow:hidden; }
+.conf-fill { height:100%; background:linear-gradient(90deg,#4a90ff,#00d4ff); border-radius:2px; transition:width .6s ease; }
+.conf-label { font-size:11px; color:#4a90ff; font-weight:700; min-width:30px; text-align:right; }
+
+/* Quick Replies */
+.quick-replies { display:flex; flex-wrap:wrap; gap:7px; }
+.qr-btn {
+  background:white; border:1.5px solid #e0e5f5;
+  border-radius:20px; padding:6px 13px; font-size:13px;
+  color:#3a5fc8; cursor:pointer; font-family:inherit; font-weight:500;
+  transition:all .2s; white-space:nowrap;
+}
+.qr-btn:hover,.qr-btn:active { background:#eef2ff; border-color:#4a90ff; transform:scale(.97); }
+.qr-btn.selected { background:#eef2ff; border-color:#4a90ff; opacity:.7; pointer-events:none; }
+
+/* Result Cards */
+.result-card {
+  background:white; border:1px solid #e8ecf8;
+  border-radius:16px; overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,.05);
+}
+.result-card-header {
+  padding:10px 14px;
+  background:linear-gradient(90deg,#f5f7ff,#eef2ff);
+  border-bottom:1px solid #e8ecf8;
+  font-size:12px; font-weight:700; color:#3a5fc8;
+  display:flex; align-items:center; gap:6px;
+}
+
+/* Welfare list */
+.welfare-list { padding:8px; display:flex; flex-direction:column; gap:7px; }
+.welfare-item {
+  display:flex; align-items:center; gap:10px;
+  padding:8px; background:#fafbff; border-radius:10px;
+  cursor:pointer; transition:background .15s;
+}
+.welfare-item:hover { background:#f0f3ff; }
+.wi-icon { width:40px; height:40px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.wi-icon.wzry { background:linear-gradient(135deg,#c9a227,#f0d060); }
+.wi-icon.sjz  { background:linear-gradient(135deg,#1a3a5e,#2a6090); }
+.wi-icon.hpjy { background:linear-gradient(135deg,#2a5a2a,#3a8a3a); }
+.wi-info { flex:1; min-width:0; }
+.wi-game { font-size:10px; color:#888; }
+.wi-name { font-size:13px; font-weight:700; color:#1a1a2e; }
+.wi-deadline { font-size:10px; color:#e57c00; }
+.wi-action {
+  background:linear-gradient(90deg,#3a7bd5,#4a90ff); color:white;
+  border:none; border-radius:8px; padding:5px 11px;
+  font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; flex-shrink:0;
+}
+
+/* Emotion card */
+.emotion-card { padding:14px; }
+.emotion-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.emotion-icon { font-size:26px; }
+.emotion-text { font-size:13px; color:#1a1a2e; font-weight:700; }
+.emotion-sub { font-size:11px; color:#888; }
+.emotion-actions { display:flex; gap:7px; flex-wrap:wrap; }
+.emotion-btn {
+  flex:1; min-width:70px;
+  background:#f5f7ff; border:1.5px solid #e0e5f5;
+  border-radius:10px; padding:9px 6px; text-align:center;
+  cursor:pointer; transition:all .2s;
+}
+.emotion-btn:hover { background:#eef2ff; border-color:#4a90ff; }
+.emotion-btn-icon { font-size:18px; margin-bottom:3px; }
+.emotion-btn-text { font-size:11px; color:#3a5fc8; font-weight:600; }
+
+/* Partner list */
+.partner-list { padding:8px; display:flex; flex-direction:column; gap:7px; }
+.partner-item { display:flex; align-items:center; gap:10px; padding:9px 10px; background:#fafbff; border-radius:12px; }
+.partner-avatar {
+  width:40px; height:40px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; flex-shrink:0; position:relative;
+}
+.partner-online-dot {
+  position:absolute; bottom:1px; right:1px;
+  width:9px; height:9px; background:#22c55e; border-radius:50%; border:2px solid white;
+}
+.partner-info { flex:1; min-width:0; }
+.partner-name { font-size:13px; font-weight:700; color:#1a1a2e; }
+.partner-rank { font-size:11px; color:#888; }
+.partner-tag-row { display:flex; gap:4px; margin-top:3px; }
+.partner-tag { background:#eef2ff; color:#3a5fc8; font-size:10px; font-weight:600; padding:1px 6px; border-radius:5px; }
+.partner-btn {
+  background:linear-gradient(90deg,#3a7bd5,#4a90ff); color:white;
+  border:none; border-radius:9px; padding:6px 13px;
+  font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
+}
+
+/* Replay card */
+.replay-card { padding:13px; }
+.replay-header { display:flex; align-items:center; gap:10px; padding-bottom:11px; border-bottom:1px solid #f0f0f0; margin-bottom:11px; }
+.replay-hero-icon { width:44px; height:44px; border-radius:11px; background:linear-gradient(135deg,#c9a227,#f0d060); display:flex; align-items:center; justify-content:center; font-size:22px; }
+.replay-game-name { font-size:13px; font-weight:700; color:#1a1a2e; }
+.replay-result { font-size:12px; margin-top:2px; }
+.replay-result.lose { color:#ef4444; }
+.replay-result.win  { color:#22c55e; }
+.replay-time { font-size:10px; color:#aaa; }
+.replay-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:11px; }
+.stat-item { text-align:center; background:#fafbff; border-radius:9px; padding:8px; }
+.stat-val { font-size:18px; font-weight:900; color:#1a1a2e; }
+.stat-label { font-size:10px; color:#888; margin-top:1px; }
+.replay-insight {
+  background:linear-gradient(90deg,#fff8e8,#fffaf0);
+  border:1px solid #ffe0a0; border-radius:9px;
+  padding:9px 12px; font-size:12px; color:#7a5a00;
+  line-height:1.6; margin-bottom:11px;
+}
+.replay-insight-label { font-weight:700; color:#c87000; }
+.replay-btn-row { display:flex; gap:8px; }
+.replay-btn { flex:1; padding:9px; border:none; border-radius:9px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; }
+.replay-btn.primary { background:linear-gradient(90deg,#3a7bd5,#4a90ff); color:white; }
+.replay-btn.secondary { background:#f0f3ff; color:#3a5fc8; }
+
+/* News card */
+.news-list { padding:8px; display:flex; flex-direction:column; gap:7px; }
+.news-item { display:flex; gap:10px; padding:9px; background:#fafbff; border-radius:10px; align-items:flex-start; }
+.news-img { width:64px; height:44px; border-radius:7px; background:linear-gradient(135deg,#1a2a5e,#3a60c0); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.news-info { flex:1; min-width:0; }
+.news-title { font-size:12px; font-weight:700; color:#1a1a2e; line-height:1.4; }
+.news-meta { font-size:10px; color:#aaa; margin-top:3px; }
+
+/* Download card */
+.download-card { padding:14px; display:flex; align-items:center; gap:12px; }
+.dl-icon { width:56px; height:56px; border-radius:14px; background:linear-gradient(135deg,#2a4a1e,#4a8a3a); display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; }
+.dl-info { flex:1; }
+.dl-name { font-size:14px; font-weight:700; color:#1a1a2e; }
+.dl-meta { font-size:11px; color:#888; margin-top:2px; }
+.dl-btn { background:linear-gradient(90deg,#3a7bd5,#4a90ff); color:white; border:none; border-radius:10px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+
+/* Skin card */
+.skin-scroll { display:flex; gap:8px; overflow-x:auto; padding:8px; scrollbar-width:none; }
+.skin-scroll::-webkit-scrollbar { display:none; }
+.skin-card { min-width:110px; background:#fafbff; border-radius:12px; overflow:hidden; flex-shrink:0; border:1px solid #e8ecf8; }
+.skin-img { height:70px; display:flex; align-items:center; justify-content:center; font-size:30px; }
+.skin-info { padding:7px 9px; }
+.skin-name { font-size:11px; font-weight:700; color:#1a1a2e; }
+.skin-price { font-size:11px; color:#3a7bd5; font-weight:700; margin-top:2px; }
+.skin-tag { font-size:9px; color:#e57c00; background:#fff3e0; padding:1px 5px; border-radius:4px; display:inline-block; margin-top:2px; }
+
+/* Weekly report */
+.report-card { padding:14px; }
+.report-title { font-size:14px; font-weight:700; color:#1a1a2e; margin-bottom:12px; }
+.report-row { display:flex; justify-content:space-between; margin-bottom:8px; }
+.report-item { text-align:center; flex:1; }
+.report-val { font-size:20px; font-weight:900; color:#3a7bd5; }
+.report-label { font-size:10px; color:#888; margin-top:2px; }
+.report-divider { width:1px; background:#eee; }
+.report-bar-section { margin-top:12px; padding-top:12px; border-top:1px solid #f0f0f0; }
+.report-bar-label { font-size:11px; color:#666; margin-bottom:5px; font-weight:600; }
+.report-bar-track { height:6px; background:#eee; border-radius:3px; overflow:hidden; }
+.report-bar-fill { height:100%; border-radius:3px; }
+
+/* Reminder card */
+.reminder-card { padding:14px; }
+.reminder-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.reminder-icon { font-size:26px; }
+.reminder-title { font-size:13px; font-weight:700; color:#1a1a2e; }
+.reminder-sub { font-size:11px; color:#888; }
+.reminder-time { background:#f5f7ff; border:1.5px solid #d0dcff; border-radius:10px; padding:10px 14px; font-size:13px; color:#3a5fc8; font-weight:600; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.reminder-confirm { background:linear-gradient(90deg,#3a7bd5,#4a90ff); color:white; border:none; border-radius:9px; padding:10px; width:100%; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+
+/* Typing */
+.typing-indicator { display:flex; align-items:center; gap:8px; padding:8px 0; animation:msg-in .3s ease; }
+.typing-dots { display:flex; gap:4px; }
+.typing-dot { width:6px; height:6px; background:#bbb; border-radius:50%; }
+.typing-dot:nth-child(1) { animation:typing 1.2s ease-in-out infinite 0s; }
+.typing-dot:nth-child(2) { animation:typing 1.2s ease-in-out infinite .2s; }
+.typing-dot:nth-child(3) { animation:typing 1.2s ease-in-out infinite .4s; }
+@keyframes typing { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-6px);opacity:1} }
+
+/* Analyzing */
+.analyzing-wrap { display:flex; align-items:center; gap:8px; padding:8px 12px; background:linear-gradient(90deg,#f5f7ff,#eef2ff); border-radius:10px; font-size:12px; color:#3a7bd5; font-weight:600; animation:msg-in .3s ease; }
+.analyzing-spinner { width:13px; height:13px; border:2px solid rgba(74,144,255,.3); border-top-color:#4a90ff; border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* Input Area */
+.chat-input-area { padding:10px 14px 22px; border-top:1px solid #f0f0f0; flex-shrink:0; }
+
+/* Input hint chips (pre-fill suggestions) */
+.input-hints {
+  display:flex; gap:7px; overflow-x:auto; scrollbar-width:none;
+  padding-bottom:8px;
+}
+.input-hints::-webkit-scrollbar { display:none; }
+.input-hint-chip {
+  display:flex; align-items:center; gap:5px;
+  background:#f5f7ff; border:1px solid #e0e5f5;
+  border-radius:16px; padding:5px 11px;
+  font-size:12px; color:#3a5fc8; cursor:pointer;
+  white-space:nowrap; transition:all .18s; font-family:inherit;
+  flex-shrink:0;
+}
+.input-hint-chip:hover { background:#eef2ff; border-color:#4a90ff; transform:scale(.97); }
+
+.chat-input-row {
+  display:flex; align-items:center; gap:9px;
+  background:#f5f7ff; border-radius:24px; padding:9px 13px;
+  border:1.5px solid #e0e5f5; transition:border-color .2s;
+}
+.chat-input-row:focus-within { border-color:#4a90ff; }
+.chat-input { flex:1; border:none; background:transparent; font-size:14px; color:#1a1a2e; outline:none; font-family:inherit; }
+.chat-input::placeholder { color:#bbb; }
+.send-btn {
+  width:32px; height:32px;
+  background:linear-gradient(135deg,#3a7bd5,#4a90ff);
+  border:none; border-radius:50%; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; flex-shrink:0; transition:transform .15s;
+}
+.send-btn:hover { transform:scale(1.1); }
+.send-btn:active { transform:scale(.95); }
+
+/* Overlay */
+.overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0);
+  z-index:150; pointer-events:none; transition:background .3s;
+}
+.overlay.active { background:rgba(0,0,0,.35); pointer-events:all; }
+
+/* Reset button */
+.reset-btn {
+  position:fixed; top:14px; right:14px;
+  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2);
+  border-radius:20px; padding:6px 14px; color:white; font-size:12px;
+  cursor:pointer; z-index:500; font-family:inherit;
+  backdrop-filter:blur(8px); display:none;
+}
+
+/* Unknown intent */
+.unknown-card { padding:14px; text-align:center; }
+.unknown-icon { font-size:36px; margin-bottom:8px; }
+.unknown-text { font-size:13px; color:#888; line-height:1.6; }
+.unknown-text strong { color:#1a1a2e; }
+
+@media (min-width:450px) {
+  body { background:#1a1e2e; }
+  #screen-app { box-shadow:0 0 60px rgba(0,0,0,.5); }
+  .bottom-nav,.ai-panel { max-width:390px; }
+}
+.hidden { display:none !important; }
+</style>
+</head>
+<body>
+
+<!-- ===== LANDING ===== -->
+<div id="screen-landing" class="screen active">
+  <div class="landing-content">
+    <div>
+      <div class="logo-icon">🎮</div>
+      <div class="logo-title">游戏中心 AI助手</div>
+      <div class="logo-sub">Game Center · Intent Recognition</div>
+    </div>
+    <h1 class="landing-title">从<span class="hl">找功能</span><br>到<span class="hl">问一问</span></h1>
+    <p class="landing-desc">垂类意图识别 · 把每一句模糊输入<br>变成可执行的明确指令</p>
+
+    <div class="intent-pills">
+      <div class="intent-pill"><span>🎁</span> 福利/礼包</div>
+      <div class="intent-pill"><span>🏆</span> 战绩查询</div>
+      <div class="intent-pill"><span>🔍</span> AI复盘</div>
+      <div class="intent-pill"><span>🤝</span> 找搭子</div>
+      <div class="intent-pill"><span>📰</span> 游戏资讯</div>
+      <div class="intent-pill"><span>📖</span> 攻略查询</div>
+      <div class="intent-pill"><span>🎬</span> 高光视频</div>
+      <div class="intent-pill"><span>⬇️</span> 游戏下载</div>
+      <div class="intent-pill"><span>🛍️</span> 皮肤购买</div>
+      <div class="intent-pill"><span>📅</span> 日报周报</div>
+      <div class="intent-pill"><span>😤</span> 情绪互动</div>
+      <div class="intent-pill"><span>⏰</span> 定时提醒</div>
+    </div>
+
+    <button class="start-btn" onclick="startDemo()">进入Demo · 自由对话 →</button>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="screen-app" class="screen">
+  <div class="app-header">
+    <div class="app-header-top">
+      <div class="app-logo">
+        <div class="app-logo-icon">🎮</div>
+        <div class="app-logo-text">游戏中心</div>
+      </div>
+      <div class="app-header-icons">
+        <span class="header-icon">🔔</span>
+        <span class="header-icon">⚙️</span>
+      </div>
+    </div>
+    <div class="search-wrapper">
+      <div class="search-bar" onclick="openAIPanel()">
+        <span class="search-icon">✨</span>
+        <span class="search-placeholder">问我任何游戏问题…</span>
+        <span class="ai-badge">AI</span>
+      </div>
+    </div>
+    <div class="app-nav">
+      <div class="nav-tab active">推荐</div>
+      <div class="nav-tab">游戏</div>
+      <div class="nav-tab">福利</div>
+      <div class="nav-tab">搭子</div>
+    </div>
+  </div>
+
+  <div class="app-content">
+    <div class="banner">
+      <div class="banner-text">
+        <div class="banner-tag">限时活动</div>
+        <div class="banner-title">王者荣耀 · 马年皮肤</div>
+        <div class="banner-sub">限定战令·春节版 限时开放</div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">我的游戏</span><span class="section-more">全部 ›</span></div>
+      <div class="games-grid">
+        <div class="game-item"><div class="game-icon wzry">⚔️</div><div class="game-name">王者荣耀</div></div>
+        <div class="game-item"><div class="game-icon sjz">🔫</div><div class="game-name">三角洲行动</div></div>
+        <div class="game-item"><div class="game-icon hpjy">🪂</div><div class="game-name">和平精英</div></div>
+        <div class="game-item"><div class="game-icon chess">♟️</div><div class="game-name">欢乐斗地主</div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">🎁 今日可领福利</span><span class="section-more">更多 ›</span></div>
+      <div class="welfare-scroll">
+        <div class="welfare-card">
+          <div class="welfare-img">⚔️</div>
+          <div class="welfare-info"><div class="welfare-game">王者荣耀</div><div class="welfare-name">英雄碎片×20</div><div class="welfare-deadline">今日23:59截止</div></div>
+        </div>
+        <div class="welfare-card">
+          <div class="welfare-img" style="background:linear-gradient(135deg,#1a3a5e,#2a6090)">🔫</div>
+          <div class="welfare-info"><div class="welfare-game">三角洲行动</div><div class="welfare-name">补给箱×3</div><div class="welfare-deadline">明日12:00截止</div></div>
+        </div>
+        <div class="welfare-card">
+          <div class="welfare-img" style="background:linear-gradient(135deg,#2a5a2a,#3a8a3a)">🪂</div>
+          <div class="welfare-info"><div class="welfare-game">和平精英</div><div class="welfare-name">金币×188</div><div class="welfare-deadline">3天后截止</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="bottom-nav-item active"><span class="bottom-nav-icon">🎮</span>游戏</div>
+    <div class="bottom-nav-item"><span class="bottom-nav-icon">🪶</span>鹅毛</div>
+    <div class="bottom-nav-item"><span class="bottom-nav-icon">🤝</span>搭子</div>
+    <div class="bottom-nav-item"><span class="bottom-nav-icon">👤</span>我的</div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closeAIPanel()"></div>
+
+<!-- AI Panel -->
+<div class="ai-panel hidden" id="aiPanel">
+  <div class="ai-panel-handle"></div>
+  <div class="ai-panel-header">
+    <div class="ai-avatar">✨</div>
+    <div class="ai-header-text">
+      <div class="ai-name">游戏中心 AI &nbsp;<span id="modeLabel" style="font-size:10px;font-weight:700;color:white;background:linear-gradient(90deg,#4a90ff,#00d4ff);padding:2px 8px;border-radius:10px;vertical-align:middle">本地引擎</span></div>
+      <div class="ai-tagline">听得懂你的游戏大脑 · 随时问我</div>
+    </div>
+    <button class="ai-close-btn" onclick="toggleSettingsPanel()" title="设置 DeepSeek Key">⚙️</button>
+    <button class="ai-close-btn" onclick="closeAIPanel()" style="margin-left:4px">✕</button>
+  </div>
+
+  <!-- Settings Panel -->
+  <div id="settingsPanel" class="hidden" style="
+    padding:14px 16px 16px;border-bottom:1px solid #f0f0f0;
+    background:linear-gradient(90deg,#f8f9ff,#f0f3ff);
+    animation:msg-in .2s ease;
+  ">
+    <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:10px">🤖 接入 DeepSeek 大模型</div>
+    <div style="font-size:12px;color:#666;margin-bottom:8px;line-height:1.6">
+      填入 API Key 后，意图识别将由 DeepSeek 真实理解；留空则使用本地关键词引擎（离线可用）。
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input id="apiKeyInput" type="password" placeholder="sk-xxxxxxxxxxxxxxxx"
+        style="flex:1;border:1.5px solid #d0dcff;border-radius:9px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;color:#1a1a2e;background:white"
+        onfocus="this.style.borderColor='#4a90ff'"
+        onblur="this.style.borderColor='#d0dcff'"
+      />
+      <button onclick="saveApiKey()" style="
+        background:linear-gradient(90deg,#3a7bd5,#4a90ff);color:white;
+        border:none;border-radius:9px;padding:8px 16px;
+        font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap
+      ">保存</button>
+    </div>
+    <div id="apiKeyStatus" style="font-size:11px;color:#888">⚙️ 未填写，使用本地关键词引擎</div>
+    <div style="font-size:11px;color:#aaa;margin-top:6px">
+      Key 仅存于页面内存，刷新后清除，不会上传或存储。
+    </div>
+  </div>
+  <div class="chat-area" id="chatArea"></div>
+  <div class="chat-input-area">
+    <div class="input-hints" id="inputHints">
+      <button class="input-hint-chip" onclick="fillInput('有什么礼包可以领')">🎁 有什么礼包可以领</button>
+      <button class="input-hint-chip" onclick="fillInput('帮我复盘上一把')">🔍 帮我复盘上一把</button>
+      <button class="input-hint-chip" onclick="fillInput('连跪五把好烦')">😤 连跪五把好烦</button>
+      <button class="input-hint-chip" onclick="fillInput('帮我找王者上分搭子')">🤝 找王者上分搭子</button>
+      <button class="input-hint-chip" onclick="fillInput('王者荣耀最近有什么更新')">📰 王者最近有什么更新</button>
+      <button class="input-hint-chip" onclick="fillInput('朵莉亚怎么出装')">📖 朵莉亚怎么出装</button>
+      <button class="input-hint-chip" onclick="fillInput('帮我生成昨天的高光视频')">🎬 生成昨天高光视频</button>
+      <button class="input-hint-chip" onclick="fillInput('三国志异闻录怎么下载')">⬇️ 三国志异闻录下载</button>
+      <button class="input-hint-chip" onclick="fillInput('最近有什么新皮肤')">🛍️ 最近有什么新皮肤</button>
+      <button class="input-hint-chip" onclick="fillInput('看看我的本周总结')">📅 看看我的本周总结</button>
+      <button class="input-hint-chip" onclick="fillInput('提醒我8点上线打排位')">⏰ 提醒我8点打排位</button>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" class="chat-input" id="chatInput" placeholder="随便问，比如"今天有啥礼包"…" />
+      <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+</div>
+
+<button class="reset-btn" id="resetBtn" onclick="goToLanding()">← 返回</button>
+
+<script>
+// ============================================================
+// INTENT ENGINE
+// ============================================================
+const INTENTS = [
+  {
+    id: 'welfare',
+    label: '🎁 福利/礼包',
+    keywords: ['礼包','福利','领取','领','奖励','兑换','可以领','能领','有啥福利','什么福利','今天福利','限时礼'],
+    confidence: 0,
+  },
+  {
+    id: 'record',
+    label: '🏆 战绩查询',
+    keywords: ['战绩','战报','最近打','胜率','赢了多少','输了多少','kda','KDA','我的数据','排位数据','局数','胜负'],
+    confidence: 0,
+  },
+  {
+    id: 'replay',
+    label: '🔍 AI复盘',
+    keywords: ['复盘','分析','上一把','上局','刚才那把','这把','怎么输的','为什么输','打得怎么样','AI分析','复盘一下'],
+    confidence: 0,
+  },
+  {
+    id: 'partner',
+    label: '🤝 找搭子',
+    keywords: ['搭子','搭一搭','队友','找人','一起玩','组队','开黑','上分','找个人','陪玩','匹配','找搭'],
+    confidence: 0,
+  },
+  {
+    id: 'news',
+    label: '📰 游戏资讯',
+    keywords: ['资讯','更新','新版本','新英雄','新角色','活动','最近','公告','新地图','改动','新增','版本'],
+    confidence: 0,
+  },
+  {
+    id: 'guide',
+    label: '📖 攻略查询',
+    keywords: ['怎么玩','攻略','出装','加点','技巧','套路','怎么打','如何','玩法','推荐装备','铭文','符文','怎么用'],
+    confidence: 0,
+  },
+  {
+    id: 'highlight',
+    label: '🎬 高光/视频',
+    keywords: ['高光','视频','精彩','战报','回放','生成','录像','精彩时刻','集锦','highlight'],
+    confidence: 0,
+  },
+  {
+    id: 'download',
+    label: '⬇️ 游戏下载',
+    keywords: ['下载','安装','预约','怎么下','哪里下','下载链接','客户端','app','游戏包'],
+    confidence: 0,
+  },
+  {
+    id: 'skin',
+    label: '🛍️ 皮肤/购买',
+    keywords: ['皮肤','购买','买','新皮','限定','多少钱','价格','商城','市集','鹅毛','在卖','上架'],
+    confidence: 0,
+  },
+  {
+    id: 'report',
+    label: '📅 日报/周报',
+    keywords: ['日报','周报','总结','本周','今天','每日','统计','报告','数据总览','回顾'],
+    confidence: 0,
+  },
+  {
+    id: 'emotion',
+    label: '😤 情绪互动',
+    keywords: ['好烦','烦死','气死','连跪','一直输','菜','坑','队友','垃圾','太难了','好难','放弃','崩溃','心态','想退坑','不想玩了'],
+    confidence: 0,
+  },
+  {
+    id: 'reminder',
+    label: '⏰ 定时提醒',
+    keywords: ['提醒','定时','到时候','帮我记','点钟','点提醒','点上线','打卡','提示我','alarm'],
+    confidence: 0,
+  },
+];
+
+function detectIntent(text) {
+  const t = text.toLowerCase();
+  let best = null, bestScore = 0;
+  const scores = [];
+
+  INTENTS.forEach(intent => {
+    let score = 0;
+    intent.keywords.forEach(kw => {
+      if (t.includes(kw.toLowerCase())) score += 2;
+    });
+    scores.push({ id: intent.id, label: intent.label, score });
+    if (score > bestScore) { bestScore = score; best = intent; }
+  });
+
+  if (bestScore === 0) return null;
+  const confidence = Math.min(95, 60 + bestScore * 8);
+  return { ...best, confidence, allScores: scores };
+}
+
+// ============================================================
+// RESPONSE BUILDER
+// ============================================================
+function buildResponse(intentId, userText) {
+  const map = {
+    welfare: buildWelfareResponse,
+    record:  buildRecordResponse,
+    replay:  buildReplayResponse,
+    partner: buildPartnerResponse,
+    news:    buildNewsResponse,
+    guide:   buildGuideResponse,
+    highlight: buildHighlightResponse,
+    download:  buildDownloadResponse,
+    skin:    buildSkinResponse,
+    report:  buildReportResponse,
+    emotion: buildEmotionResponse,
+    reminder: buildReminderResponse,
+  };
+  const fn = map[intentId];
+  return fn ? fn(userText) : null;
+}
+
+function buildWelfareResponse(text) {
+  const hasGame = text.includes('王者') ? 'wzry' : text.includes('三角') ? 'sjz' : text.includes('和平') ? 'hpjy' : null;
+  if (hasGame) {
+    return {
+      text: `${hasGame === 'wzry' ? '王者荣耀' : hasGame === 'sjz' ? '三角洲行动' : '和平精英'}今天有 <strong>3个福利</strong> 可以领，快去领吧！`,
+      card: 'welfare_' + hasGame
+    };
+  }
+  return {
+    text: '我帮你找到了 <strong>今日全部可领福利</strong> 🎉<br>想先看哪个游戏的？',
+    quickReplies: ['⚔️ 王者荣耀', '🔫 三角洲行动', '🪂 和平精英', '全部游戏'],
+    onQR: { '⚔️ 王者荣耀': () => buildWelfareResponse('王者'), '🔫 三角洲行动': () => buildWelfareResponse('三角'), '🪂 和平精英': () => buildWelfareResponse('和平'), '全部游戏': () => buildWelfareResponse('_all') }
+  };
+}
+
+function buildRecordResponse(text) {
+  return {
+    text: '这是蟹柳最近的 <strong>王者荣耀战绩</strong> 📊',
+    cardHtml: `
+      <div class="result-card">
+        <div class="result-card-header">🏆 近7日战绩 · 王者荣耀</div>
+        <div style="padding:12px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+            <div class="stat-item"><div class="stat-val" style="color:#22c55e">58%</div><div class="stat-label">胜率</div></div>
+            <div class="stat-item"><div class="stat-val">24</div><div class="stat-label">场次</div></div>
+            <div class="stat-item"><div class="stat-val">7.2</div><div class="stat-label">场均评分</div></div>
+          </div>
+          <div style="font-size:12px;color:#888;margin-bottom:6px;font-weight:600">最常使用英雄</div>
+          <div style="display:flex;gap:8px">
+            <div style="flex:1;background:#fafbff;border-radius:9px;padding:8px;text-align:center">
+              <div style="font-size:20px">⚔️</div>
+              <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-top:3px">亚瑟</div>
+              <div style="font-size:10px;color:#22c55e">胜率 63%</div>
+            </div>
+            <div style="flex:1;background:#fafbff;border-radius:9px;padding:8px;text-align:center">
+              <div style="font-size:20px">🌙</div>
+              <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-top:3px">嫦娥</div>
+              <div style="font-size:10px;color:#22c55e">胜率 55%</div>
+            </div>
+            <div style="flex:1;background:#fafbff;border-radius:9px;padding:8px;text-align:center">
+              <div style="font-size:20px">🗡️</div>
+              <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-top:3px">兰陵王</div>
+              <div style="font-size:10px;color:#ef4444">胜率 44%</div>
+            </div>
+          </div>
+        </div>
+      </div>`
+  };
+}
+
+function buildReplayResponse(text) {
+  return {
+    text: '找到蟹柳 <strong>最近一局</strong> 的数据了，AI分析如下：',
+    cardHtml: `
+      <div class="result-card">
+        <div class="replay-card">
+          <div class="replay-header">
+            <div class="replay-hero-icon">⚔️</div>
+            <div class="replay-game-info">
+              <div class="replay-game-name">王者荣耀 · 亚瑟</div>
+              <div class="replay-result lose">● 失败 · 18:42</div>
+              <div class="replay-time">2小时前 · 排位赛</div>
+            </div>
+          </div>
+          <div class="replay-stats">
+            <div class="stat-item"><div class="stat-val">4</div><div class="stat-label">击杀</div></div>
+            <div class="stat-item"><div class="stat-val">6</div><div class="stat-label">死亡</div></div>
+            <div class="stat-item"><div class="stat-val">7</div><div class="stat-label">助攻</div></div>
+          </div>
+          <div class="replay-insight">
+            <span class="replay-insight-label">💡 AI分析：</span>本局8-12分钟频繁单独进攻，3次死亡发生在无视野区域。建议中期跟随团队，避免孤立作战。
+          </div>
+          <div class="replay-btn-row">
+            <button class="replay-btn primary">🎬 生成高光视频</button>
+            <button class="replay-btn secondary">📊 详细数据</button>
+          </div>
+        </div>
+      </div>`
+  };
+}
+
+function buildPartnerResponse(text) {
+  const hasRole = text.includes('打野') ? '打野' : text.includes('辅助') ? '辅助' : text.includes('中单') ? '中单' : null;
+  return {
+    text: `为蟹柳匹配 <strong>${hasRole ? hasRole + '位' : '实力相当'}的当前在线搭子</strong> ✨`,
+    cardHtml: `
+      <div class="result-card">
+        <div class="result-card-header">🤝 为你匹配的搭子 · 当前在线</div>
+        <div class="partner-list">
+          <div class="partner-item">
+            <div class="partner-avatar" style="background:linear-gradient(135deg,#6a4c93,#9b72cf)">🦁<div class="partner-online-dot"></div></div>
+            <div class="partner-info"><div class="partner-name">暗影刀锋</div><div class="partner-rank">⭐ 铂金II · 打野</div><div class="partner-tag-row"><span class="partner-tag">上分型</span><span class="partner-tag">语音开黑</span></div></div>
+            <button class="partner-btn">搭一搭</button>
+          </div>
+          <div class="partner-item">
+            <div class="partner-avatar" style="background:linear-gradient(135deg,#c0392b,#e74c3c)">🌸<div class="partner-online-dot"></div></div>
+            <div class="partner-info"><div class="partner-name">樱花剑士</div><div class="partner-rank">⭐ 钻石V · 中单</div><div class="partner-tag-row"><span class="partner-tag">教学耐心</span><span class="partner-tag">不倾诉</span></div></div>
+            <button class="partner-btn">搭一搭</button>
+          </div>
+          <div class="partner-item">
+            <div class="partner-avatar" style="background:linear-gradient(135deg,#1a5276,#2e86c1)">🐉<div class="partner-online-dot"></div></div>
+            <div class="partner-info"><div class="partner-name">龙腾四海</div><div class="partner-rank">⭐ 铂金V · 辅助</div><div class="partner-tag-row"><span class="partner-tag">稳健型</span><span class="partner-tag">不开麦</span></div></div>
+            <button class="partner-btn">搭一搭</button>
+          </div>
+        </div>
+      </div>`
+  };
+}
+
+function buildNewsResponse(text) {
+  return {
+    text: '王者荣耀最近的 <strong>版本更新内容</strong> 📰',
+    cardHtml: `
+      <div class="result-card">
+        <div class="result-card-header">📰 王者荣耀 · 近期资讯</div>
+        <div class="news-list">
+          <div class="news-item">
+            <div class="news-img">⚔️</div>
+            <div class="news-info"><div class="news-title">S37赛季新英雄「逐梦者」正式上线</div><div class="news-meta">官方公告 · 3小时前</div></div>
+          </div>
+          <div class="news-item">
+            <div class="news-img">🏆</div>
+            <div class="news-info"><div class="news-title">排位赛调整：新段位体系全面更新</div><div class="news-meta">版本说明 · 1天前</div></div>
+          </div>
+          <div class="news-item">
+            <div class="news-img">🎭</div>
+            <div class="news-info"><div class="news-title">限定皮肤「花月夜」即将下架，仅剩3天</div><div class="news-meta">活动通知 · 2天前</div></div>
+          </div>
+        </div>
+      </div>`
+  };
+}
+
+function buildGuideResponse(text) {
+  const hero = text.includes('朵莉亚') ? '朵莉亚' : text.includes('亚瑟') ? '亚瑟' : text.includes('嫦娥') ? '嫦娥' : '该英雄';
+  return {
+    text: `这是 <strong>${hero}</strong> 的推荐出装和核心玩法 📖`,
+    cardHtml: `
+      <div class="result-card">
+        <div class="result-card-header">📖 ${hero} · 攻略指南</div>
+        <div style="padding:12px">
+          <div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:8px">🛡️ 推荐出装顺序</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+            ${['破军','不祥征兆','暗影战斧','影刃','名刀·司命','影忍之足'].map((i,idx)=>`<div style="background:#f0f3ff;border:1px solid #d0dcff;border-radius:8px;padding:5px 10px;font-size:11px;color:#3a5fc8;font-weight:600">${idx+1}. ${i}</div>`).join('')}
+          </div>
+          <div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:6px">⚡ 核心技巧</div>
+          <div style="font-size:12px;color:#555;line-height:1.7">
+            • 开局先补兵，5级后开始抢红蓝BUFF<br>
+            • 二技能切入，大招开启后立即普攻叠层<br>
+            • 优先击杀敌方脆皮，拉开对局优势
+          </div>
+        </div>
+      </div>`
+  };
+}
+
+function buildHighlightResponse(text) {
+  return {
+    text: '正在为蟹柳生成 <strong>昨日高光视频</strong>，提取到3个精彩时刻 🎬',
+    cardHtml: `
+      <div class="result-card">
+        <div class="result-card-header">🎬 蟹柳的高光时刻 · 昨日</div>
+        <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
+          ${[
+            {t:'⚔️ 亚瑟 · 三杀','d':'8:32 · 中路团战逆转','tag':'团战高光'},
+            {t:'🌙 嫦娥 · 完美大招','d':'14:20 · 一技能+大招双杀','tag':'操作秀'},
+            {t:'🏆 逆风翻盘','d':'18:00 · 最终团战MVP','tag':'逆风局'},
+          ].map(item=>`
+            <div style="display:flex;align-items:center;gap:10px;padding:9px;background:#fafbff;border-radius:10px">
+              <div style="width:52px;height:36px;background:linear-gradient(135deg,#1a2a5e,#2a4090);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">▶️</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:700;color:#1a1a2e">${item.t}</div>
+                <div style="font-size:10px;color:#888;margin-top:2px">${item.d}</div>
+              </div>
+              <div style="background:#eef2ff;color:#3a5fc8;font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;flex-shrink:0">${item.tag}</div>
+            </div>`).join('')}
+          <button style="width:100%;padding:10px;background:linear-gradient(90deg,#3a7bd5,#4a90ff);color:white;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:2px">✨ 一键生成合集视频</button>
+        </div>
+      </div>`
+  };
+}
+
+function buildDownloadResponse(text) {
+  const game = text.includes('三国志') ? {name:'三国志·异闻录',icon:'🏯',bg:'linear-gradient(135deg,#4a2a0e,#8a5a2e)',size:'1.8GB',score:'9.2'}
+    : text.includes('和平') ? {name:'和平精英',icon:'🪂',bg:'linear-gradient(135deg,#2a5a2a,#3a8a3a)',size:'2.1GB',score:'9.5'}
+    : {name:'游戏',icon:'🎮',bg:'linear-gradient(135deg,#1a2040,#2a3060)',size:'1.2GB',score:'8.9'};
+  return {
+    text: `已找到 <strong>${game.name}</strong> 的下载入口 ⬇️`,
+    cardHtml: `
+      <div class="result-card">
+        <div class="download-card">
+          <div class="dl-icon" style="background:${game.bg}">${game.icon}</div>
+          <div class="dl-info">
+            <div class="dl-name">${game.name}</div>
+            <div class="dl-meta">⭐ ${game.score} · 大小 ${game.size} · 适合当前设备</div>
+          </div>
+          <button class="dl-btn">立即下载</button>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:8px">
+          <div style="flex:1;background:#f5f7ff;border-radius:9px;padding:9px;text-align:center">
+            <div style="font-size:11px;color:#888">已预约</div>
+            <div style="font-size:16px;font-weight:900;color:#3a7bd5">12,830</div>
+          </div>
+          <div style="flex:1;background:#f5f7ff;border-radius:9px;padding:9px;text-align:center">
+            <div style="font-size:11px;color:#888">好评率</div>
+            <div style="font-size:16px;font-weight:900;color:#22c55e">96%</div>
+          </div>
+          <div style="flex:1;background:#f5f7ff;border-radius:9px;padding:9px;text-align:center">
+            <div style="font-size:11px;color:#888">大小</div>
+            <div style="font-size:16px;font-weight:900;color:#1a1a2e">${game.size}</div>
+          </div>
+        </div>
+      </div>`
+  };
+}
+
+function buildSkinResponse(text) {
+  return {
+    text: '最近上架的 <strong>热门皮肤</strong> 来了，限时特惠别错过 🛍️',
+    cardHtml: `
+      <div class="result-card">
+        <div class="result-card-header">🛍️ 鹅毛市集 · 热卖皮肤</div>
+        <div class="skin-scroll">
+          ${[
+            {name:'花月夜·嫦娥',game:'王者荣耀',price:'648点券',tag:'限时',bg:'linear-gradient(135deg,#4a1a6e,#9b72cf)',icon:'🌙'},
+            {name:'星际迷途',game:'王者荣耀',price:'328点券',tag:'新品',bg:'linear-gradient(135deg,#0a2a5e,#1a5abf)',icon:'⭐'},
+            {name:'暗夜骑士',game:'三角洲',price:'酷玩币×88',tag:'折扣',bg:'linear-gradient(135deg,#1a1a2e,#2a2a5e)',icon:'🌑'},
+            {name:'传说系列',game:'和平精英',price:'金币×1888',tag:'热卖',bg:'linear-gradient(135deg,#2a5a2a,#3a8a3a)',icon:'🌿'},
+          ].map(s=>`
+            <div class="skin-card">
+              <div class="skin-img" style="background:${s.bg}">${s.icon}</div>
+              <div class="skin-info">
+                <div class="skin-name">${s.name}</div>
+                <div class="skin-price">${s.price}</div>
+                <span class="skin-tag">${s.tag}</span>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`
+  };
+}
+
+function buildReportResponse(text) {
+  return {
+    text: '这是蟹柳的 <strong>本周游戏总结</strong> 📅',
+    cardHtml: `
+      <div class="result-card">
+        <div class="result-card-header">📅 蟹柳的本周报告 · 3.11-3.17</div>
+        <div class="report-card">
+          <div class="report-row">
+            <div class="report-item"><div class="report-val">38</div><div class="report-label">总局数</div></div>
+            <div class="report-divider"></div>
+            <div class="report-item"><div class="report-val" style="color:#22c55e">55%</div><div class="report-label">综合胜率</div></div>
+            <div class="report-divider"></div>
+            <div class="report-item"><div class="report-val">14h</div><div class="report-label">游戏时长</div></div>
+          </div>
+          <div class="report-bar-section">
+            ${[
+              {label:'王者荣耀',pct:70,color:'#c9a227'},
+              {label:'三角洲行动',pct:20,color:'#2a6090'},
+              {label:'和平精英',pct:10,color:'#3a8a3a'},
+            ].map(b=>`
+              <div style="margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span class="report-bar-label">${b.label}</span>
+                  <span style="font-size:11px;color:#888">${b.pct}%</span>
+                </div>
+                <div class="report-bar-track"><div class="report-bar-fill" style="width:${b.pct}%;background:${b.color}"></div></div>
+              </div>`).join('')}
+          </div>
+          <div style="background:#f5fff8;border:1px solid #d0f0d8;border-radius:9px;padding:10px;font-size:12px;color:#1a6a30;margin-top:2px">
+            💡 本周胜率比上周提升 <strong>+7%</strong>，继续加油！推荐多练习辅助位。
+          </div>
+        </div>
+      </div>`
+  };
+}
+
+function buildEmotionResponse(text) {
+  return {
+    text: '蟹柳，连跪确实太难受了 😮‍💨<br>我来帮你找个出口，选一个：',
+    cardHtml: `
+      <div class="result-card">
+        <div class="emotion-card">
+          <div class="emotion-header">
+            <div class="emotion-icon">😮‍💨</div>
+            <div><div class="emotion-text">心态稳住，都是青铜的路</div><div class="emotion-sub">想怎么调整一下？</div></div>
+          </div>
+          <div class="emotion-actions">
+            <div class="emotion-btn" onclick="emotionAction('partner')"><div class="emotion-btn-icon">🤝</div><div class="emotion-btn-text">找个搭子</div></div>
+            <div class="emotion-btn" onclick="emotionAction('replay')"><div class="emotion-btn-icon">🔍</div><div class="emotion-btn-text">看看复盘</div></div>
+            <div class="emotion-btn"><div class="emotion-btn-icon">😌</div><div class="emotion-btn-text">休息一下</div></div>
+            <div class="emotion-btn" onclick="emotionAction('guide')"><div class="emotion-btn-icon">📖</div><div class="emotion-btn-text">看看攻略</div></div>
+          </div>
+        </div>
+      </div>`
+  };
+}
+
+function buildReminderResponse(text) {
+  const timeMatch = text.match(/(\d+)点/);
+  const timeStr = timeMatch ? `今天 ${timeMatch[1]}:00` : '设定时间';
+  return {
+    text: `好的！我来帮你设置提醒 ⏰`,
+    cardHtml: `
+      <div class="result-card">
+        <div class="reminder-card">
+          <div class="reminder-header">
+            <div class="reminder-icon">⏰</div>
+            <div><div class="reminder-title">提醒已设置</div><div class="reminder-sub">到时间我会通知你</div></div>
+          </div>
+          <div class="reminder-time">📅 ${timeStr} &nbsp;·&nbsp; 🎮 王者荣耀排位</div>
+          <button class="reminder-confirm" onclick="this.textContent='✅ 已确认'">确认提醒</button>
+        </div>
+      </div>`
+  };
+}
+
+// ============================================================
+// CHAT ENGINE
+// ============================================================
+// ============================================================
+// DEEPSEEK CONFIG
+// 填入你的 DeepSeek API Key 即可启用真实大模型识别
+// 留空则使用本地关键词匹配引擎（离线可用）
+// ============================================================
+const DEEPSEEK_CONFIG = {
+  apiKey: '',          // 填入：sk-xxxxxxxxxxxxxxxx
+  baseUrl: 'https://api.deepseek.com/v1',
+  model: 'deepseek-chat',
+  enabled() { return !!this.apiKey.trim(); },
+};
+
+// 游戏中心垂类 System Prompt —— 告诉 DeepSeek 它的角色和边界
+const SYSTEM_PROMPT = `你是"QQ游戏中心 AI助手"，一个专注于游戏中心垂类场景的意图识别引擎。
+用户名：蟹柳。
+
+你的核心任务：
+1. 判断用户输入是否属于游戏中心范围内的问题
+2. 若在范围内，精准识别意图类别并返回结构化 JSON
+3. 若不在范围内，返回 out_of_scope
+
+支持的意图类别（intentId）：
+- welfare      福利/礼包（领取、兑换、限时奖励）
+- record       战绩查询（胜率、KDA、排位数据）
+- replay       AI复盘（分析对局、失误、改进建议）
+- partner      找搭子（组队、开黑、匹配队友）
+- news         游戏资讯（版本更新、新英雄、公告）
+- guide        攻略查询（出装、技巧、玩法）
+- highlight    高光视频（生成集锦、精彩回放）
+- download     游戏下载/预约
+- skin         皮肤/购买（商城、鹅毛市集）
+- report       日报/周报（游戏统计总结）
+- emotion      情绪互动（发泄、安慰、心态问题）
+- reminder     定时提醒（设置上线提醒）
+
+必须严格返回如下 JSON 格式，不要有任何多余文字：
+{
+  "intentId": "<意图ID或out_of_scope>",
+  "intentLabel": "<中文意图名称，带emoji>",
+  "confidence": <50-99的整数>,
+  "replyText": "<对用户的回复，15-40字，自然友好，可用<strong>加粗关键词>",
+  "needFollowUp": <true|false，是否需要追问>,
+  "followUpQuestion": "<如果needFollowUp为true，追问的问题>",
+  "quickReplies": ["选项1", "选项2"] // 最多4个，needFollowUp为true时提供
+}`;
+
+// ============================================================
+// DEEPSEEK API 调用
+// ============================================================
+async function callDeepSeek(userText) {
+  if (!DEEPSEEK_CONFIG.enabled()) return null;
+
+  try {
+    const res = await fetch(`${DEEPSEEK_CONFIG.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${DEEPSEEK_CONFIG.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: DEEPSEEK_CONFIG.model,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user',   content: userText },
+        ],
+        temperature: 0.3,
+        max_tokens: 300,
+        response_format: { type: 'json_object' },
+      }),
+    });
+
+    if (!res.ok) {
+      console.warn('[DeepSeek] API error:', res.status, await res.text());
+      return null;
+    }
+
+    const data = await res.json();
+    const raw = data.choices?.[0]?.message?.content;
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    return parsed;
+  } catch (e) {
+    console.warn('[DeepSeek] 调用失败，降级到本地引擎:', e.message);
+    return null;
+  }
+}
+
+// ============================================================
+// 设置面板（运行时填 Key）
+// ============================================================
+function toggleSettingsPanel() {
+  const panel = document.getElementById('settingsPanel');
+  panel.classList.toggle('hidden');
+}
+
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  DEEPSEEK_CONFIG.apiKey = val;
+  const status = document.getElementById('apiKeyStatus');
+  if (val) {
+    status.textContent = '✅ 已启用 DeepSeek 大模型';
+    status.style.color = '#22c55e';
+  } else {
+    status.textContent = '⚙️ 未填写，使用本地关键词引擎';
+    status.style.color = '#888';
+  }
+  document.getElementById('settingsPanel').classList.add('hidden');
+  // 更新顶部模式标签
+  updateModeLabel();
+}
+
+function updateModeLabel() {
+  const label = document.getElementById('modeLabel');
+  if (label) {
+    label.textContent = DEEPSEEK_CONFIG.enabled() ? 'DeepSeek' : '本地引擎';
+    label.style.background = DEEPSEEK_CONFIG.enabled()
+      ? 'linear-gradient(90deg,#22c55e,#16a34a)'
+      : 'linear-gradient(90deg,#4a90ff,#00d4ff)';
+  }
+}
+
+let panelOpen = false;
+let chatInited = false;
+let pendingQR = null;
+
+function startDemo() {
+  document.getElementById('screen-landing').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  document.getElementById('resetBtn').style.display = 'block';
+  setTimeout(openAIPanel, 600);
+}
+
+function goToLanding() {
+  closeAIPanel();
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('screen-landing').classList.add('active');
+  document.getElementById('resetBtn').style.display = 'none';
+  chatInited = false;
+  pendingQR = null;
+  document.getElementById('chatArea').innerHTML = '';
+}
+
+function openAIPanel() {
+  document.getElementById('aiPanel').classList.remove('hidden');
+  document.getElementById('overlay').classList.add('active');
+  panelOpen = true;
+  if (!chatInited) { initChat(); chatInited = true; }
+}
+
+function closeAIPanel() {
+  document.getElementById('aiPanel').classList.add('hidden');
+  document.getElementById('overlay').classList.remove('active');
+  panelOpen = false;
+}
+
+function initChat() {
+  addAIBubble(
+    '嗨蟹柳！🎮 我是游戏中心 AI。<br>你可以直接问我任何游戏问题——<br>领福利、查战绩、找搭子、复盘…<br>也可以点上面的快捷词试试 ↑',
+    null, null, null
+  );
+}
+
+function fillInput(text) {
+  const input = document.getElementById('chatInput');
+  input.value = text;
+  input.focus();
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  processUserMessage(text);
+}
+
+async function processUserMessage(text) {
+  addUserBubble(text);
+
+  const analyzingId = addAnalyzing(
+    DEEPSEEK_CONFIG.enabled() ? '🤖 DeepSeek 意图理解中…' : '⚡ 本地引擎识别中…'
+  );
+
+  let dsResult = null;
+
+  // 优先尝试 DeepSeek
+  if (DEEPSEEK_CONFIG.enabled()) {
+    dsResult = await callDeepSeek(text);
+  }
+
+  removeEl(analyzingId);
+
+  // ── 走 DeepSeek 结果 ──────────────────────────────────────
+  if (dsResult) {
+    const { intentId, intentLabel, confidence, replyText, needFollowUp, followUpQuestion, quickReplies } = dsResult;
+
+    if (intentId === 'out_of_scope') {
+      showTyping(() => {
+        addAIBubble(
+          replyText || '抱歉，这个问题超出了游戏中心的范围 😅<br>可以问我：<strong>福利、战绩、搭子、复盘、皮肤、攻略</strong>等~',
+          null, null, null
+        );
+      });
+      return;
+    }
+
+    showTyping(() => {
+      if (needFollowUp) {
+        // DeepSeek 判断需要追问
+        const qrOptions = quickReplies || [];
+        const callbacks = {};
+        qrOptions.forEach(opt => {
+          callbacks[opt] = () => {
+            const resp = buildResponse(intentId, text + ' ' + opt);
+            return resp || { text: opt + '，好的，我来帮你处理！', cardHtml: null };
+          };
+        });
+        addAIBubble(replyText, intentLabel, confidence, null, qrOptions, callbacks);
+      } else {
+        // DeepSeek 已确认意图，直接渲染结果卡片
+        const response = buildResponse(intentId, text);
+        addAIBubble(
+          replyText || response?.text || '',
+          intentLabel,
+          confidence,
+          response?.cardHtml || (response?.card ? getPrebuiltCard(response.card) : null),
+          response?.quickReplies,
+          response?.onQR
+        );
+      }
+    });
+    return;
+  }
+
+  // ── 降级到本地关键词引擎 ──────────────────────────────────
+  const result = detectIntent(text);
+
+  if (!result) {
+    addAIBubble(
+      '抱歉，这个问题好像超出了游戏中心的范围 😅<br>我只处理游戏中心相关的问题，你可以试试问我：<strong>福利、战绩、搭子、复盘、皮肤、攻略</strong>等~',
+      null, null, null
+    );
+    return;
+  }
+
+  const confPct = result.confidence;
+  showTyping(() => {
+    const response = buildResponse(result.id, text);
+    if (response) {
+        addAIBubble(
+          response.text,
+          result.label,
+          confPct,
+          response.cardHtml || (response.card ? getPrebuiltCard(response.card) : null),
+          response.quickReplies,
+          response.onQR
+        );
+      }
+    });
+}
+
+function getPrebuiltCard(cardId) {
+  const welfareItems = {
+    welfare_wzry: [
+      {icon:'⚔️',cls:'wzry',game:'王者荣耀',name:'英雄碎片 ×20',dl:'今日23:59截止'},
+      {icon:'💎',cls:'wzry',game:'王者荣耀',name:'点券 ×18',dl:'明日12:00截止'},
+      {icon:'🏆',cls:'wzry',game:'王者荣耀',name:'铭文碎片 ×50 + 金币 ×2000',dl:'3天后截止'},
+    ],
+    welfare_sjz: [
+      {icon:'🔫',cls:'sjz',game:'三角洲行动',name:'补给箱 ×3',dl:'今日23:59截止'},
+      {icon:'🎖️',cls:'sjz',game:'三角洲行动',name:'战术物资包',dl:'明日截止'},
+    ],
+    welfare_hpjy: [
+      {icon:'🪂',cls:'hpjy',game:'和平精英',name:'金币 ×188',dl:'3天后截止'},
+      {icon:'🎒',cls:'hpjy',game:'和平精英',name:'精英补给箱',dl:'今日截止'},
+    ],
+    welfare__all: [
+      {icon:'⚔️',cls:'wzry',game:'王者荣耀',name:'英雄碎片 ×20',dl:'今日23:59截止'},
+      {icon:'🔫',cls:'sjz',game:'三角洲行动',name:'补给箱 ×3',dl:'今日23:59截止'},
+      {icon:'🪂',cls:'hpjy',game:'和平精英',name:'金币 ×188',dl:'3天后截止'},
+    ],
+  };
+  const items = welfareItems[cardId] || welfareItems['welfare__all'];
+  return `
+    <div class="result-card">
+      <div class="result-card-header">🎁 今日可领福利 · ${items.length}个</div>
+      <div class="welfare-list">
+        ${items.map(i=>`
+          <div class="welfare-item">
+            <div class="wi-icon ${i.cls}">${i.icon}</div>
+            <div class="wi-info"><div class="wi-game">${i.game}</div><div class="wi-name">${i.name}</div><div class="wi-deadline">⏰ ${i.dl}</div></div>
+            <button class="wi-action">立即领</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function addUserBubble(text) {
+  const area = document.getElementById('chatArea');
+  const el = document.createElement('div');
+  el.className = 'msg user';
+  el.innerHTML = `<div class="msg-avatar">👤</div><div class="msg-content"><div class="msg-bubble">${text}</div></div>`;
+  area.appendChild(el);
+  scrollChat();
+}
+
+function addAIBubble(text, intentLabel, confidence, cardHtml, quickReplies, qrCallbacks) {
+  const area = document.getElementById('chatArea');
+  const el = document.createElement('div');
+  el.className = 'msg ai';
+
+  let inner = `<div class="msg-avatar ai-av">✨</div><div class="msg-content">`;
+
+  if (intentLabel) {
+    inner += `<div class="intent-tag"><div class="intent-dot"></div>识别意图：${intentLabel}</div>`;
+    if (confidence) {
+      inner += `<div class="confidence-row"><span>置信度</span><div class="conf-bar"><div class="conf-fill" style="width:0%" data-target="${confidence}"></div></div><span class="conf-label">${confidence}%</span></div>`;
+    }
+  }
+
+  inner += `<div class="msg-bubble">${text}</div>`;
+
+  if (cardHtml) inner += cardHtml;
+
+  if (quickReplies) {
+    inner += `<div class="quick-replies">`;
+    quickReplies.forEach((r, i) => {
+      inner += `<button class="qr-btn" data-qr="${i}">${r}</button>`;
+    });
+    inner += `</div>`;
+    pendingQR = qrCallbacks;
+  }
+
+  inner += `</div>`;
+  el.innerHTML = inner;
+  area.appendChild(el);
+
+  // Animate confidence bar
+  const fill = el.querySelector('.conf-fill');
+  if (fill) {
+    const target = fill.dataset.target;
+    setTimeout(() => { fill.style.width = target + '%'; }, 100);
+  }
+
+  // Bind quick reply buttons
+  if (quickReplies && qrCallbacks) {
+    el.querySelectorAll('.qr-btn').forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        el.querySelectorAll('.qr-btn').forEach(b => b.classList.add('selected'));
+        const reply = quickReplies[i];
+        addUserBubble(reply);
+        const cb = qrCallbacks[reply];
+        if (cb) {
+          const resp = cb();
+          setTimeout(() => {
+            showTyping(() => {
+              addAIBubble(resp.text, null, null, resp.cardHtml || getPrebuiltCard(resp.card));
+            });
+          }, 300);
+        }
+      });
+    });
+  }
+
+  scrollChat();
+}
+
+function addAnalyzing(msg) {
+  const area = document.getElementById('chatArea');
+  const el = document.createElement('div');
+  const id = 'analyzing_' + Date.now();
+  el.id = id;
+  el.innerHTML = `<div class="analyzing-wrap"><div class="analyzing-spinner"></div>${msg || '意图识别中…'}</div>`;
+  area.appendChild(el);
+  scrollChat();
+  return id;
+}
+
+function showTyping(callback) {
+  const area = document.getElementById('chatArea');
+  const el = document.createElement('div');
+  const id = 'typing_' + Date.now();
+  el.id = id;
+  el.className = 'msg ai';
+  el.innerHTML = `<div class="msg-avatar ai-av">✨</div><div class="typing-indicator"><div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  area.appendChild(el);
+  scrollChat();
+  setTimeout(() => { removeEl(id); callback(); }, 700 + Math.random() * 300);
+}
+
+function removeEl(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function scrollChat() {
+  const area = document.getElementById('chatArea');
+  setTimeout(() => { area.scrollTop = area.scrollHeight; }, 60);
+}
+
+// Emotion card callbacks
+function emotionAction(type) {
+  const textMap = { partner:'帮我找个搭子', replay:'帮我复盘上一把', guide:'朵莉亚怎么出装' };
+  const text = textMap[type] || type;
+  processUserMessage(text);
+}
+
+// Enter key
+document.getElementById('chatInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+</script>
+</body>
+</html>
