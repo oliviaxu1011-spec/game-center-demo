@@ -97,12 +97,17 @@ body {
 }
 .start-btn:hover { transform:translateY(-1px); box-shadow:0 8px 28px rgba(74,144,255,.4); }
 
-/* intent showcase pills on landing */
-.intent-pills { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:28px; }
+/* intent showcase pills on landing — 单行横向滚动 */
+.intent-pills {
+  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
+  margin-bottom:28px; padding:0 4px 4px;
+}
+.intent-pills::-webkit-scrollbar { display:none; }
 .intent-pill {
-  background:var(--bg-surface); border:1px solid var(--border);
-  border-radius:20px; padding:6px 14px; font-size:12px; color:var(--text-secondary);
-  cursor:default;
+  display:inline-flex; align-items:center; gap:5px;
+  background:#F5F5F5; border:1px solid #EBEBEB;
+  border-radius:20px; padding:8px 14px; font-size:12px; color:var(--text-secondary);
+  cursor:default; white-space:nowrap; flex-shrink:0;
 }
 .intent-pill span { color:var(--accent-blue); font-weight:600; }
 
