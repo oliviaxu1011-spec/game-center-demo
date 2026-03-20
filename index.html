@@ -334,7 +334,7 @@ body {
 
 /* Intent Tag & Confidence — 已移除，不再展示 */
 
-/* Quick Replies */
+/* Quick Replies (legacy, keep for compat) */
 .quick-replies { display:flex; flex-wrap:wrap; gap:7px; }
 .qr-btn {
   background:white; border:1.5px solid rgba(26,107,255,.25);
@@ -345,6 +345,106 @@ body {
 }
 .qr-btn:hover,.qr-btn:active { background:#eef3ff; border-color:#1a6bff; transform:scale(.97); }
 .qr-btn.selected { background:#e5eeff; border-color:#1a6bff; opacity:.7; pointer-events:none; }
+
+/* ========== 三段式AI回复布局 ========== */
+
+/* 主卡片：文本 + 数据卡片合并 */
+.ai-reply-card {
+  background:#ffffff;
+  border-radius:16px;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);
+  overflow:hidden;
+}
+.ai-reply-card .ai-reply-text {
+  padding:14px 16px;
+  font-size:14px; line-height:1.7; color:#1a1a2e;
+}
+.ai-reply-card .ai-reply-text strong { color:#1a6bff; font-weight:700; }
+.ai-reply-card .ai-reply-text .ai-reply-title {
+  font-size:15px; font-weight:700; color:#1a1a2e; margin-bottom:6px; line-height:1.4;
+}
+.ai-reply-card .ai-reply-text .ai-reply-desc {
+  font-size:13px; color:#444; line-height:1.7;
+}
+.ai-reply-card .ai-reply-text .ai-reply-desc strong { color:#1a1a2e; }
+
+/* 嵌入的数据卡片（无外边距，紧贴主卡片） */
+.ai-reply-card .result-card {
+  border-radius:0;
+  border:none;
+  border-top:1px solid #f0f0f0;
+}
+.ai-reply-card .result-card .result-card-header {
+  border-radius:0;
+}
+
+/* 按钮区 */
+.ai-reply-buttons {
+  display:flex; gap:8px; padding:0;
+  margin-top:8px;
+}
+.ai-reply-buttons .ai-action-btn {
+  flex:1;
+  padding:12px 16px;
+  border:none; border-radius:12px;
+  font-size:14px; font-weight:700;
+  cursor:pointer; font-family:inherit;
+  transition:all .2s;
+  text-align:center;
+}
+.ai-reply-buttons .ai-action-btn.primary {
+  background:linear-gradient(135deg,#1a6bff,#4a90ff);
+  color:white;
+  box-shadow:0 2px 10px rgba(26,107,255,.25);
+}
+.ai-reply-buttons .ai-action-btn.primary:hover {
+  box-shadow:0 4px 16px rgba(26,107,255,.35);
+  transform:translateY(-1px);
+}
+.ai-reply-buttons .ai-action-btn.secondary {
+  background:#f0f3ff;
+  color:#1a6bff;
+  border:1.5px solid rgba(26,107,255,.2);
+}
+.ai-reply-buttons .ai-action-btn.secondary:hover {
+  background:#e5eeff;
+  border-color:#1a6bff;
+}
+.ai-reply-buttons .ai-action-btn.clicked {
+  opacity:.6; pointer-events:none;
+}
+
+/* 追问区 */
+.ai-followups {
+  display:flex; flex-direction:column; gap:6px;
+  margin-top:10px;
+}
+.ai-followup-item {
+  display:flex; align-items:center; justify-content:space-between;
+  background:#ffffff;
+  border:1px solid #ececec;
+  border-radius:12px;
+  padding:12px 14px;
+  font-size:13.5px; font-weight:600; color:#1a1a2e;
+  cursor:pointer;
+  transition:all .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.ai-followup-item:hover {
+  background:#f8faff;
+  border-color:#c0d0ff;
+}
+.ai-followup-item:active {
+  transform:scale(.98);
+}
+.ai-followup-item .followup-arrow {
+  color:#bbb; font-size:14px; flex-shrink:0; margin-left:8px;
+  transition:color .2s;
+}
+.ai-followup-item:hover .followup-arrow { color:#1a6bff; }
+.ai-followup-item.clicked {
+  opacity:.5; pointer-events:none;
+}
 
 /* Result Cards — 嵌在白色气泡内，无边框，轻阴影 */
 .result-card {
@@ -1583,7 +1683,15 @@ function buildWelfareResponse(text) {
                 <button class="wi-action">立即领</button>
               </div>`).join('')}
           </div>
-        </div>`
+        </div>`,
+      opts: {
+        buttons: [{label:'一键全部领取', type:'primary', action: () => ({text:'已帮你领取全部福利 🎉 明天记得再来哦！'})}],
+        followUps: [
+          {label:'看看其他游戏的福利', action: () => buildWelfareResponse('_all')},
+          {label:'查看我的近期战绩', action: () => buildResponse('record', '今天战绩')},
+          {label:'有什么新皮肤上架', action: () => buildResponse('skin', '新皮肤')},
+        ]
+      }
     };
   }
   if (showAll) {
@@ -1593,15 +1701,17 @@ function buildWelfareResponse(text) {
     };
   }
   return {
-    text: '我帮你找到了 <strong>今日全部可领福利</strong> 🎉<br>想先看哪个游戏的？',
-    quickReplies: ['⚔️ 王者荣耀', '🔫 三角洲行动', '🪂 和平精英', '🏰 英雄联盟', '🌍 原神', '全部游戏'],
-    onQR: {
-      '⚔️ 王者荣耀': () => buildWelfareResponse('王者'),
-      '🔫 三角洲行动': () => buildWelfareResponse('三角'),
-      '🪂 和平精英': () => buildWelfareResponse('和平'),
-      '🏰 英雄联盟': () => buildWelfareResponse('英雄联盟'),
-      '🌍 原神': () => buildWelfareResponse('原神'),
-      '全部游戏': () => buildWelfareResponse('_all')
+    text: '我帮你找到了 <strong>今日全部可领福利</strong> 🎉',
+    opts: {
+      title: '今日福利总览',
+      followUps: [
+        {label:'⚔️ 王者荣耀福利', action: () => buildWelfareResponse('王者')},
+        {label:'🪂 和平精英福利', action: () => buildWelfareResponse('和平')},
+        {label:'🔫 三角洲行动福利', action: () => buildWelfareResponse('三角')},
+        {label:'🏰 英雄联盟手游福利', action: () => buildWelfareResponse('英雄联盟')},
+        {label:'🌍 原神福利', action: () => buildWelfareResponse('原神')},
+        {label:'📦 全部游戏福利', action: () => buildWelfareResponse('_all')},
+      ]
     }
   };
 }
@@ -1788,7 +1898,7 @@ function buildRecordResponse(text) {
     });
 
     return {
-      text: `蟹柳${range.label}玩了好几款游戏呢 🎮 你想看哪个游戏的战绩？`,
+      text: `蟹柳${range.label}玩了好几款游戏呢 🎮`,
       cardHtml: `
         <div class="result-card">
           <div class="result-card-header">🎮 ${range.label}在玩的游戏</div>
@@ -1796,8 +1906,13 @@ function buildRecordResponse(text) {
             ${gameCardsHtml}
           </div>
         </div>`,
-      quickReplies: qrOptions,
-      onQR: callbacks
+      opts: {
+        title: `${range.label}游戏数据`,
+        followUps: userGames.map(g => ({
+          label: `${g.icon} 查看${g.name}战绩`,
+          action: callbacks[`${g.icon} ${g.name}`]
+        }))
+      }
     };
   }
 
@@ -1825,7 +1940,15 @@ function buildRecordResponse(text) {
             </div>`).join('')}
           </div>
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      buttons: [{label:'查看全部', type:'primary', action: `查看${game.name}详细战绩`}],
+      followUps: [
+        {label:`看看${range.label}打的几把对局`, action: () => buildResponse('replay', `${game.name} ${range.label}`)},
+        {label:`看看${range.label}的高光视频`, action: () => buildResponse('highlight', game.name)},
+        {label:'看看和好友的开黑数据', action: () => buildResponse('report', `${game.name}本周`)},
+      ]
+    }
   };
 }
 
@@ -1865,7 +1988,14 @@ function buildReplayResponse(text) {
             <button class="replay-btn secondary" onclick="handleViewDetailData('${game.id}','${d.hero}','${range.label}')">📊 详细数据</button>
           </div>
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      followUps: [
+        {label:'帮我生成这把高光视频', action: () => buildResponse('highlight', game.name)},
+        {label:'看看我的本周战绩总结', action: () => buildResponse('report', `${game.name}本周`)},
+        {label:'帮我找个搭子再来一把', action: () => buildResponse('partner', game.name)},
+      ]
+    }
   };
 }
 
@@ -1900,7 +2030,15 @@ function buildReportResponse(text) {
             💡 ${d.tip}
           </div>
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      buttons: [{label:'分享到动态', type:'primary', action: () => ({text:'报告已生成分享卡片，可以转发给好友了 📤'})}],
+      followUps: [
+        {label:'查看详细游戏战绩', action: () => buildResponse('record', '今天战绩')},
+        {label:'生成我的高光视频', action: () => buildResponse('highlight', '王者荣耀')},
+        {label:'帮我找搭子开黑', action: () => buildResponse('partner', '王者荣耀')},
+      ]
+    }
   };
 }
 
@@ -2027,7 +2165,15 @@ function buildPartnerResponse(text) {
         <div class="partner-list">
           ${partnerCards}
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      buttons: [{label:'立即组队', type:'primary', action: () => ({text:'已发送组队邀请，等待搭子接受 🎮'})}],
+      followUps: [
+        {label:'换一批搭子看看', action: () => buildResponse('partner', game.name)},
+        {label:'看看我的近期战绩', action: () => buildResponse('record', game.name + '今天')},
+        {label:'有什么福利可以领', action: () => buildResponse('welfare', game.name)},
+      ]
+    }
   };
 }
 
@@ -2073,7 +2219,14 @@ function buildNewsResponse(text) {
             <div class="news-info"><div class="news-title">${n.title}</div><div class="news-meta">${n.meta}</div></div>
           </div>`).join('')}
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      followUps: [
+        {label:'看看有什么福利可以领', action: () => buildResponse('welfare', game.name)},
+        {label:`${game.name}攻略推荐`, action: () => buildResponse('guide', game.name)},
+        {label:'查查我最近的战绩', action: () => buildResponse('record', `${game.name}今天`)},
+      ]
+    }
   };
 }
 
@@ -2127,7 +2280,14 @@ function buildGuideResponse(text) {
             ${gd.tips.map(t=>`• ${t}`).join('<br>')}
           </div>
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      followUps: [
+        {label:'找个搭子一起练练', action: () => buildResponse('partner', game.name)},
+        {label:'看看我这个英雄的战绩', action: () => buildResponse('record', `${game.name}今天`)},
+        {label:'最近有什么版本更新', action: () => buildResponse('news', game.name)},
+      ]
+    }
   };
 }
 
@@ -2178,7 +2338,14 @@ function buildHighlightResponse(text) {
             </div>`).join('')}
           <button style="width:100%;padding:10px;background:linear-gradient(135deg,#1a6bff,#4a90ff);color:white;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:2px">✨ 一键生成合集视频</button>
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      followUps: [
+        {label:'分享到我的动态', action: () => ({text:'视频已生成，可以分享到动态了 🎬'})},
+        {label:'查看我的战绩数据', action: () => buildResponse('record', game.name + '今天')},
+        {label:'帮我找搭子再来一把', action: () => buildResponse('partner', game.name)},
+      ]
+    }
   };
 }
 
@@ -2212,7 +2379,13 @@ function buildDownloadResponse(text) {
             <div style="font-size:16px;font-weight:900;color:#1a1a2e">${game.size}</div>
           </div>
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      followUps: [
+        {label:'看看其他热门游戏', action: () => buildResponse('news', '最新资讯')},
+        {label:'有什么福利可以领', action: () => buildResponse('welfare', '今日福利')},
+      ]
+    }
   };
 }
 
@@ -2238,11 +2411,16 @@ function buildSkinResponse(text) {
               </div>
             </div>`).join('')}
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      followUps: [
+        {label:'有什么福利可以领', action: () => buildResponse('welfare', '今日福利')},
+        {label:'看看最新游戏资讯', action: () => buildResponse('news', '王者荣耀')},
+        {label:'查查我的近期战绩', action: () => buildResponse('record', '今天战绩')},
+      ]
+    }
   };
 }
-
-/* buildReportResponse 已在上方定义（支持时间解析），此处不再重复 */
 
 function buildEmotionResponse(text) {
   return {
@@ -2261,7 +2439,13 @@ function buildEmotionResponse(text) {
             <div class="emotion-btn" onclick="emotionAction('guide')"><div class="emotion-btn-icon">📖</div><div class="emotion-btn-text">看看攻略</div></div>
           </div>
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      followUps: [
+        {label:'帮我找个搭子开黑', action: () => buildResponse('partner', '王者荣耀')},
+        {label:'看看有什么福利领一下', action: () => buildResponse('welfare', '今日福利')},
+      ]
+    }
   };
 }
 
@@ -2283,7 +2467,14 @@ function buildReminderResponse(text) {
           <div class="reminder-time">📅 ${timeStr} &nbsp;·&nbsp; ${game.icon} ${game.name} · ${mode}</div>
           <button class="reminder-confirm" onclick="this.textContent='✅ 已确认'">确认提醒</button>
         </div>
-      </div>`
+      </div>`,
+    opts: {
+      followUps: [
+        {label:'帮我找搭子一起玩', action: () => buildResponse('partner', game.name)},
+        {label:'看看有什么福利', action: () => buildResponse('welfare', game.name)},
+        {label:'查看最近战绩', action: () => buildResponse('record', game.name + '今天')},
+      ]
+    }
   };
 }
 
@@ -2595,7 +2786,14 @@ function closeAIPanel() {
 function initChat() {
   addAIBubble(
     '嗨蟹柳！🎮 我是游戏中心 AI。<br>你可以直接问我任何游戏问题——<br>领福利、查战绩、找搭子、复盘…<br>也可以点上面的快捷词试试 ↑',
-    null, null, null
+    null, null, null, null, null,
+    {
+      followUps: [
+        {label:'看看今天有什么福利', action: () => buildResponse('welfare', '今日福利')},
+        {label:'查查我的近期战绩', action: () => buildResponse('record', '今天战绩')},
+        {label:'帮我找个搭子开黑', action: () => buildResponse('partner', '王者荣耀找搭子')},
+      ]
+    }
   );
 }
 
@@ -2647,8 +2845,13 @@ async function processUserMessage(text) {
       showTyping(() => {
         addAIBubble(
           replyText || '哈哈，这个我不太擅长 😄 不过<strong>今日游戏福利</strong>还没领，要不要看看？🎁',
-          '🎁 福利/礼包', 65, null, ['看今日福利', '帮我找搭子'],
-          { '看今日福利': () => buildResponse('welfare', '今日福利'), '帮我找搭子': () => buildResponse('partner', '找搭子') }
+          '🎁 福利/礼包', 65, null, null, null,
+          {
+            followUps: [
+              {label:'看今日福利', action: () => buildResponse('welfare', '今日福利')},
+              {label:'帮我找搭子', action: () => buildResponse('partner', '找搭子')},
+            ]
+          }
         );
       });
       return;
@@ -2657,14 +2860,14 @@ async function processUserMessage(text) {
     showTyping(() => {
       if (needFollowUp) {
         const qrOptions = quickReplies || [];
-        const callbacks = {};
-        qrOptions.forEach(opt => {
-          callbacks[opt] = () => {
+        const fuItems = qrOptions.map(opt => ({
+          label: opt,
+          action: () => {
             const resp = buildResponse(intentId, text + ' ' + opt);
             return resp || { text: opt + '，好的，我来帮你处理！', cardHtml: null };
-          };
-        });
-        addAIBubble(replyText, intentLabel, confidence, null, qrOptions, callbacks);
+          }
+        }));
+        addAIBubble(replyText, intentLabel, confidence, null, null, null, { followUps: fuItems });
       } else {
         const response = buildResponse(intentId, text);
         addAIBubble(
@@ -2673,7 +2876,8 @@ async function processUserMessage(text) {
           confidence,
           response?.cardHtml || (response?.card ? getPrebuiltCard(response.card) : null),
           response?.quickReplies,
-          response?.onQR
+          response?.onQR,
+          response?.opts
         );
       }
     });
@@ -2695,7 +2899,8 @@ async function processUserMessage(text) {
             addAIBubble(
               response.text, intentObj.label, 82,
               response.cardHtml || (response.card ? getPrebuiltCard(response.card) : null),
-              response.quickReplies, response.onQR
+              response.quickReplies, response.onQR,
+              response.opts
             );
             const h = { role: 'assistant', content: response.text }; h._intentId = lastIntent;
             chatHistory.push(h); if (chatHistory.length > MAX_HISTORY) chatHistory.shift();
@@ -2734,11 +2939,16 @@ async function processUserMessage(text) {
 
     if (matched) {
       showTyping(() => {
-        addAIBubble(matched.reply, matched.label, 72, null, matched.qr,
-          Object.fromEntries(matched.qr.map(q => [q, () => {
-            const r = buildResponse(matched.intentId, q);
-            return r || { text: q, cardHtml: null };
-          }]))
+        addAIBubble(matched.reply, matched.label, 72, null, null, null,
+          {
+            followUps: matched.qr.map(q => ({
+              label: q,
+              action: () => {
+                const r = buildResponse(matched.intentId, q);
+                return r || { text: q, cardHtml: null };
+              }
+            }))
+          }
         );
         const h = { role: 'assistant', content: matched.reply }; h._intentId = matched.intentId;
         chatHistory.push(h); if (chatHistory.length > MAX_HISTORY) chatHistory.shift();
@@ -2752,11 +2962,16 @@ async function processUserMessage(text) {
       ];
       const fb = fallbacks[Math.floor(Math.random() * fallbacks.length)];
       showTyping(() => {
-        addAIBubble(fb.reply, fb.label, 65, null, fb.qr,
-          Object.fromEntries(fb.qr.map(q => [q, () => {
-            const r = buildResponse(fb.intentId, q);
-            return r || { text: q, cardHtml: null };
-          }]))
+        addAIBubble(fb.reply, fb.label, 65, null, null, null,
+          {
+            followUps: fb.qr.map(q => ({
+              label: q,
+              action: () => {
+                const r = buildResponse(fb.intentId, q);
+                return r || { text: q, cardHtml: null };
+              }
+            }))
+          }
         );
         const h = { role: 'assistant', content: fb.reply }; h._intentId = fb.intentId;
         chatHistory.push(h); if (chatHistory.length > MAX_HISTORY) chatHistory.shift();
@@ -2776,7 +2991,8 @@ async function processUserMessage(text) {
           confPct,
           response.cardHtml || (response.card ? getPrebuiltCard(response.card) : null),
           response.quickReplies,
-          response.onQR
+          response.onQR,
+          response.opts
         );
         const h = { role: 'assistant', content: response.text }; h._intentId = result.id;
         chatHistory.push(h); if (chatHistory.length > MAX_HISTORY) chatHistory.shift();
@@ -2831,20 +3047,51 @@ function addUserBubble(text) {
   scrollChat();
 }
 
-function addAIBubble(text, intentLabel, confidence, cardHtml, quickReplies, qrCallbacks) {
+function addAIBubble(text, intentLabel, confidence, cardHtml, quickReplies, qrCallbacks, opts) {
+  // opts: { title, buttons:[{label,type,action}], followUps:[{label,action}] }
+  const options = opts || {};
   const area = document.getElementById('chatArea');
   const el = document.createElement('div');
   el.className = 'msg ai';
 
   let inner = `<div class="msg-avatar ai-av">✨</div><div class="msg-content">`;
 
-  // 意图标签和置信度已移除，不再展示
-
-  inner += `<div class="msg-bubble">${text}</div>`;
-
+  // ── 主卡片区：AI文本 + 数据卡片 合并在一个白色容器内 ──
+  inner += `<div class="ai-reply-card">`;
+  inner += `<div class="ai-reply-text">`;
+  if (options.title) {
+    inner += `<div class="ai-reply-title">${options.title}</div>`;
+    inner += `<div class="ai-reply-desc">${text}</div>`;
+  } else {
+    inner += text;
+  }
+  inner += `</div>`;
   if (cardHtml) inner += cardHtml;
+  inner += `</div>`;
 
-  if (quickReplies) {
+  // ── 按钮区（可选，支持1-2个按钮） ──
+  const buttons = options.buttons;
+  if (buttons && buttons.length > 0) {
+    inner += `<div class="ai-reply-buttons">`;
+    buttons.forEach((btn, i) => {
+      const cls = btn.type === 'secondary' ? 'secondary' : 'primary';
+      inner += `<button class="ai-action-btn ${cls}" data-btn-idx="${i}">${btn.label}</button>`;
+    });
+    inner += `</div>`;
+  }
+
+  // ── 追问区（可选） ──
+  const followUps = options.followUps;
+  if (followUps && followUps.length > 0) {
+    inner += `<div class="ai-followups">`;
+    followUps.forEach((fu, i) => {
+      inner += `<div class="ai-followup-item" data-fu-idx="${i}"><span>${fu.label}</span><span class="followup-arrow">›</span></div>`;
+    });
+    inner += `</div>`;
+  }
+
+  // ── 兼容旧版：快速回复药丸按钮（当没有 buttons/followUps 时降级） ──
+  if (quickReplies && !buttons && !followUps) {
     inner += `<div class="quick-replies">`;
     quickReplies.forEach((r, i) => {
       inner += `<button class="qr-btn" data-qr="${i}">${r}</button>`;
@@ -2857,8 +3104,56 @@ function addAIBubble(text, intentLabel, confidence, cardHtml, quickReplies, qrCa
   el.innerHTML = inner;
   area.appendChild(el);
 
-  // Bind quick reply buttons
-  if (quickReplies && qrCallbacks) {
+  // ── 绑定按钮区事件 ──
+  if (buttons && buttons.length > 0) {
+    el.querySelectorAll('.ai-action-btn').forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        el.querySelectorAll('.ai-action-btn').forEach(b => b.classList.add('clicked'));
+        const action = buttons[i].action;
+        if (typeof action === 'function') {
+          const resp = action();
+          if (resp) {
+            setTimeout(() => {
+              showTyping(() => {
+                const html = resp.cardHtml || (resp.card ? getPrebuiltCard(resp.card) : null);
+                addAIBubble(resp.text, null, null, html, null, null, resp.opts);
+              });
+            }, 300);
+          }
+        } else if (typeof action === 'string') {
+          addUserBubble(action);
+          setTimeout(() => processUserInput(action), 300);
+        }
+      });
+    });
+  }
+
+  // ── 绑定追问区事件 ──
+  if (followUps && followUps.length > 0) {
+    el.querySelectorAll('.ai-followup-item').forEach((item, i) => {
+      item.addEventListener('click', () => {
+        item.classList.add('clicked');
+        const fu = followUps[i];
+        addUserBubble(fu.label);
+        if (typeof fu.action === 'function') {
+          const resp = fu.action();
+          if (resp) {
+            setTimeout(() => {
+              showTyping(() => {
+                const html = resp.cardHtml || (resp.card ? getPrebuiltCard(resp.card) : null);
+                addAIBubble(resp.text, null, null, html, null, null, resp.opts);
+              });
+            }, 300);
+          }
+        } else {
+          setTimeout(() => processUserInput(fu.label), 300);
+        }
+      });
+    });
+  }
+
+  // ── 兼容旧版快速回复按钮事件 ──
+  if (quickReplies && qrCallbacks && !buttons && !followUps) {
     el.querySelectorAll('.qr-btn').forEach((btn, i) => {
       btn.addEventListener('click', () => {
         el.querySelectorAll('.qr-btn').forEach(b => b.classList.add('selected'));
@@ -2870,7 +3165,7 @@ function addAIBubble(text, intentLabel, confidence, cardHtml, quickReplies, qrCa
           setTimeout(() => {
             showTyping(() => {
               const html = resp.cardHtml || (resp.card ? getPrebuiltCard(resp.card) : null);
-              addAIBubble(resp.text, null, null, html);
+              addAIBubble(resp.text, null, null, html, null, null, resp.opts);
             });
           }, 300);
         }
@@ -3112,11 +3407,12 @@ function ondemandPlay(el, title) {
       showTyping(() => {
         addAIBubble(
           `<strong>${title}</strong> 已生成完毕 ✅ 点击即可播放，也可以分享到动态～`,
-          null, null, null,
-          ['📤 分享到动态', '🎬 生成更多'],
+          null, null, null, null, null,
           {
-            '📤 分享到动态': () => ({ text: '正在打开分享页面，选择你想分享的好友或动态 📤', cardHtml: null }),
-            '🎬 生成更多': () => ({ text: '还想要什么风格的视频？告诉我就好 🎬', cardHtml: null }),
+            followUps: [
+              {label:'📤 分享到动态', action: () => ({ text: '正在打开分享页面，选择你想分享的好友或动态 📤', cardHtml: null })},
+              {label:'🎬 生成更多', action: () => ({ text: '还想要什么风格的视频？告诉我就好 🎬', cardHtml: null })},
+            ]
           }
         );
       });
@@ -3128,11 +3424,12 @@ function shareVideo() {
   showTyping(() => {
     addAIBubble(
       '正在打开分享页面 📤 你可以分享到<strong>QQ动态、好友聊天</strong>或保存到手机相册～',
-      null, null, null,
-      ['分享到QQ动态', '保存到相册'],
+      null, null, null, null, null,
       {
-        '分享到QQ动态': () => ({ text: '已为你打开QQ动态分享页面 ✅ 选个好友圈一起看！', cardHtml: null }),
-        '保存到相册': () => ({ text: '视频已保存到手机相册 📱 随时可以回看！', cardHtml: null }),
+        followUps: [
+          {label:'分享到QQ动态', action: () => ({ text: '已为你打开QQ动态分享页面 ✅ 选个好友圈一起看！', cardHtml: null })},
+          {label:'保存到相册', action: () => ({ text: '视频已保存到手机相册 📱 随时可以回看！', cardHtml: null })},
+        ]
       }
     );
   });
