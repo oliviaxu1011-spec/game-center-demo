@@ -629,24 +629,24 @@ body {
 /* Input Area */
 .chat-input-area { padding:0; border-top:1px solid rgba(0,0,0,.05); flex-shrink:0; background:#FFFFFF; }
 
-/* Input hint chips — 快捷入口横向标签 */
+/* Input hint chips — 快捷入口多行网格（深色背景） */
 .input-hints {
-  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
-  padding:10px 16px 8px;
+  display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+  padding:16px 14px 12px;
+  background:#1E2030; border-radius:16px 16px 0 0;
 }
-.input-hints::after {
-  content:''; flex-shrink:0; width:1px;
-}
+.input-hints::after { display:none; }
 .input-hints::-webkit-scrollbar { display:none; }
 .input-hint-chip {
-  display:flex; align-items:center; gap:0;
-  background:#FFFFFF; border:1px solid #E0E0E0;
-  border-radius:20px; padding:8px 16px;
-  font-size:13px; color:#1A1C1E; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.12);
+  border-radius:22px; padding:9px 18px;
+  font-size:13px; color:rgba(255,255,255,.92); cursor:pointer;
   white-space:nowrap; transition:all .18s; font-family:inherit;
   flex-shrink:0; font-weight:500;
 }
-.input-hint-chip:hover { background:#F6F6F6; border-color:#CCC; }
+.input-hint-chip:hover { background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.2); }
+.input-hint-chip .chip-icon { font-size:15px; line-height:1; }
 
 .chat-input-row {
   display:flex; align-items:center; gap:10px;
@@ -1125,7 +1125,7 @@ body {
   <div class="ai-panel-header">
     <button class="ai-panel-back" onclick="closeAIPanel()">‹</button>
     <div class="ai-panel-title-area">
-      <span class="ai-panel-title">游戏课代表</span>
+      <span class="ai-panel-title">Q仔</span>
       <span class="ai-panel-badge" id="modeLabel">AI</span>
     </div>
     <button class="ai-panel-menu" onclick="toggleSettingsPanel()">☰</button>
@@ -1161,11 +1161,18 @@ body {
   <div class="chat-area" id="chatArea"></div>
   <div class="chat-input-area">
     <div class="input-hints" id="inputHints">
-      <button class="input-hint-chip" onclick="fillInput('查查我的今日战绩')">战绩查询</button>
-      <button class="input-hint-chip" onclick="fillInput('帮我生成高光视频')">游戏高光</button>
-      <button class="input-hint-chip" onclick="fillInput('帮我找搭子开黑')">搭子大厅</button>
-      <button class="input-hint-chip" onclick="fillInput('看看好友排行')">好友排行</button>
-      <button class="input-hint-chip" onclick="fillInput('有什么福利可以领')">福利中心</button>
+      <button class="input-hint-chip" onclick="fillInput('有什么福利礼包可以领')"><span class="chip-icon">🎁</span>福利/礼包</button>
+      <button class="input-hint-chip" onclick="fillInput('查查我的今日战绩')"><span class="chip-icon">🏆</span>战绩查询</button>
+      <button class="input-hint-chip" onclick="fillInput('帮我AI复盘上一把')"><span class="chip-icon">🔮</span>AI复盘</button>
+      <button class="input-hint-chip" onclick="fillInput('帮我找搭子开黑')"><span class="chip-icon">🤝</span>找搭子</button>
+      <button class="input-hint-chip" onclick="fillInput('最近有什么游戏资讯')"><span class="chip-icon">📺</span>游戏资讯</button>
+      <button class="input-hint-chip" onclick="fillInput('查一下攻略')"><span class="chip-icon">📖</span>攻略查询</button>
+      <button class="input-hint-chip" onclick="fillInput('帮我生成高光视频')"><span class="chip-icon">🎬</span>高光视频</button>
+      <button class="input-hint-chip" onclick="fillInput('怎么下载这个游戏')"><span class="chip-icon">⬇️</span>游戏下载</button>
+      <button class="input-hint-chip" onclick="fillInput('最近有什么新皮肤')"><span class="chip-icon">🛍️</span>皮肤购买</button>
+      <button class="input-hint-chip" onclick="fillInput('看看我的本周总结')"><span class="chip-icon">📅</span>日报周报</button>
+      <button class="input-hint-chip" onclick="fillInput('连跪五把好烦')"><span class="chip-icon">🤯</span>情绪互动</button>
+      <button class="input-hint-chip" onclick="fillInput('提醒我8点上线打排位')"><span class="chip-icon">⏰</span>定时提醒</button>
     </div>
     <div class="chat-input-row">
       <button class="chat-input-mic">🎙️</button>
@@ -2827,7 +2834,7 @@ function closeAIPanel() {
 
 function initChat() {
   addAIBubble(
-    '嗨蟹柳！🎮 我是游戏课代表。<br>你可以直接问我任何游戏问题——<br>领福利、查战绩、找搭子、复盘…',
+    '嗨蟹柳！🎮 我是Q仔。<br>你可以直接问我任何游戏问题——<br>领福利、查战绩、找搭子、复盘…',
     null, null, null, null, null,
     {
       followUps: [
