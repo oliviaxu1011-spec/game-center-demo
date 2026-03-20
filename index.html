@@ -634,24 +634,25 @@ body {
 /* Input Area */
 .chat-input-area { padding:0; border-top:1px solid rgba(0,0,0,.05); flex-shrink:0; background:#FFFFFF; }
 
-/* Input hint chips — 快捷入口多行网格（深色背景） */
+/* Input hint chips — 快捷入口单行横向滚动（浅色） */
 .input-hints {
-  display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
-  padding:16px 14px 12px;
-  background:#1E2030; border-radius:16px 16px 0 0;
+  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
+  padding:10px 16px 8px;
 }
-.input-hints::after { display:none; }
+.input-hints::after {
+  content:''; flex-shrink:0; width:1px;
+}
 .input-hints::-webkit-scrollbar { display:none; }
 .input-hint-chip {
-  display:inline-flex; align-items:center; gap:6px;
-  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.12);
-  border-radius:22px; padding:9px 18px;
-  font-size:13px; color:rgba(255,255,255,.92); cursor:pointer;
+  display:inline-flex; align-items:center; gap:5px;
+  background:#F5F5F5; border:1px solid #EBEBEB;
+  border-radius:20px; padding:8px 14px;
+  font-size:13px; color:#1A1C1E; cursor:pointer;
   white-space:nowrap; transition:all .18s; font-family:inherit;
   flex-shrink:0; font-weight:500;
 }
-.input-hint-chip:hover { background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.2); }
-.input-hint-chip .chip-icon { font-size:15px; line-height:1; }
+.input-hint-chip:hover { background:#EAEAEA; border-color:#DDD; }
+.input-hint-chip .chip-icon { font-size:14px; line-height:1; }
 
 .chat-input-row {
   display:flex; align-items:center; gap:10px;
