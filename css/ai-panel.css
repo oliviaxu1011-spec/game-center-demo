@@ -77,6 +77,10 @@
   cursor:pointer;
   flex-shrink:0;
 }
+.aio-back svg {
+  width:24px;
+  height:24px;
+}
 
 .aio-bot-info {
   display:flex;
