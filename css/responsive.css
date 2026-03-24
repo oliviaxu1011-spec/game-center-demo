@@ -12,11 +12,14 @@
 
 /* 超小屏幕 (iPhone SE 等 <= 375px) */
 @media (max-width:375px) {
-  .landing-title { font-size:28px; }
+  #screen-landing { padding:24px 16px; }
+  .landing-title { font-size:28px; margin:20px 0 10px; }
+  .landing-desc { font-size:13px; margin-bottom:20px; }
   .logo-icon { width:68px; height:68px; font-size:30px; border-radius:20px; }
   .logo-title { font-size:22px; }
-  .intent-pills { gap:5px; }
+  .intent-pills { gap:5px; margin-bottom:20px; }
   .intent-pill { padding:5px 10px; font-size:11px; }
+  .start-btn { padding:14px; font-size:15px; }
   .banner { height:220px; }
   .game-list-icon { width:48px; height:48px; }
   .msg-content { max-width:90%; }
@@ -29,6 +32,8 @@
 
 /* 中等屏幕 (标准手机 376-430px) */
 @media (min-width:376px) and (max-width:430px) {
+  #screen-landing { padding:30px 20px; }
+  .landing-title { font-size:30px; }
   .msg-content { max-width:88%; }
 }
 
