@@ -206,6 +206,7 @@ window.fillInput = function(text) {
   const input = document.getElementById('chatInput');
   input.value = text;
   input.focus();
+  input.dispatchEvent(new Event('input'));
 };
 
 // ============================================================
@@ -233,6 +234,9 @@ window.sendMessage = function() {
   const text = input.value.trim();
   if (!text) return;
   input.value = '';
+  // 重置发送按钮状态
+  const sendBtnEl = document.getElementById('sendBtn');
+  if (sendBtnEl) sendBtnEl.classList.remove('active');
   const sendBtn = document.querySelector('.send-btn');
   if (sendBtn) { sendBtn.disabled = true; setTimeout(() => sendBtn.disabled = false, 1500); }
   processUserMessage(text);
@@ -678,33 +682,84 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
 // ============================================================
 (function mobilePatch() {
   const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const panel = document.getElementById('aiPanel');
+
+  // — 发送按钮状态跟随输入内容 —
+  function updateSendBtn() {
+    if (sendBtn) {
+      if (chatInput.value.trim()) {
+        sendBtn.classList.add('active');
+      } else {
+        sendBtn.classList.remove('active');
+      }
+    }
+  }
+  chatInput.addEventListener('input', updateSendBtn);
+
+  // — 键盘弹出/收起检测 —
+  let keyboardOpen = false;
+
+  function setKeyboardState(open) {
+    if (keyboardOpen === open) return;
+    keyboardOpen = open;
+    if (panel) {
+      if (open) {
+        panel.classList.add('keyboard-open');
+      } else {
+        panel.classList.remove('keyboard-open');
+      }
+    }
+  }
 
   if (window.visualViewport) {
-    let lastHeight = window.visualViewport.height;
+    const fullHeight = window.visualViewport.height;
     window.visualViewport.addEventListener('resize', () => {
       const vh = window.visualViewport.height;
-      const panel = document.getElementById('aiPanel');
       if (panel && !panel.classList.contains('hidden')) {
+        // 键盘弹出时，viewport 高度会明显变小
+        const isKbOpen = vh < fullHeight * 0.75;
+        setKeyboardState(isKbOpen);
+
+        // 将面板高度限制为可视区域高度
+        panel.style.height = vh + 'px';
         panel.style.maxHeight = vh + 'px';
         scrollChat();
       }
-      lastHeight = vh;
     });
     window.visualViewport.addEventListener('scroll', () => {
-      const panel = document.getElementById('aiPanel');
       if (panel && !panel.classList.contains('hidden')) {
-        panel.style.bottom = -window.visualViewport.offsetTop + 'px';
+        // 确保面板紧贴可视区域底部
+        panel.style.top = window.visualViewport.offsetTop + 'px';
       }
     });
   }
 
   chatInput.addEventListener('focus', () => {
-    setTimeout(scrollChat, 300);
+    setTimeout(() => {
+      setKeyboardState(true);
+      scrollChat();
+    }, 300);
   });
 
-  const aiPanel = document.getElementById('aiPanel');
-  if (aiPanel) {
-    aiPanel.addEventListener('touchmove', e => {
+  chatInput.addEventListener('blur', () => {
+    setTimeout(() => {
+      setKeyboardState(false);
+      if (panel) {
+        panel.style.height = '';
+        panel.style.maxHeight = '';
+        panel.style.top = '';
+      }
+    }, 100);
+  });
+
+  // — 添加 enterkeyhint="send" 的键盘回车处理 —
+  chatInput.addEventListener('keydown', e => {
+    // Enter 发送（已在上面绑定，这里仅用于虚拟键盘的 send 按钮适配）
+  });
+
+  if (panel) {
+    panel.addEventListener('touchmove', e => {
       const chatArea = document.getElementById('chatArea');
       if (chatArea && chatArea.contains(e.target)) return;
       if (e.target.closest('.aio-quick-actions')) return;
