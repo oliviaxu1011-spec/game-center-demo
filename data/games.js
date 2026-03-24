@@ -26,7 +26,7 @@ window.DATA_GAMES = {
     supportsRecentCard: true,  // 支持近7日战绩卡（rank-card 风格）
     jumpUrl: 'https://static.gamecenter.qq.com/xgame/gc-assets/pages/game-detail/sgame.html?page_name=QQGameCenterGameDetail&open_kuikly_info=%7B%22url%22%3A%22%3FFFROMSCHEMA%3D%26appid%3D1104466820%26adtag%3Dremen%22%2C%22page_name%22%3A%22QQGameCenterGameDetail%22%2C%22bundle_name%22%3A%22gamecenter_detail%22%7D',
     slogan: '国民MOBA手游大作',
-    keywords: ['王者','荣耀','王者荣耀','wzry','农药'],
+    keywords: ['王者','荣耀','王者荣耀','wzry','农药','峡谷'],
     status: 'download',     // 立即下载
     media: [
       { type: 'video', vid: 'i3185k0qdar' },

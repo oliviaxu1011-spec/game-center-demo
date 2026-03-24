@@ -175,8 +175,16 @@ window.QR_COPYWRITING = {
       // ── 排行完成后 ──
       ranking: {
         record:  [
-          function(g) { return '看看我的战绩'; },
-          function(g) { return '查查我的数据'; },
+          function(g) { return '看看我的' + g + '战绩'; },
+          function(g) { return '查查' + g + '近期数据'; },
+        ],
+        replay:  [
+          function(g) { return '复盘一下' + g + '最近对局'; },
+          function(g) { return '分析下' + g + '近期表现'; },
+        ],
+        partner: [
+          function(g) { return '找个搭子一起打' + g; },
+          function(g) { return '约人' + g + '开黑'; },
         ],
       },
       // ── 福利领取完成后 ──

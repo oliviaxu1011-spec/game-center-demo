@@ -10,7 +10,7 @@ window.MOCK_RANKING_DATA = {
     tabs: ['上星榜', '击杀榜', 'MVP榜', '段位榜'],
     defaultTab: '上星榜',
     me: {
-      name: '蟹柳（我）',
+      name: 'olivia（我）',
       avatar: 'my-tab-assets/rank-avatar-me.png',
       rank: 5,
       tier: '至尊星耀II',
@@ -49,7 +49,7 @@ window.MOCK_RANKING_DATA = {
     tabs: ['吃鸡榜', '击杀榜', 'KD榜', '段位榜'],
     defaultTab: '吃鸡榜',
     me: {
-      name: '蟹柳（我）',
+      name: 'olivia（我）',
       avatar: 'my-tab-assets/rank-avatar-me.png',
       rank: 4,
       tier: '坚韧铂金III',
@@ -84,7 +84,7 @@ window.MOCK_RANKING_DATA = {
     tabs: ['撤离榜', '击杀榜', '资产榜', '段位榜'],
     defaultTab: '撤离榜',
     me: {
-      name: '蟹柳（我）',
+      name: 'olivia（我）',
       avatar: 'my-tab-assets/rank-avatar-me.png',
       rank: 4,
       tier: '黄金Ⅱ',

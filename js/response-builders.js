@@ -427,13 +427,13 @@ window.buildMatchQueryResponse = function(text) {
   if (isSpecificMatch && specificMatchInfo) {
     if (!specificMatchInfo.found) {
       // 序号超出范围
-      titleText = '蟹柳今天共打了 <strong>' + specificMatchInfo.total + '</strong> 把' + game.name + '，没有找到第 ' + (specificMatchInfo.index + 1) + ' 把哦 🤔'
+      titleText = 'olivia今天共打了 <strong>' + specificMatchInfo.total + '</strong> 把' + game.name + '，没有找到第 ' + (specificMatchInfo.index + 1) + ' 把哦 🤔'
         + '<p class="mq-intro">可以试试说"上一把"或"今天对局"看看~</p>';
     } else {
-      titleText = '这是蟹柳 <strong>' + range.label + '</strong> 的' + game.name + '对局记录 📋';
+      titleText = '这是olivia <strong>' + range.label + '</strong> 的' + game.name + '对局记录 📋';
     }
   } else {
-    titleText = '这是蟹柳 <strong>' + range.label + '</strong> 的' + game.name + '对局记录 📋'
+    titleText = '这是olivia <strong>' + range.label + '</strong> 的' + game.name + '对局记录 📋'
       + '<p class="mq-intro">' + matchData.summary + '</p>';
   }
 
@@ -544,7 +544,7 @@ window.buildRecordResponse = function(text) {
       </div>`;
 
     return {
-      text: `这是蟹柳 <strong>${range.label}</strong> 的${game.name}战绩 📊`,
+      text: `这是olivia <strong>${range.label}</strong> 的${game.name}战绩 📊`,
       cardHtml: recentCardHtml,
       ...(_buildAfterCompleteQR('record', game.name, ['replay', 'ranking', 'partner']) || {}),
     };
@@ -595,8 +595,8 @@ window.buildRecordResponse = function(text) {
 
   // 文案：支持 recentCard 的游戏显示时间范围，不支持的显示"数据总览"
   const textLabel = (d.isRecentQuery && !game.supportsRecentCard)
-    ? `这是蟹柳的${game.name}数据总览 📊`
-    : `这是蟹柳 <strong>${range.label}</strong> 的${game.name}战绩 📊`;
+    ? `这是olivia的${game.name}数据总览 📊`
+    : `这是olivia <strong>${range.label}</strong> 的${game.name}战绩 📊`;
 
   return {
     text: textLabel,
@@ -675,7 +675,7 @@ window.buildReplayResponse = function(text) {
     : `<span style="font-size:22px">${d.heroIcon || '🎮'}</span>`;
 
   return {
-    text: `找到蟹柳 <strong>${range.label}</strong> 的${game.name}数据了，AI分析如下：`,
+    text: `找到olivia <strong>${range.label}</strong> 的${game.name}数据了，AI分析如下：`,
     cardHtml: `
       <div class="result-card">
         <div class="replay-card">
@@ -709,7 +709,7 @@ window.buildReplayResponse = function(text) {
             <div class="rp-pc-foot">
               <div class="rp-pc-foot-left">
                 <div class="rp-pc-foot-avatar">🤖</div>
-                <span class="rp-pc-foot-name">蟹柳</span>
+                <span class="rp-pc-foot-name">olivia</span>
               </div>
             </div>
           </div>
@@ -785,7 +785,7 @@ window.buildReportResponse = function(text) {
       return function() { return window.buildRecordResponse(key); };
     });
     return {
-      text: `这是蟹柳的${game.name} <strong>${d.title}</strong> 📅`
+      text: `这是olivia的${game.name} <strong>${d.title}</strong> 📅`
         + `<p class="mq-intro">💡 ${d.tip}</p>`,
       cardHtml: `
       <div class="result-card">
@@ -861,7 +861,7 @@ window.buildReportResponse = function(text) {
   });
 
   return {
-    text: `这是蟹柳的${game.name} <strong>${d.title}</strong> 📅`,
+    text: `这是olivia的${game.name} <strong>${d.title}</strong> 📅`,
     cardHtml: `
       <div class="result-card">
         <div class="result-card-header">${game.icon || '🎮'} ${game.name} · ${d.title} · ${d.period}</div>
@@ -1005,7 +1005,7 @@ window.buildPartnerResponse = function(text) {
   }).join('');
 
   return {
-    text: `为蟹柳匹配 ${matchInfo} ✨`,
+    text: `为olivia匹配 ${matchInfo} ✨`,
     cardHtml: `
       <div class="result-card">
         <div class="result-card-header">🤝 为你匹配的搭子 · ${game.name}${hero ? ' · ' + hero.name : ''}</div>
@@ -1683,10 +1683,10 @@ window.buildHighlightResponse = function(text) {
   const highlightData = window.MOCK_HIGHLIGHT_DATA || {};
   const items = highlightData[game.id] || highlightData.wzry;
   return {
-    text: `正在为蟹柳生成 <strong>${game.name}昨日高光视频</strong>，提取到${items.length}个精彩时刻 🎬`,
+    text: `正在为olivia生成 <strong>${game.name}昨日高光视频</strong>，提取到${items.length}个精彩时刻 🎬`,
     cardHtml: `
       <div class="result-card">
-        <div class="result-card-header">🎬 蟹柳的高光时刻 · ${game.name}</div>
+        <div class="result-card-header">🎬 olivia的高光时刻 · ${game.name}</div>
         <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
           ${items.map(item=>`
             <div style="display:flex;align-items:center;gap:10px;padding:9px;background:#fafbff;border-radius:10px">
@@ -1941,7 +1941,7 @@ window.buildEmotionResponse = function(text) {
 
   const config = {
     happy: {
-      text: '蟹柳，看起来今天战绩不错啊 🎉<br>想趁热打铁继续，还是见好就收？',
+      text: 'olivia，看起来今天战绩不错啊 🎉<br>想趁热打铁继续，还是见好就收？',
       icon: '🎉',
       title: '今天状态在线！',
       sub: '趁手感好，选一个：',
@@ -1953,7 +1953,7 @@ window.buildEmotionResponse = function(text) {
       ]
     },
     tired: {
-      text: '蟹柳，累了就歇歇，游戏不会跑的 😴<br>选一个放松方式：',
+      text: 'olivia，累了就歇歇，游戏不会跑的 😴<br>选一个放松方式：',
       icon: '😴',
       title: '累了就放一放吧',
       sub: '先调整一下再说：',
@@ -1965,7 +1965,7 @@ window.buildEmotionResponse = function(text) {
       ]
     },
     angry: {
-      text: '蟹柳，遇到这种队友确实气人 😤<br>别急，我帮你想办法：',
+      text: 'olivia，遇到这种队友确实气人 😤<br>别急，我帮你想办法：',
       icon: '😤',
       title: '深呼吸，别被带节奏',
       sub: '来释放一下：',
@@ -1977,7 +1977,7 @@ window.buildEmotionResponse = function(text) {
       ]
     },
     frustrated: {
-      text: '蟹柳，连跪确实太难受了 😮‍💨<br>我来帮你找个出口，选一个：',
+      text: 'olivia，连跪确实太难受了 😮‍💨<br>我来帮你找个出口，选一个：',
       icon: '😮‍💨',
       title: '心态稳住，都是青铜的路',
       sub: '想怎么调整一下？',
@@ -2009,6 +2009,16 @@ window.buildEmotionResponse = function(text) {
 
 // ── 提醒响应 ───────────────────────────────────────
 window.buildReminderResponse = function(text) {
+  // ── 检测是否为「取消提醒」意图 ──
+  var _cancelPatterns = ['取消提醒','取消闹钟','取消定时','不用提醒','别提醒','不需要提醒',
+    '关掉提醒','关闭提醒','删除提醒','去掉提醒','不要提醒了','算了不用提醒'];
+  var _textLower = text.toLowerCase();
+  for (var _ci = 0; _ci < _cancelPatterns.length; _ci++) {
+    if (_textLower.indexOf(_cancelPatterns[_ci]) !== -1) {
+      return window.buildCancelReminderResponse(text);
+    }
+  }
+
   const DEFAULT_GAME = window.ENGINE_DEFAULT_GAME;
   const game = detectGameWithContext(text);
 
@@ -2056,6 +2066,65 @@ window.buildReminderResponse = function(text) {
   };
 };
 
+// ── 提醒卡片按钮交互 ───────────────────────────────
+window._confirmReminder = function(btn) {
+  var row = btn.closest('.reminder-btn-row');
+  if (!row) return;
+  btn.textContent = '✅ 已确认';
+  btn.style.background = '#22c55e';
+  btn.disabled = true;
+  // 隐藏取消按钮
+  var cancelBtn = row.querySelector('.reminder-cancel-btn');
+  if (cancelBtn) { cancelBtn.style.display = 'none'; }
+  showToast('提醒设置成功 ⏰');
+};
+
+window._cancelReminder = function(btn) {
+  var row = btn.closest('.reminder-btn-row');
+  var card = btn.closest('.reminder-card');
+  if (!row || !card) return;
+  // 更新标题区域
+  var titleEl = card.querySelector('.reminder-title');
+  var subEl = card.querySelector('.reminder-sub');
+  var iconEl = card.querySelector('.reminder-icon');
+  if (titleEl) titleEl.textContent = '提醒已取消';
+  if (subEl) subEl.textContent = '你可以随时重新设置';
+  if (iconEl) iconEl.textContent = '🔕';
+  // 时间行加删除线效果
+  var timeEl = card.querySelector('.reminder-time');
+  if (timeEl) {
+    timeEl.style.textDecoration = 'line-through';
+    timeEl.style.opacity = '0.5';
+    timeEl.style.color = '#909094';
+    timeEl.style.borderColor = 'rgba(0,0,0,.08)';
+  }
+  // 更新按钮区：只保留一个"已取消"状态
+  row.innerHTML = '<button class="replay-btn reminder-cancelled-btn" disabled>🔕 已取消</button>';
+  showToast('提醒已取消');
+};
+
+// ── 取消提醒指令响应 ───────────────────────────────
+window.buildCancelReminderResponse = function(text) {
+  return {
+    text: '好的，已帮你<strong>取消提醒</strong> 🔕 需要重新设置的话随时告诉我~',
+    cardHtml: '<div class="result-card"><div class="reminder-card">' +
+      '<div class="reminder-header">' +
+        '<div class="reminder-icon">🔕</div>' +
+        '<div><div class="reminder-title">提醒已取消</div><div class="reminder-sub">你可以随时重新设置</div></div>' +
+      '</div>' +
+      '<div class="replay-btn-row">' +
+        '<button class="replay-btn primary" onclick="fillInput(\'帮我设个游戏提醒\')">重新设置提醒</button>' +
+      '</div>' +
+    '</div></div>',
+    quickReplies: ['重新设个提醒', '看看今日福利', '查查最近战绩'],
+    onQR: {
+      '重新设个提醒': function() { return window.buildReminderResponse('帮我设个游戏提醒'); },
+      '看看今日福利': function() { return window.buildWelfareResponse('今日福利'); },
+      '查查最近战绩': function() { return window.buildRecordResponse('查查最近战绩'); },
+    },
+  };
+};
+
 // ── 预构建福利卡片 ─────────────────────────────────
 window.getPrebuiltCard = function(cardId) {
   const welfareItems = window.MOCK_WELFARE_ITEMS || {};
@@ -2077,6 +2146,51 @@ window.getPrebuiltCard = function(cardId) {
 // ── 好友排行响应 ───────────────────────────────────
 window.buildRankingResponse = function(text) {
   const game = detectGameWithContext(text);
+
+  // ── 检测用户是否在问"英雄排行/角色排行/武器排行"等不支持的排行类型 ──
+  // 策略：如果文本中包含非好友排行的排行类型关键词，或者检测到了英雄/角色名
+  //       → 先告知没有该服务，再推荐好友排行等可用功能
+  var unsupportedRankType = null;
+  var _rankTypePatterns = [
+    { keywords: ['英雄排行','英雄榜','角色排行','角色榜','武器排行','武器榜','装备排行','装备榜'], label: '英雄排行' },
+    { keywords: ['胜率排行','胜率榜','出场率排行','出场率榜','ban率排行','热度排行','热度榜','使用率排行','使用率榜'], label: '英雄胜率排行' },
+    { keywords: ['国服排行','国服榜','国服最强'], label: '国服排行' },
+    { keywords: ['全服排行','全服榜','战力排行','战力榜'], label: '战力排行' },
+  ];
+  var _textLower = text.toLowerCase();
+  for (var _rp = 0; _rp < _rankTypePatterns.length; _rp++) {
+    var _rItem = _rankTypePatterns[_rp];
+    for (var _rk = 0; _rk < _rItem.keywords.length; _rk++) {
+      if (_textLower.indexOf(_rItem.keywords[_rk]) !== -1) {
+        unsupportedRankType = _rItem.label;
+        break;
+      }
+    }
+    if (unsupportedRankType) break;
+  }
+
+  // 如果没匹配到显式关键词，再检查是否提到了英雄名/角色名 + 排行
+  if (!unsupportedRankType && /排行|排名|榜/.test(text)) {
+    var _heroResult = window.detectHeroAcrossGames ? window.detectHeroAcrossGames(text) : null;
+    if (_heroResult && _heroResult.hero) {
+      unsupportedRankType = _heroResult.hero.name + '排行';
+    }
+  }
+
+  if (unsupportedRankType) {
+    // 构建推荐好友排行 + 其他功能的追问
+    var qrGames = getFeatureQuickReplyGames('ranking');
+    var qrItems = buildQR_L1_selectGame(qrGames, 'ranking');
+    var resolved = resolveQR(qrItems, function(key) {
+      return function() { return window.buildRankingResponse(key); };
+    });
+    return {
+      text: '<strong>' + unsupportedRankType + '</strong>暂时还没有上线哦 😅 目前支持查看<strong>好友排行</strong>，看看你在好友中排第几 🏅',
+      quickReplies: resolved.quickReplies,
+      onQR: resolved.onQR,
+      _displayMap: resolved.displayMap
+    };
+  }
 
   // 未识别到具体游戏 → 反问用户
   if (!game) {
@@ -2166,20 +2280,23 @@ window.buildRankingResponse = function(text) {
       <span class="ranking-encourage__text">${encouragement}</span>
     </div>` : '';
 
-  // 快捷回复：切换其他游戏排行
-  const qrGames = getFeatureQuickReplyGames('ranking');
-  const otherGames = qrGames.filter(g => g.id !== game.id);
-  const qrItems = [];
-  otherGames.forEach(function(g) {
-    qrItems.push({ text: '看' + g.name + '排行', actionKey: g.name + '排行' });
-  });
-  qrItems.push({ text: '看看我的战绩', actionKey: '查看战绩' });
-  const onQR = {};
-  otherGames.forEach(g => { onQR[g.name + '排行'] = () => window.buildRankingResponse(g.name + '排行'); });
-  onQR['查看战绩'] = () => window.buildRecordResponse(game.name + '战绩');
-  const qrTexts = qrItems.map(function(item) { return item.text; });
-  const displayMap = {};
-  qrItems.forEach(function(item) { displayMap[item.text] = item.actionKey; });
+  // 快捷回复：优先引导同游戏下的其他功能（游戏关联度优先策略）
+  // 策略：排行完成后 → 同游戏战绩/复盘/找搭子 优先于 跨游戏排行
+  var rankingQR = _buildAfterCompleteQR('ranking', game.name, ['record', 'replay', 'partner']);
+  var qrTexts, onQR, displayMap;
+  if (rankingQR && rankingQR.quickReplies && rankingQR.quickReplies.length > 0) {
+    qrTexts = rankingQR.quickReplies;
+    onQR = rankingQR.onQR;
+    displayMap = rankingQR._displayMap;
+  } else {
+    // 兜底：如果同游戏功能追问构建失败，降级到查看战绩
+    const qrItems = [{ text: '看看我的战绩', actionKey: game.name + '战绩' }];
+    onQR = {};
+    onQR[game.name + '战绩'] = () => window.buildRecordResponse(game.name + '战绩');
+    qrTexts = qrItems.map(function(item) { return item.text; });
+    displayMap = {};
+    qrItems.forEach(function(item) { displayMap[item.text] = item.actionKey; });
+  }
 
   return {
     text: `来看看 <strong>${game.name}</strong> 好友排行，你在第几名？🏅`,

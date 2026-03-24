@@ -152,7 +152,7 @@ window.closeAIPanel = function() {
 window.initChat = function() {
   // 先渲染欢迎语（不带追问参数）
   addAIBubble(
-    '嗨蟹柳！🎮 我是游戏中心 AI。<br>你可以直接问我任何游戏问题——<br>领福利、查战绩、找搭子、复盘…<br>问我 <strong>游戏版本/资讯</strong> 还能联网搜索哦 🌐',
+    '嗨olivia！🎮 我是游戏中心 AI。<br>你可以直接问我任何游戏问题——<br>领福利、查战绩、找搭子、复盘…<br>问我 <strong>游戏版本/资讯</strong> 还能联网搜索哦 🌐',
     null, null, null
   );
 
@@ -761,11 +761,56 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
     // Enter 发送（已在上面绑定，这里仅用于虚拟键盘的 send 按钮适配）
   });
 
+  // — 防止 AI 面板区域触摸滑动导致页面上缩/下缩 —
+  // 策略：chat-area 内允许正常滚动，但到达边界时阻止默认行为
+  //       快捷按钮区允许横向滚动
+  //       其他空白区域完全阻止触摸滚动
+  let _touchStartY = 0;
   if (panel) {
+    panel.addEventListener('touchstart', e => {
+      _touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
     panel.addEventListener('touchmove', e => {
       const chatArea = document.getElementById('chatArea');
-      if (chatArea && chatArea.contains(e.target)) return;
+
+      // 快捷按钮区 — 允许横向滚动
       if (e.target.closest('.aio-quick-actions')) return;
+
+      // 横向滚动容器（皮肤、下载媒体等）— 允许滑动
+      if (e.target.closest('.dl-media-scroll, .skin-scroll, .video-templates-row')) return;
+
+      // chat-area 内 — 仅在内容可滚动方向上允许，边界时阻止
+      if (chatArea && chatArea.contains(e.target)) {
+        var touchY = e.touches[0].clientY;
+        var deltaY = touchY - _touchStartY;
+        var scrollTop = chatArea.scrollTop;
+        var scrollHeight = chatArea.scrollHeight;
+        var clientHeight = chatArea.clientHeight;
+
+        // 内容不足以滚动（无溢出）→ 阻止，防止页面被拖动
+        if (scrollHeight <= clientHeight) {
+          e.preventDefault();
+          return;
+        }
+
+        // 已在顶部，还想下拉（deltaY > 0，手指下滑）→ 阻止
+        if (scrollTop <= 0 && deltaY > 0) {
+          e.preventDefault();
+          return;
+        }
+
+        // 已在底部，还想上拉（deltaY < 0，手指上滑）→ 阻止
+        if (scrollTop + clientHeight >= scrollHeight && deltaY < 0) {
+          e.preventDefault();
+          return;
+        }
+
+        // 正常滚动范围内 → 允许
+        return;
+      }
+
+      // 其他区域（导航栏、输入栏等空白处）→ 阻止默认行为
       e.preventDefault();
     }, { passive: false });
   }
