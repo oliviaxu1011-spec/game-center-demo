@@ -1,0 +1,57 @@
+/* ========== MOBILE FIRST RESPONSIVE ========== */
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .qr-btn:hover,.qr-btn:active { transform:none; }
+  .start-btn:hover { transform:none; }
+  .game-list-btn:hover { background:#f5f5f5; }
+  .emotion-btn:hover { background:#F6F6F6; border-color:rgba(0,0,0,.05); }
+  * { -webkit-tap-highlight-color:transparent; }
+  .chat-area { -webkit-overflow-scrolling:touch; }
+}
+
+/* 超小屏幕 (iPhone SE 等 <= 375px) */
+@media (max-width:375px) {
+  .landing-title { font-size:28px; }
+  .logo-icon { width:68px; height:68px; font-size:30px; border-radius:20px; }
+  .logo-title { font-size:22px; }
+  .intent-pills { gap:5px; }
+  .intent-pill { padding:5px 10px; font-size:11px; }
+  .banner { height:220px; }
+  .game-list-icon { width:48px; height:48px; }
+  .msg-content { max-width:90%; }
+  .ai-panel-header { padding:8px 12px; }
+  .partner-rec-card { padding:12px; }
+  .partner-rec-name { max-width:80px; font-size:14px; }
+  .partner-rec-action-btn { width:70px; height:32px; font-size:13px; }
+  .partner-rec-tag { padding:3px 8px; font-size:12px; }
+}
+
+/* 中等屏幕 (标准手机 376-430px) */
+@media (min-width:376px) and (max-width:430px) {
+  .msg-content { max-width:88%; }
+}
+
+/* 桌面端 (>= 450px) */
+@media (min-width:450px) {
+  body { background:#f0f1f3; }
+  #screen-app { box-shadow:0 0 60px rgba(0,0,0,.15); }
+  .bottom-nav { max-width:430px; }
+  .ai-panel { max-width:430px; }
+}
+
+/* iOS 键盘弹起适配 */
+@supports (-webkit-touch-callout: none) {
+  .ai-panel { max-height:100dvh; }
+  .chat-area { max-height:calc(100dvh - 200px); }
+}
+
+/* 横屏适配 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .ai-panel { max-height:100vh; max-height:100dvh; }
+  .chat-area { min-height:80px; }
+  #screen-landing { padding:20px; }
+  .landing-title { font-size:26px; margin:16px 0 10px; }
+  .landing-desc { margin-bottom:16px; }
+  .logo-icon { width:56px; height:56px; font-size:28px; margin-bottom:8px; }
+}
