@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>QQ游戏中心 · AI意图识别Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/landing.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/ai-panel.css">
+<link rel="stylesheet" href="css/video-card.css">
+<link rel="stylesheet" href="css/game-tab.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<!-- ===== LANDING ===== -->
+<div id="screen-landing" class="screen active">
+  <div class="landing-content">
+    <div>
+      <div class="logo-icon">🎮</div>
+      <div class="logo-title">游戏中心 AI助手</div>
+      <div class="logo-sub">Game Center · Intent Recognition</div>
+    </div>
+    <h1 class="landing-title">从<span class="hl">找功能</span><br>到<span class="hl">问一问</span></h1>
+    <p class="landing-desc">垂类意图识别 · 把每一句模糊输入<br>变成可执行的明确指令</p>
+
+    <div class="intent-pills">
+      <div class="intent-pill"><span>🎁</span> 福利/礼包</div>
+      <div class="intent-pill"><span>🏆</span> 战绩查询</div>
+      <div class="intent-pill"><span>🎯</span> 对局查询</div>
+      <div class="intent-pill"><span>🔍</span> AI复盘</div>
+      <div class="intent-pill"><span>🤝</span> 找搭子</div>
+      <div class="intent-pill"><span>📰</span> 游戏资讯</div>
+      <div class="intent-pill"><span>📖</span> 攻略查询</div>
+      <div class="intent-pill"><span>🎬</span> 高光视频</div>
+      <div class="intent-pill"><span>⬇️</span> 游戏下载</div>
+      <div class="intent-pill"><span>🛍️</span> 皮肤购买</div>
+      <div class="intent-pill"><span>📅</span> 日报周报</div>
+      <div class="intent-pill"><span>😤</span> 情绪互动</div>
+      <div class="intent-pill"><span>⏰</span> 定时提醒</div>
+    </div>
+
+    <button class="start-btn" onclick="startDemo()">进入Demo · 自由对话 →</button>
+  </div>
+</div>
+
+<!-- ===== APP（设计稿：游戏Tab 推荐Tab） ===== -->
+<div id="screen-app" class="screen">
+  <div class="page-inner">
+
+    <!-- ===== 1. 顶部固定导航区 ===== -->
+    <div class="top-fixed">
+      <!-- 导航栏 -->
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goToLanding()">
+          <svg viewBox="0 0 10 18" fill="none"><path d="M9 1L1 9l8 8" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="search-box" onclick="showToast('正在打开搜索…')">
+          <svg class="search-icon" viewBox="0 0 18 18" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="#929296" stroke-width="1.5"/>
+            <path d="M13 13l3.5 3.5" stroke="#929296" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="search-text">搜索游戏、攻略、视频</span>
+        </div>
+        <!-- AI 入口按钮 -->
+        <div class="nav-ai-btn" onclick="openAIPanel()">
+          <div class="nav-ai-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="10" y1="2" x2="10" y2="5"/>
+              <circle cx="10" cy="1.5" r="1"/>
+              <rect x="3" y="5" width="14" height="11" rx="3"/>
+              <circle cx="7.5" cy="10.5" r="1.2"/>
+              <circle cx="12.5" cy="10.5" r="1.2"/>
+              <path d="M7.5 14c1 .8 2.2 1.2 2.5 1.2s1.5-.4 2.5-1.2"/>
+            </svg>
+          </div>
+          <span class="nav-ai-label">AI</span>
+        </div>
+        <div class="nav-gift-btn" onclick="showToast('正在打开功能中心…')">
+          <img src="game-tab-assets/nav-right-icon.png" alt="功能入口">
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 2. Tab页签 ===== -->
+    <div class="tab-navigation">
+      <button class="tab-item active" onclick="switchTab(this)">推荐</button>
+      <button class="tab-item" onclick="switchTab(this)">新游</button>
+      <button class="tab-item" onclick="switchTab(this)">热玩</button>
+      <button class="tab-item" onclick="switchTab(this)">期待</button>
+      <button class="tab-item" onclick="switchTab(this)">内测</button>
+      <button class="tab-item" onclick="switchTab(this)">分类</button>
+    </div>
+
+    <!-- ===== 3. 游戏推广卡片 ===== -->
+    <div class="promo-section">
+      <div class="gap-12"></div>
+      <div class="promo-card">
+        <div class="promo-card-top">
+          <img src="game-tab-assets/game-promo-bg.png" alt="游戏推广">
+          <div class="promo-title-overlay"></div>
+        </div>
+        <div class="promo-card-bottom">
+          <div class="promo-blur-layer">
+            <div class="promo-blur-base"></div>
+            <img class="promo-blur-img" src="game-tab-assets/game-promo-bg.png" alt="">
+            <div class="promo-blur-glass"></div>
+          </div>
+          <div class="promo-game-info">
+            <img class="promo-game-icon" src="game-tab-assets/icon-wangzhe.png" alt="王者荣耀">
+            <div class="promo-game-text">
+              <div class="promo-game-name">王者荣耀</div>
+              <div class="promo-game-desc">
+                <span class="tag-label">MOBA</span>
+                <span>·</span>
+                <span>5v5公平竞技，传奇对决手游</span>
+              </div>
+              <div class="promo-game-meta">
+                <span>深圳市腾讯计算机系统有限公司</span>
+                <span>3.8GB</span>
+              </div>
+            </div>
+            <button class="promo-download-btn" onclick="showToast('正在跳转下载王者荣耀...')"><span>下载</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-dots">
+        <div class="carousel-dot active"></div>
+        <div class="carousel-dot"></div>
+        <div class="carousel-dot"></div>
+      </div>
+    </div>
+
+    <!-- ===== 4. 模块 - 模拟经营游戏（横滑分页） ===== -->
+    <div class="game-module">
+      <div class="module-header">
+        <h3 class="module-title">模拟经营游戏</h3>
+      </div>
+      <div class="game-swipe-container">
+        <!-- 第1页 -->
+        <div class="game-swipe-page">
+          <div class="design-game-item">
+            <div class="game-icon-wrap">
+              <img src="game-tab-assets/icon-shengdoushi.png" alt="圣斗士星矢">
+            </div>
+            <div class="game-info">
+              <div class="game-name-row"><span class="game-name">圣斗士星矢</span></div>
+              <div class="game-subtitle">
+                <span class="tag-text">卡牌</span><span class="sep">·</span>
+                <span class="desc-text">燃烧小宇宙！经典圣斗士集结</span>
+              </div>
+              <div class="game-meta">
+                <span>深圳市腾讯计算机系统有限公司</span><span>1.6GB</span>
+              </div>
+            </div>
+            <button class="game-download-btn" onclick="showToast('正在跳转下载圣斗士星矢...')">下载</button>
+          </div>
+          <div class="design-game-item">
+            <div class="game-icon-wrap mini-game">
+              <img src="game-tab-assets/icon-ditiepaoku.png" alt="地铁跑酷">
+              <div class="mini-game-badge"><img src="game-tab-assets/小游戏.svg" alt="小游戏"></div>
+            </div>
+            <div class="game-info" style="height:40px;">
+              <span class="game-name">地铁跑酷</span>
+              <div class="game-subtitle"><span class="desc-text-dark">全球10亿人在玩的跑酷游戏</span></div>
+            </div>
+            <button class="game-download-btn" onclick="showToast('正在打开地铁跑酷小游戏...')">立即玩</button>
+          </div>
+          <div class="design-game-item">
+            <div class="game-icon-wrap">
+              <img src="game-tab-assets/icon-huoying.png" alt="火影忍者">
+            </div>
+            <div class="game-info">
+              <span class="game-name">火影忍者</span>
+              <div class="game-subtitle">
+                <span class="tag-text">格斗</span><span class="sep">·</span>
+                <span class="desc-text">正版火影忍者格斗手游</span>
+              </div>
+              <div class="game-meta">
+                <span>深圳市腾讯计算机系统有限公司</span><span>2.3GB</span>
+              </div>
+            </div>
+            <button class="game-download-btn" onclick="showToast('正在跳转下载火影忍者...')">下载</button>
+          </div>
+        </div>
+        <!-- 第2页 -->
+        <div class="game-swipe-page game-swipe-page-2">
+          <div class="design-game-item">
+            <div class="game-icon-wrap mini-game">
+              <img src="game-tab-assets/icon-sanguo.png" alt="三国：冰河时代">
+              <div class="mini-game-badge"><img src="game-tab-assets/小游戏.svg" alt="小游戏"></div>
+            </div>
+            <div class="game-info" style="height:40px;">
+              <span class="game-name">三国：冰河时代</span>
+              <div class="game-subtitle"><span class="desc-text-dark">三国题材策略卡牌小游戏</span></div>
+            </div>
+            <button class="game-download-btn" onclick="showToast('正在打开三国冰河时代小游戏...')">立即玩</button>
+          </div>
+          <div class="design-game-item">
+            <div class="game-icon-wrap">
+              <img src="game-tab-assets/icon-jinchan.png" alt="金铲铲之战">
+            </div>
+            <div class="game-info">
+              <span class="game-name">金铲铲之战</span>
+              <div class="game-subtitle"><span class="desc-text-dark">英雄联盟正版自走棋</span></div>
+              <div class="game-meta">
+                <span>深圳市腾讯计算机系统有限公司</span><span>1.5GB</span>
+              </div>
+            </div>
+            <button class="game-download-btn" onclick="showToast('正在跳转下载金铲铲之战...')">下载</button>
+          </div>
+          <div class="design-game-item">
+            <div class="game-icon-wrap mini-game">
+              <img src="game-tab-assets/icon-majiang.png" alt="欢乐麻将">
+              <div class="mini-game-badge"><img src="game-tab-assets/小游戏.svg" alt="小游戏"></div>
+            </div>
+            <div class="game-info">
+              <span class="game-name">欢乐麻将</span>
+              <div class="game-subtitle">
+                <span class="rank-badge">
+                  <svg viewBox="0 0 7 14" fill="none"><path d="M1 1l2.5 3h-2L5.5 8h-2L6 13" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  人气榜TOP50
+                </span>
+                <span class="tag-sep">·</span><span class="tag-val">棋牌</span>
+                <span class="tag-sep">·</span><span class="tag-val">休闲</span>
+              </div>
+            </div>
+            <button class="game-download-btn" onclick="showToast('正在打开欢乐麻将小游戏...')">立即玩</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模块间分割 -->
+    <div class="divider-module"></div>
+
+    <!-- ===== 5. 模块 - 人气竞速与跑酷游戏（横滑分页） ===== -->
+    <div class="game-module">
+      <div class="module-header">
+        <h3 class="module-title">人气竞速与跑酷游戏</h3>
+      </div>
+      <div class="game-swipe-container">
+        <div class="game-swipe-page">
+          <div class="design-game-item">
+            <div class="game-icon-wrap">
+              <img src="game-tab-assets/icon-wangzhe.png" alt="王者荣耀">
+            </div>
+            <div class="game-info">
+              <span class="game-name">王者荣耀</span>
+              <div class="game-subtitle">
+                <span class="tag-text">MOBA</span><span class="sep">·</span>
+                <span class="desc-text-dark">5v5公平竞技手游</span>
+              </div>
+              <div class="game-meta">
+                <span>深圳市腾讯计算机系统有限公司</span><span>3.8GB</span>
+              </div>
+            </div>
+            <button class="game-download-btn" onclick="showToast('正在跳转下载王者荣耀...')">下载</button>
+          </div>
+          <div class="design-game-item">
+            <div class="game-icon-wrap">
+              <img src="game-tab-assets/icon-yuanmeng.png" alt="元梦之星">
+            </div>
+            <div class="game-info">
+              <span class="game-name">元梦之星</span>
+              <div class="game-subtitle">
+                <span class="tag-text">派对</span><span class="sep">·</span>
+                <span class="desc-text-dark">快乐派对，创造无限可能</span>
+              </div>
+              <div class="game-meta">
+                <span>深圳市腾讯计算机系统有限公司</span><span>2.8GB</span>
+              </div>
+            </div>
+            <button class="game-download-btn" onclick="showToast('正在跳转下载元梦之星...')">下载</button>
+          </div>
+          <div class="design-game-item">
+            <div class="game-icon-wrap">
+              <img src="game-tab-assets/icon-jinchan.png" alt="金铲铲之战">
+            </div>
+            <div class="game-info">
+              <span class="game-name">金铲铲之战</span>
+              <div class="game-subtitle">
+                <span class="tag-text">策略</span><span class="sep">·</span>
+                <span class="desc-text">英雄联盟正版自走棋手游</span>
+              </div>
+              <div class="game-meta">
+                <span>深圳市腾讯计算机系统有限公司</span><span>1.5GB</span>
+              </div>
+            </div>
+            <button class="game-download-btn" onclick="showToast('正在跳转下载金铲铲之战...')">下载</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap-16"></div>
+
+  </div><!-- end page-inner -->
+
+  <!-- 底部 TabBar -->
+  <div class="bottom-nav-design">
+    <div class="bottom-nav-inner">
+      <div class="bottom-nav-item active" onclick="switchBottomTab(this,'游戏')">
+        <img src="game-tab-assets/icon-tab-game.svg" alt="游戏">
+        <span>游戏</span>
+      </div>
+      <div class="bottom-nav-item" onclick="switchBottomTab(this,'搭子')">
+        <img src="game-tab-assets/icon-tab-dazi.svg" alt="搭子">
+        <span>搭子</span>
+      </div>
+      <div class="bottom-nav-item" onclick="switchBottomTab(this,'鹅毛')">
+        <img src="game-tab-assets/icon-tab-emao.svg" alt="鹅毛">
+        <span>鹅毛</span>
+      </div>
+      <div class="bottom-nav-item" onclick="switchBottomTab(this,'我的')">
+        <img src="game-tab-assets/icon-tab-user.svg" alt="我的">
+        <span>我的</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closeAIPanel()"></div>
+
+<!-- AI Panel -->
+<div class="ai-panel hidden" id="aiPanel">
+  <div class="ai-panel-handle"></div>
+
+  <!-- 顶部导航栏（复用 QQ AIO 风格） -->
+  <nav class="aio-nav-bar">
+    <!-- QQ AIO 标题栏 -->
+    <div class="aio-title-bar">
+      <div class="aio-left">
+        <div class="aio-back" onclick="closeAIPanel()">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 19l-7-7 7-7" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="aio-bot-info">
+          <span class="aio-bot-name">YoYoclaw</span>
+          <span class="aio-ai-badge" id="modeLabel">AI</span>
+        </div>
+      </div>
+      <div class="aio-right">
+        <div class="aio-menu-btn" onclick="toggleSettingsPanel()">
+          <svg viewBox="0 0 24 24" fill="none">
+            <line x1="4" y1="6" x2="20" y2="6" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4" y1="12" x2="20" y2="12" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4" y1="18" x2="20" y2="18" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Settings Panel -->
+  <div id="settingsPanel" class="hidden" style="
+    padding:14px 16px 16px;border-bottom:1px solid #f0f0f0;
+    background:linear-gradient(90deg,#f8f9ff,#f0f3ff);
+    animation:msg-in .2s ease;
+  ">
+    <div style="font-size:13px;font-weight:700;color:#1A1C1E;margin-bottom:10px">🤖 接入 DeepSeek 大模型</div>
+    <div style="font-size:12px;color:#666;margin-bottom:8px;line-height:1.6">
+      填入 API Key 后，意图识别将由 DeepSeek 真实理解；留空则使用本地关键词引擎（离线可用）。
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input id="apiKeyInput" type="password" placeholder="sk-xxxxxxxxxxxxxxxx"
+        style="flex:1;border:1px solid #CCCCCC;border-radius:9px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;color:#1A1C1E;background:white"
+        onfocus="this.style.borderColor='#0099FF'"
+        onblur="this.style.borderColor='#CCCCCC'"
+      />
+      <button onclick="saveApiKey()" style="
+        background:#0099FF;color:white;
+        border:none;border-radius:9px;padding:8px 16px;
+        font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap
+      ">保存</button>
+    </div>
+    <div id="apiKeyStatus" style="font-size:11px;color:#888">⚙️ 未填写，使用本地关键词引擎</div>
+    <div style="font-size:11px;color:#aaa;margin-top:6px">
+      Key 已通过配置文件预设，刷新页面也不会丢失。
+    </div>
+  </div>
+
+  <div class="chat-area" id="chatArea"></div>
+
+  <!-- 底部固定区域（复用 QQ AIO 对话风格） -->
+  <div class="aio-bottom-fixed">
+    <!-- 快捷操作标签 -->
+    <div class="aio-quick-actions" id="inputHints">
+      <button class="aio-quick-btn" onclick="fillInput('有什么福利礼包可以领')">福利礼包</button>
+      <button class="aio-quick-btn" onclick="fillInput('查查我的战绩')">战绩查询</button>
+      <button class="aio-quick-btn" onclick="fillInput('查看今天对局记录')">对局查询</button>
+      <button class="aio-quick-btn" onclick="fillInput('帮我AI复盘上一把')">AI复盘</button>
+      <button class="aio-quick-btn" onclick="fillInput('帮我找搭子开黑')">找搭子</button>
+      <button class="aio-quick-btn" onclick="fillInput('王者荣耀最新版本')">游戏资讯</button>
+      <button class="aio-quick-btn" onclick="fillInput('查一下攻略')">攻略查询</button>
+      <button class="aio-quick-btn" onclick="fillInput('帮我生成高光视频')">高光视频</button>
+      <button class="aio-quick-btn" onclick="fillInput('怎么下载这个游戏')">游戏下载</button>
+      <button class="aio-quick-btn" onclick="fillInput('最近有什么新皮肤')">皮肤购买</button>
+      <button class="aio-quick-btn" onclick="fillInput('看看我的上周总结')">周报</button>
+      <button class="aio-quick-btn" onclick="fillInput('连跪五把好烦')">情绪互动</button>
+      <button class="aio-quick-btn" onclick="fillInput('看看好友排行')">好友排行</button>
+      <button class="aio-quick-btn" onclick="fillInput('提醒我8点上线打排位')">定时提醒</button>
+    </div>
+
+    <!-- 底部输入栏 -->
+    <div class="aio-input-bar">
+      <div class="aio-input-content">
+        <!-- 麦克风 -->
+        <div class="aio-mic-btn" onclick="showToast('语音功能开发中，敬请期待')">
+          <img src="icons/mic-icon.svg" alt="麦克风">
+        </div>
+
+        <!-- 输入框 -->
+        <input type="text" class="aio-input-field" id="chatInput" placeholder="试试说「查战绩」「领福利」…">
+
+
+      </div>
+
+      <!-- Home Indicator -->
+      <div class="aio-home-indicator">
+        <div class="aio-home-indicator-bar"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 外部数据文件 — 所有配置和模拟数据独立维护 -->
+<!-- ============================================================ -->
+<script src="data/intents.js"></script>
+<script src="data/typo-abbr.js"></script>
+<script src="data/games.js"></script>
+<script src="data/heroes.js"></script>
+<script src="data/video-templates.js"></script>
+<script src="data/deepseek-config.js"></script>
+<script src="data/system-prompt.js"></script>
+<script src="data/pullback-fallback.js"></script>
+<script src="data/qr-copywriting.js"></script>
+<script src="data/mock/welfare.js"></script>
+<script src="data/mock/record.js"></script>
+<script src="data/mock/match-query.js"></script>
+<script src="data/mock/replay.js"></script>
+<script src="data/mock/partner.js"></script>
+<script src="data/mock/misc.js"></script>
+<script src="data/mock/ranking.js"></script>
+
+<!-- ============================================================ -->
+<!-- 逻辑层（按依赖顺序加载） -->
+<!-- ============================================================ -->
+<script src="js/intent-engine.js"></script>
+<script src="js/data-generators.js"></script>
+<script src="js/deepseek-api.js"></script>
+<script src="js/web-search.js"></script>
+<script src="js/response-builders.js"></script>
+<script src="js/video-handler.js"></script>
+<script src="js/chat-controller.js"></script>
+
+</body>
+</html>

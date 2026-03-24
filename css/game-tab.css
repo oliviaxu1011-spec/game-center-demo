@@ -1,0 +1,322 @@
+/* ========== 设计稿：游戏Tab页样式 ========== */
+
+/* 页面主体 */
+#screen-app .page-inner {
+  width:100%; background:#FFFFFF; position:relative; padding-bottom:90px;
+}
+
+/* 顶部固定导航区 */
+#screen-app .top-fixed {
+  position:sticky; top:0; z-index:20; background:#FFFFFF;
+}
+#screen-app .status-bar {
+  width:100%; height:44px; display:flex; justify-content:space-between;
+  align-items:center; padding:0 30px; background:#fff;
+}
+#screen-app .status-bar .time {
+  font-weight:600; font-size:17px; color:#000; letter-spacing:0.2px;
+}
+#screen-app .status-bar .indicators {
+  display:flex; align-items:center; gap:6px;
+}
+#screen-app .indicator-icon { color:#000; }
+#screen-app .indicator-icon.cellular { width:17px; height:12px; }
+#screen-app .indicator-icon.wifi { width:15px; height:12px; }
+#screen-app .indicator-icon.battery { width:27px; height:13px; }
+
+/* 导航栏 */
+#screen-app .nav-bar {
+  width:100%; height:50px; display:flex; align-items:center;
+  padding:0 16px; gap:8px; background:#fff;
+}
+#screen-app .nav-back {
+  width:12px; height:24px; display:flex; align-items:center;
+  justify-content:center; cursor:pointer; flex-shrink:0;
+  background:none; border:none;
+}
+#screen-app .nav-back svg { width:10px; height:18px; }
+
+/* 搜索框 */
+#screen-app .search-box {
+  flex:1; height:36px; background:rgba(0,81,254,0.04);
+  border-radius:12px; display:flex; align-items:center;
+  gap:4px; padding:0 8px; cursor:pointer; transition:background .2s;
+}
+#screen-app .search-box:hover { background:rgba(0,81,254,0.08); }
+#screen-app .search-box .search-icon {
+  width:18px; height:18px; flex-shrink:0; color:#929296;
+}
+#screen-app .search-box .search-text {
+  font-size:17px; color:rgba(60,60,67,0.56); line-height:1.4;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* AI 入口按钮 */
+#screen-app .nav-ai-btn {
+  display:flex; align-items:center; gap:3px;
+  height:32px; padding:0 10px 0 6px;
+  background:linear-gradient(135deg, #7C5CFC 0%, #5B8DEF 50%, #00B4FF 100%);
+  border-radius:16px; cursor:pointer; flex-shrink:0;
+  transition:opacity .2s, transform .15s;
+  position:relative;
+  overflow:hidden;
+}
+#screen-app .nav-ai-btn::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
+  border-radius:16px;
+}
+#screen-app .nav-ai-btn:hover { opacity:0.9; }
+#screen-app .nav-ai-btn:active { transform:scale(0.95); }
+#screen-app .nav-ai-icon {
+  width:20px; height:20px; display:flex; align-items:center;
+  justify-content:center; flex-shrink:0; position:relative; z-index:1;
+}
+#screen-app .nav-ai-icon svg { width:20px; height:20px; }
+#screen-app .nav-ai-label {
+  font-size:13px; font-weight:700; color:white;
+  line-height:1; position:relative; z-index:1;
+  letter-spacing:0.5px;
+}
+
+/* 导航右侧按钮 */
+#screen-app .nav-gift-btn {
+  width:30px; height:34px; display:flex; align-items:center;
+  justify-content:center; cursor:pointer; flex-shrink:0;
+  background:none; border:none;
+}
+#screen-app .nav-gift-btn img { width:30px; height:34px; object-fit:contain; }
+
+/* Tab页签 */
+#screen-app .tab-navigation {
+  display:flex; align-items:center; justify-content:center;
+  background:white; position:sticky; top:50px; z-index:15;
+  border-bottom:0.5px solid rgba(0,0,0,0.1); height:48px;
+}
+#screen-app .tab-item {
+  height:48px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; font-weight:400; color:rgba(0,0,0,0.9);
+  cursor:pointer; position:relative; border:none; background:none;
+  transition:all 0.2s; padding:0 14px; font-family:inherit;
+}
+#screen-app .tab-item.active { font-weight:500; color:#1A1C1E; }
+#screen-app .tab-item.active::after {
+  content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+  width:32px; height:3px; background:#0099FF; border-radius:2px;
+}
+
+/* 游戏推广卡片 */
+#screen-app .promo-section { padding:0; }
+#screen-app .promo-card {
+  margin:0 16px 8px; border-radius:16px; overflow:hidden;
+  position:relative; height:277px; background:#0099FF;
+  -webkit-mask-image:-webkit-radial-gradient(white,black);
+  mask-image:radial-gradient(white,black); isolation:isolate;
+}
+#screen-app .promo-card-top {
+  width:100%; height:193px; position:relative; overflow:hidden;
+}
+#screen-app .promo-card-top img {
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+#screen-app .promo-title-overlay {
+  position:absolute; bottom:0; left:0; width:100%; padding:0 16px 16px;
+}
+#screen-app .promo-title-text {
+  font-size:16px; font-weight:500; color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,0.3);
+}
+#screen-app .promo-card-bottom {
+  width:100%; height:88px; position:relative; overflow:hidden;
+}
+#screen-app .promo-blur-layer {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  z-index:0; pointer-events:none; overflow:hidden;
+}
+#screen-app .promo-blur-base {
+  position:absolute; top:0; left:0; width:100%; height:100%; background:#000;
+}
+#screen-app .promo-blur-img {
+  position:absolute; top:-140%; left:-24%;
+  width:148%; height:325%; object-fit:cover;
+}
+#screen-app .promo-blur-glass {
+  position:absolute; top:0; left:0; width:100%; height:145%;
+  background:rgba(0,0,0,0.2);
+  backdrop-filter:blur(100px); -webkit-backdrop-filter:blur(100px);
+}
+#screen-app .promo-game-info {
+  position:relative; z-index:2; display:flex; align-items:center;
+  gap:8px; padding:10px 16px; height:100%;
+}
+#screen-app .promo-game-icon {
+  width:52px; height:52px; border-radius:10.4px;
+  object-fit:cover; flex-shrink:0;
+}
+#screen-app .promo-game-text {
+  flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;
+}
+#screen-app .promo-game-name {
+  font-size:16px; font-weight:400; color:#FFFFFF; line-height:1.4;
+}
+#screen-app .promo-game-desc {
+  display:flex; align-items:center; gap:2px;
+  font-size:12px; color:#E9E9E9; line-height:1.4;
+}
+#screen-app .promo-game-desc .tag-label { color:rgba(255,255,255,0.5); }
+#screen-app .promo-game-meta {
+  display:flex; gap:4px; font-size:10px;
+  color:rgba(255,255,255,0.55); line-height:1.4; opacity:0.7;
+}
+#screen-app .promo-download-btn {
+  width:74px; height:32px; border-radius:100px; position:relative;
+  flex-shrink:0; overflow:hidden; cursor:pointer; border:none;
+  padding:0; background:rgba(17,17,17,0.6);
+}
+#screen-app .promo-download-btn::before {
+  content:''; position:absolute; top:0; left:0; width:100%; height:100%;
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(80px); -webkit-backdrop-filter:blur(80px);
+  border-radius:100px;
+}
+#screen-app .promo-download-btn span {
+  position:relative; z-index:1; color:#fff;
+  font-size:14px; font-weight:400; font-family:inherit;
+}
+
+/* 轮播指示器 */
+#screen-app .carousel-dots {
+  display:flex; justify-content:center; gap:4px; padding:0 0 4px;
+}
+#screen-app .carousel-dot {
+  width:6px; height:6px; border-radius:50%; background:rgba(0,0,0,0.1);
+}
+#screen-app .carousel-dot.active {
+  width:16px; border-radius:3px; background:#1A1A1A;
+}
+
+/* 游戏分类模块 */
+#screen-app .game-module { padding:16px 0; background:#fff; }
+#screen-app .module-header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:0 16px 12px;
+}
+#screen-app .module-title {
+  font-size:16px; font-weight:500; color:rgba(0,0,0,0.9); line-height:1.25;
+}
+
+/* 横滑分页容器 */
+#screen-app .game-swipe-container {
+  padding:0 0 0 16px; overflow-x:auto; overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x mandatory; scroll-padding-left:16px;
+  scrollbar-width:none; display:flex; gap:8px;
+}
+#screen-app .game-swipe-container::-webkit-scrollbar { display:none; }
+#screen-app .game-swipe-page {
+  flex:0 0 calc(100% - 32px); scroll-snap-align:start;
+  display:flex; flex-direction:column; gap:8px;
+}
+#screen-app .game-swipe-page-2 { flex:0 0 calc(100% - 32px); }
+#screen-app .game-swipe-container::after {
+  content:''; flex:0 0 16px;
+}
+
+/* 设计稿游戏列表项 */
+#screen-app .game-list-new { padding:0 16px; }
+#screen-app .game-list-new-inner { display:flex; flex-direction:column; gap:8px; }
+#screen-app .design-game-item {
+  display:flex; justify-content:space-between; align-items:center;
+  gap:8px; padding:0;
+}
+#screen-app .game-icon-wrap {
+  width:52px; height:52px; border-radius:10.4px;
+  overflow:hidden; flex-shrink:0; position:relative;
+}
+#screen-app .game-icon-wrap.mini-game { border-radius:50%; overflow:visible; }
+#screen-app .game-icon-wrap img {
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+#screen-app .mini-game-badge {
+  position:absolute; right:-3px; bottom:-3px;
+  width:17px; height:17px; z-index:5;
+  filter:drop-shadow(0 0.5px 1px rgba(0,0,0,0.1));
+}
+#screen-app .mini-game-badge img { width:100%; height:100%; display:block; }
+
+#screen-app .game-info {
+  flex:1; min-width:0; display:flex; flex-direction:column;
+  justify-content:center; gap:2px;
+}
+#screen-app .game-name-row { display:flex; align-items:center; gap:4px; }
+#screen-app .game-name {
+  font-size:16px; font-weight:400; color:rgba(0,0,0,0.9);
+  line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#screen-app .cloud-play-badge {
+  display:inline-flex; align-items:center; padding:0 8px; height:20px;
+  background:rgba(0,0,0,0.02); border:0.5px solid rgba(0,0,0,0.05);
+  border-radius:4px; font-size:12px; color:#2D77E5;
+  line-height:1.4; flex-shrink:0; white-space:nowrap;
+}
+#screen-app .game-subtitle {
+  display:flex; align-items:center; gap:2px;
+  font-size:12px; line-height:1.4;
+}
+#screen-app .game-subtitle .tag-text { color:rgba(60,60,67,0.56); }
+#screen-app .game-subtitle .sep { color:rgba(60,60,67,0.56); font-weight:200; }
+#screen-app .game-subtitle .desc-text {
+  color:#909094; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#screen-app .game-subtitle .desc-text-dark { color:rgba(60,60,67,0.56); }
+#screen-app .rank-badge {
+  display:inline-flex; align-items:center; gap:2px;
+  color:#0099FF; font-size:12px; line-height:1.4;
+}
+#screen-app .rank-badge svg { width:7px; height:13px; flex-shrink:0; }
+#screen-app .game-subtitle .tag-sep {
+  color:rgba(60,60,67,0.76); font-weight:200; font-size:12px;
+}
+#screen-app .game-subtitle .tag-val { color:rgba(60,60,67,0.76); font-size:12px; }
+#screen-app .game-meta {
+  display:flex; gap:4px; font-size:10px;
+  color:rgba(60,60,67,0.26); line-height:1.4;
+}
+#screen-app .game-download-btn {
+  width:74px; height:32px; border-radius:16px;
+  background:rgba(0,0,0,0.05); color:rgba(0,0,0,0.9);
+  font-size:14px; font-weight:400; border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; font-family:inherit;
+}
+
+/* 分割线 */
+#screen-app .divider-module { height:8px; background:#FFFFFF; }
+
+/* 设计稿底部导航栏 */
+#screen-app .bottom-nav-design {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:430px; z-index:50;
+  background:#F7F7F7; padding-top:8px; padding-bottom:28px;
+}
+#screen-app .bottom-nav-design .bottom-nav-inner {
+  display:flex; justify-content:space-around; align-items:center;
+}
+#screen-app .bottom-nav-design .bottom-nav-item {
+  display:flex; flex-direction:column; align-items:center;
+  gap:2px; cursor:pointer; background:none; border:none; padding:0;
+}
+#screen-app .bottom-nav-design .bottom-nav-item img {
+  width:29px; height:29px;
+}
+#screen-app .bottom-nav-design .bottom-nav-item span {
+  font-size:11px; color:#1A1A1A; line-height:1.3; font-family:inherit;
+}
+#screen-app .bottom-nav-design .bottom-nav-item.active span {
+  color:#0091FF;
+}
+
+/* 间距辅助 */
+#screen-app .gap-8 { height:8px; }
+#screen-app .gap-12 { height:12px; }
+#screen-app .gap-16 { height:16px; }
