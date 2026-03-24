@@ -147,10 +147,59 @@ window.closeAIPanel = function() {
 };
 
 window.initChat = function() {
+  // 先渲染欢迎语（不带追问参数）
   addAIBubble(
-    '嗨蟹柳！🎮 我是游戏中心 AI。<br>你可以直接问我任何游戏问题——<br>领福利、查战绩、找搭子、复盘…<br>问我 <strong>游戏版本/资讯</strong> 还能联网搜索哦 🌐<br>也可以点输入栏的快捷词试试 ↑',
+    '嗨蟹柳！🎮 我是游戏中心 AI。<br>你可以直接问我任何游戏问题——<br>领福利、查战绩、找搭子、复盘…<br>问我 <strong>游戏版本/资讯</strong> 还能联网搜索哦 🌐',
     null, null, null
   );
+
+  // ── 欢迎引导追问池（口语化，覆盖核心功能）──────────────
+  var welcomeQRPool = [
+    '今天有什么福利可以领',
+    '看看我最近的战绩',
+    '帮我找个搭子开黑',
+    '复盘一下上一把',
+    '最近有什么游戏资讯',
+    '看看有什么好攻略',
+    '帮我设个游戏提醒',
+    '看看本周战绩报告',
+    '逛逛鹅毛市集',
+    '看看好友排行榜',
+  ];
+
+  // Fisher-Yates 随机打乱并取前 3 个
+  var shuffled = welcomeQRPool.slice();
+  for (var i = shuffled.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+  }
+  var welcomeQR = shuffled.slice(0, 3);
+
+  // 在欢迎气泡最后一个 msg 元素后追加引导追问按钮
+  var area = document.getElementById('chatArea');
+  var lastMsg = area.querySelector('.msg:last-child .msg-content');
+  if (lastMsg) {
+    var qrDiv = document.createElement('div');
+    qrDiv.className = 'quick-replies';
+    welcomeQR.forEach(function(text) {
+      var btn = document.createElement('button');
+      btn.className = 'qr-btn';
+      btn.innerHTML = '<span class="qr-btn-text">' + text + '</span>' +
+        '<svg class="qr-btn-arrow" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      btn.addEventListener('click', function() {
+        // 点击后隐藏追问区域
+        qrDiv.style.transition = 'opacity .2s, max-height .3s';
+        qrDiv.style.opacity = '0';
+        qrDiv.style.maxHeight = '0';
+        qrDiv.style.overflow = 'hidden';
+        setTimeout(function() { qrDiv.style.display = 'none'; }, 300);
+        // 作为用户输入发送，走正常消息流程
+        processUserMessage(text);
+      });
+      qrDiv.appendChild(btn);
+    });
+    lastMsg.appendChild(qrDiv);
+  }
 };
 
 window.fillInput = function(text) {
