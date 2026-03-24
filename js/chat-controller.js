@@ -14,26 +14,29 @@ window.showToast = function(msg, duration) {
   duration = duration || 2000;
   const existing = document.getElementById('globalToast');
   if (existing) existing.remove();
+
+  // 创建居中容器（用 flexbox 居中，避免 transform 与动画冲突）
+  const wrapper = document.createElement('div');
+  wrapper.id = 'globalToast';
+
   const el = document.createElement('div');
-  el.id = 'globalToast';
+  el.textContent = msg;
+  el.style.cssText = 'background:rgba(0,0,0,.75);color:white;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;text-align:center;max-width:280px;backdrop-filter:blur(8px);animation:toast-in .25s ease;pointer-events:none';
+  wrapper.appendChild(el);
 
   // 判断 AI Panel 是否打开，决定挂载容器
   const aiPanel = document.getElementById('aiPanel');
   const inPanel = aiPanel && !aiPanel.classList.contains('hidden');
 
   if (inPanel) {
-    // AI Panel 内：absolute 定位，相对于 aiPanel 居中
-    el.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);color:white;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:9999;text-align:center;max-width:280px;backdrop-filter:blur(8px);animation:msg-in .25s ease;pointer-events:none';
-    el.textContent = msg;
-    aiPanel.appendChild(el);
+    wrapper.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:9999;pointer-events:none';
+    aiPanel.appendChild(wrapper);
   } else {
-    // 非 AI Panel：fixed 定位，相对于视口居中
-    el.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);color:white;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:9999;text-align:center;max-width:280px;backdrop-filter:blur(8px);animation:msg-in .25s ease;pointer-events:none';
-    el.textContent = msg;
-    document.body.appendChild(el);
+    wrapper.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:9999;pointer-events:none';
+    document.body.appendChild(wrapper);
   }
 
-  setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, duration);
+  setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => wrapper.remove(), 300); }, duration);
 };
 
 // ── 状态变量 ───────────────────────────────────────
