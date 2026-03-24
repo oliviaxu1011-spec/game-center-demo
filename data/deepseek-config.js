@@ -5,5 +5,5 @@
 window.DATA_DEEPSEEK_CONFIG = {
   baseUrl: 'https://api.deepseek.com/v1',
   model: 'deepseek-chat',
-  apiKey: 'sk-bc78fcee9c484e70a8ca747a70bab465',
+  apiKey: '',
 };
