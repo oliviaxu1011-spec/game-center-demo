@@ -419,9 +419,16 @@
         </div>
 
         <!-- 输入框 -->
-        <input type="text" class="aio-input-field" id="chatInput" placeholder="试试说「查战绩」「领福利」…">
+        <input type="text" class="aio-input-field" id="chatInput" placeholder="试试说「查战绩」「领福利」…"
+               enterkeyhint="send">
 
-
+        <!-- 发送按钮 -->
+        <div class="aio-send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="14" fill="#0099FF"/>
+            <path d="M14 8v12M9 13l5-5 5 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
       </div>
 
       <!-- Home Indicator -->

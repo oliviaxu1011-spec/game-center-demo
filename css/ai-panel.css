@@ -1128,6 +1128,27 @@
   color:#909094;
 }
 
+/* 发送按钮 */
+.aio-send-btn {
+  width:28px;
+  height:28px;
+  flex-shrink:0;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0.4;
+  transition:opacity .2s;
+}
+
+.aio-send-btn.active {
+  opacity:1;
+}
+
+.aio-send-btn:active {
+  transform:scale(0.92);
+}
+
 .aio-input-actions {
   display:flex;
   align-items:center;
@@ -1157,6 +1178,24 @@
   align-items:flex-end;
   padding-bottom:8px;
   background:rgba(246,246,246,0.9);
+  transition:height .2s, padding .2s, opacity .2s;
+}
+
+/* 键盘弹出时隐藏 Home Indicator */
+.ai-panel.keyboard-open .aio-home-indicator {
+  height:0;
+  padding:0;
+  opacity:0;
+  overflow:hidden;
+}
+
+/* 键盘弹出时快捷操作标签也隐藏，节省空间 */
+.ai-panel.keyboard-open .aio-quick-actions {
+  height:0;
+  padding:0;
+  opacity:0;
+  overflow:hidden;
+  margin:0;
 }
 
 .aio-home-indicator-bar {
