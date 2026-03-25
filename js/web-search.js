@@ -253,18 +253,31 @@ function cleanTitle(title) {
 // ============================================================
 // 智能搜索入口 — 根据游戏和意图自动构造搜索词
 // ============================================================
-window.searchGameNews = async function(gameId, userText) {
-  const queries = window.GAME_SEARCH_QUERIES[gameId] || window.GAME_SEARCH_QUERIES.wzry;
+window.searchGameNews = async function(gameId, userText, gameName) {
+  const queries = window.GAME_SEARCH_QUERIES[gameId];
   const text = (userText || '').toLowerCase();
 
-  // 根据用户输入选择搜索策略
   let query;
-  if (/版本|更新|update|patch|赛季/.test(text)) {
-    query = queries.version;
-  } else if (/资讯|新闻|消息|动态|公告/.test(text)) {
-    query = queries.news;
+  if (queries) {
+    // ── 已知游戏：使用预配置的搜索关键词 ──
+    if (/版本|更新|update|patch|赛季/.test(text)) {
+      query = queries.version;
+    } else if (/资讯|新闻|消息|动态|公告/.test(text)) {
+      query = queries.news;
+    } else {
+      query = queries.default;
+    }
   } else {
-    query = queries.default;
+    // ── 未知游戏（虚拟游戏）：用 gameName 动态构建搜索词 ──
+    const name = gameName || '游戏';
+    if (/版本|更新|update|patch|赛季/.test(text)) {
+      query = name + ' 最新版本 更新内容';
+    } else if (/资讯|新闻|消息|动态|公告/.test(text)) {
+      query = name + ' 最新版本更新';
+    } else {
+      query = name + ' 最新资讯';
+    }
+    console.log('[searchGameNews] 未知游戏,动态构建搜索词:', query);
   }
 
   // 追加当前日期，确保搜索结果时效性
@@ -293,12 +306,20 @@ window.preSearchIfNeeded = function(text) {
     window._preSearchCache = { promise: null, game: null, text: null };
     return;
   }
-  // 提前开始搜索
+  // 提前开始搜索（支持虚拟游戏）
   const DEFAULT_GAME = window.ENGINE_DEFAULT_GAME;
-  const game = window.detectGame ? (window.detectGame(text) || DEFAULT_GAME) : DEFAULT_GAME;
-  console.log('[PreSearch] 检测到资讯类输入，提前搜索:', text);
+  let game = window.detectGame ? window.detectGame(text) : null;
+  // 如果已知游戏识别失败，尝试提取游戏名创建虚拟对象
+  if (!game && window.extractGameNameFromText) {
+    const extractedName = window.extractGameNameFromText(text);
+    if (extractedName) {
+      game = window.createVirtualGame(extractedName);
+    }
+  }
+  if (!game) game = DEFAULT_GAME;
+  console.log('[PreSearch] 检测到资讯类输入，提前搜索:', text, '游戏:', game.name);
   window._preSearchCache = {
-    promise: window.searchGameNews(game.id, text),
+    promise: window.searchGameNews(game.id, text, game.name),
     game: game,
     text: text,
   };
