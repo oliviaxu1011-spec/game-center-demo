@@ -7,7 +7,7 @@
   overscroll-behavior-y:none;  /* 防止下拉 overscroll 露出背后的背景 */
 }
 
-/* App Header — 模拟QQ游戏中心真实顶栏 */
+/* App Header — 模拟游戏中心顶栏 */
 .app-header { background:white; padding:0; }
 .app-header-top { display:flex; align-items:center; padding:10px 12px; gap:8px; }
 .app-back-btn {

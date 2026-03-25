@@ -1,4 +1,4 @@
-# AIBot — QQ游戏中心 AI意图识别 Demo
+# YoYo — 游戏中心 AI 助手
 
 > 基于纯原生 HTML/CSS/JS 构建的移动端 AI 聊天助手 Demo，模拟 QQ 游戏中心内的 AI 课代表交互体验。
 > 支持 12 种游戏垂类意图识别 + DeepSeek 大模型 + 联网实时搜索。
@@ -174,7 +174,7 @@ index.html
 #screen-landing (.screen.active)
 ├── .landing-content
 │   ├── .logo-icon           🎮 浮动动画LOGO (80×80, 圆角24, float动画3s)
-│   ├── .logo-title          "游戏中心 AI助手"
+│   ├── .logo-title          "YoYo"
 │   ├── .logo-sub            英文副标题
 │   ├── h1.landing-title     标语"从找功能到问一问" (34px/900字重)
 │   │   └── .hl              蓝色渐变高亮文字
