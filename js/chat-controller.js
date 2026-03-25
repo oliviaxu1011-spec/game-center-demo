@@ -152,7 +152,7 @@ window.closeAIPanel = function() {
 window.initChat = function() {
   // 先渲染欢迎语（不带追问参数）
   addAIBubble(
-    '嗨olivia！🎮 我是游戏中心 AI。<br>你可以直接问我任何游戏问题——<br>领福利、查战绩、找搭子、复盘…<br>问我 <strong>游戏版本/资讯</strong> 还能联网搜索哦 🌐',
+    '嗨Q仔！🎮 我是游戏中心 AI。<br>你可以直接问我任何游戏问题——<br>领福利、查战绩、找搭子、复盘…<br>问我 <strong>游戏版本/资讯</strong> 还能联网搜索哦 🌐',
     null, null, null
   );
 

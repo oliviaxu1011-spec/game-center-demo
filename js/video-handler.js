@@ -15,7 +15,7 @@ window.handleGenerateHighlightVideo = function(gameId, hero, result) {
 
   // Step 1: 先推送"正在生成"消息 + 进度动画
   addAIBubble(
-    `正在为olivia生成 <strong>${game.name} · ${hero}</strong> 的高光视频 🎬<br>AI正在分析精彩片段…`,
+    `正在为Q仔生成 <strong>${game.name} · ${hero}</strong> 的高光视频 🎬<br>AI正在分析精彩片段…`,
     null, null,
     `<div class="result-card">
       <div class="video-generating" id="videoGenProgress">
@@ -109,7 +109,7 @@ window.handleShowOndemandVideos = function(gameId, hero) {
   const items = templates.ondemand;
   showTyping(() => {
     addAIBubble(
-      `为olivia推荐更多<strong>视频风格模板</strong>，点播即可生成 🎬`,
+      `为Q仔推荐更多<strong>视频风格模板</strong>，点播即可生成 🎬`,
       null, null,
       buildOndemandCardHtml(gameId, hero, items)
     );
@@ -255,7 +255,7 @@ window.emotionAction = function(type) {
   if (type === 'rest') {
     showTyping(() => {
       addAIBubble(
-        '好的olivia，休息一下也很重要 ☕<br>我帮你设个 <strong>30分钟后的提醒</strong>，到时候再回来冲分！',
+        '好的Q仔，休息一下也很重要 ☕<br>我帮你设个 <strong>30分钟后的提醒</strong>，到时候再回来冲分！',
         null, null, null,
         ['好的，30分钟后提醒我', '算了，继续打'],
         {
