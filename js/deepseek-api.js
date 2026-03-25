@@ -23,7 +23,7 @@ window.DEEPSEEK_CONFIG = {
 };
 
 // 游戏中心垂类 System Prompt（从 data/system-prompt.js 加载）
-window.SYSTEM_PROMPT = window.DATA_SYSTEM_PROMPT || '你是QQ游戏中心AI助手。';
+window.SYSTEM_PROMPT = window.DATA_SYSTEM_PROMPT || '你是YoYo。';
 
 // ============================================================
 // DEEPSEEK API 调用
