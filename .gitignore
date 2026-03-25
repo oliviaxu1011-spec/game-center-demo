@@ -16,3 +16,9 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# Data files (kept locally)
+游戏礼包跳转地址.xlsx
+游戏信息.xlsx
+游戏战绩数据维度.xlsx
+MOCK-DATA-GUIDE.md
