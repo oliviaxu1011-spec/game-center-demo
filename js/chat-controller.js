@@ -247,8 +247,11 @@ window.sendMessage = function() {
 
 // ============================================================
 // 核心消息处理流程
-// 策略：无 API Key → 纯本地引擎
-//       有 API Key → 混合模式（本地先行 + DeepSeek 增强）
+// 三层漏斗策略（按优先级）：
+//   1️⃣ 本地意图引擎（能完整处理的直接用）
+//   2️⃣ DeepSeek AI（本地无匹配 或 本地命中意图但无法完整处理时调用）
+//   3️⃣ Pullback/Fallback（以上均无结果时的兜底）
+// 特殊机制：本地命中意图但游戏不在库中 → 标记 _needDeepSeek → 转交 AI
 // ============================================================
 window.processUserMessage = async function(text) {
   // ── 新对话开始：隐藏所有历史消息的追问模块 ──
@@ -292,34 +295,42 @@ window.processUserMessage = async function(text) {
   // ── Step B: 本地引擎先行识别（0ms，两种模式都先跑）──
   const localResult = detectIntent(text);
 
-  // ── Step C: 判断是否需要 DeepSeek 增强 ──
-  // 本地 strong（score≥4）→ 直接用本地结果，不调 API
-  // 本地 medium/weak/null/ambiguous → 有 key 则调 DeepSeek 增强
-  const localIsStrong = localResult && localResult.level === 'strong' && !localResult.ambiguous;
-
-  if (localIsStrong || !isHybrid) {
-    // ── 纯本地路径（本地 strong 或 无 API Key）──
-    handleLocalResult(text, localResult);
-    return;
+  // ── Step C: 本地引擎有结果 → 先试构建响应，检查是否需要转交 DeepSeek ──
+  if (localResult) {
+    // 预检：调 buildResponse 看看本地能否完整处理
+    const preCheckResponse = buildResponse(localResult.id, text);
+    if (preCheckResponse && preCheckResponse._needDeepSeek && isHybrid) {
+      // 本地识别到意图，但无法完整处理（如游戏不在库中）→ 转交 DeepSeek
+      console.log(`[三层漏斗] 本地识别到 ${localResult.id}，但 ${preCheckResponse._reason || '需要 AI 增强'}，转交 DeepSeek`);
+    } else {
+      // 本地可以完整处理 → 直接用
+      handleLocalResult(text, localResult);
+      return;
+    }
   }
 
-  // ── Step D: 混合模式 — 本地不够确信，调 DeepSeek 增强 ──
-  const analyzingId = addAnalyzing('🤖 DeepSeek 增强分析中…');
+  // ── Step D: 本地无匹配 / 本地需要 AI 增强 → 尝试 DeepSeek AI ──
+  if (isHybrid) {
+    const analyzingId = addAnalyzing('🤖 YoYo思考中…');
 
-  let dsResult = null;
-  dsResult = await callDeepSeek(text);
+    let dsResult = null;
+    dsResult = await callDeepSeek(text);
 
-  removeEl(analyzingId);
+    removeEl(analyzingId);
 
-  // DeepSeek 成功 → 用 AI 结果
-  if (dsResult) {
-    handleDeepSeekResult(text, dsResult);
-    return;
+    // DeepSeek 成功 → 用 AI 结果
+    if (dsResult) {
+      handleDeepSeekResult(text, dsResult);
+      return;
+    }
+
+    console.warn('[混合模式] DeepSeek 失败，降级到本地/pullback/fallback');
   }
 
-  // DeepSeek 失败 → 降级回本地结果
-  console.warn('[混合模式] DeepSeek 失败，降级到本地结果');
-  handleLocalResult(text, localResult);
+  // ── Step E: DeepSeek 也无结果 → 降级处理 ──
+  // 无论是本地无匹配，还是本地命中意图但无法完整处理（游戏不在库等），
+  // 只要 DeepSeek 也失败了，统一走 pullback/fallback
+  handleLocalResult(text, null);
 };
 
 // ============================================================

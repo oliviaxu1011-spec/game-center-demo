@@ -1244,8 +1244,18 @@ window.buildGuideResponse = function(text) {
     }
   }
 
-  // 仍然未识别到 → 反问用户想查哪个游戏的攻略
+  // 仍然未识别到 → 检查是否提到了具体游戏名（不在库中的游戏）
   if (!game) {
+    // 如果用户文本中除了意图关键词外还有其他内容（可能是游戏名），标记需要 DeepSeek 处理
+    const intentKeywords = ['攻略','怎么玩','出装','加点','技巧','套路','打法','玩法','教学','教程','连招'];
+    let stripped = text;
+    intentKeywords.forEach(kw => { stripped = stripped.replace(new RegExp(kw, 'g'), ''); });
+    stripped = stripped.replace(/[？?！!。，,、~…\s]+/g, '').trim();
+    if (stripped.length >= 2) {
+      // 用户提到了具体游戏名（但不在库中）→ 标记转交 DeepSeek
+      return { _needDeepSeek: true, _reason: 'game_not_in_library', _extractedName: stripped };
+    }
+    // 纯粹只说了"攻略"没有游戏名 → 反问
     const qrGames = getFeatureQuickReplyGames('guide');
     const qrItems = buildQR_L1_selectGame(qrGames, 'guide');
     const resolved = resolveQR(qrItems, function(key) {
