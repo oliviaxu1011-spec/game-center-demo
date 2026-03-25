@@ -84,7 +84,7 @@ window.saveApiKey = function() {
 window.updateModeLabel = function() {
   const label = document.getElementById('modeLabel');
   if (label) {
-    label.textContent = window.DEEPSEEK_CONFIG.enabled() ? '混合模式' : '本地引擎';
+    label.textContent = window.DEEPSEEK_CONFIG.enabled() ? 'AI' : '本地引擎';
     label.style.background = window.DEEPSEEK_CONFIG.enabled()
       ? 'linear-gradient(90deg,#8b5cf6,#6366f1)'
       : 'linear-gradient(135deg,#1a6bff,#4a90ff)';
