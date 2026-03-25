@@ -427,13 +427,13 @@ window.buildMatchQueryResponse = function(text) {
   if (isSpecificMatch && specificMatchInfo) {
     if (!specificMatchInfo.found) {
       // 序号超出范围
-      titleText = 'olivia今天共打了 <strong>' + specificMatchInfo.total + '</strong> 把' + game.name + '，没有找到第 ' + (specificMatchInfo.index + 1) + ' 把哦 🤔'
+      titleText = 'Q仔今天共打了 <strong>' + specificMatchInfo.total + '</strong> 把' + game.name + '，没有找到第 ' + (specificMatchInfo.index + 1) + ' 把哦 🤔'
         + '<p class="mq-intro">可以试试说"上一把"或"今天对局"看看~</p>';
     } else {
-      titleText = '这是olivia <strong>' + range.label + '</strong> 的' + game.name + '对局记录 📋';
+      titleText = '这是Q仔 <strong>' + range.label + '</strong> 的' + game.name + '对局记录 📋';
     }
   } else {
-    titleText = '这是olivia <strong>' + range.label + '</strong> 的' + game.name + '对局记录 📋'
+    titleText = '这是Q仔 <strong>' + range.label + '</strong> 的' + game.name + '对局记录 📋'
       + '<p class="mq-intro">' + matchData.summary + '</p>';
   }
 
@@ -544,7 +544,7 @@ window.buildRecordResponse = function(text) {
       </div>`;
 
     return {
-      text: `这是olivia <strong>${range.label}</strong> 的${game.name}战绩 📊`,
+      text: `这是Q仔 <strong>${range.label}</strong> 的${game.name}战绩 📊`,
       cardHtml: recentCardHtml,
       ...(_buildAfterCompleteQR('record', game.name, ['replay', 'ranking', 'partner']) || {}),
     };
@@ -595,8 +595,8 @@ window.buildRecordResponse = function(text) {
 
   // 文案：支持 recentCard 的游戏显示时间范围，不支持的显示"数据总览"
   const textLabel = (d.isRecentQuery && !game.supportsRecentCard)
-    ? `这是olivia的${game.name}数据总览 📊`
-    : `这是olivia <strong>${range.label}</strong> 的${game.name}战绩 📊`;
+    ? `这是Q仔的${game.name}数据总览 📊`
+    : `这是Q仔 <strong>${range.label}</strong> 的${game.name}战绩 📊`;
 
   return {
     text: textLabel,
@@ -675,7 +675,7 @@ window.buildReplayResponse = function(text) {
     : `<span style="font-size:22px">${d.heroIcon || '🎮'}</span>`;
 
   return {
-    text: `找到olivia <strong>${range.label}</strong> 的${game.name}数据了，AI分析如下：`,
+    text: `找到Q仔 <strong>${range.label}</strong> 的${game.name}数据了，AI分析如下：`,
     cardHtml: `
       <div class="result-card">
         <div class="replay-card">
@@ -709,7 +709,7 @@ window.buildReplayResponse = function(text) {
             <div class="rp-pc-foot">
               <div class="rp-pc-foot-left">
                 <div class="rp-pc-foot-avatar">🤖</div>
-                <span class="rp-pc-foot-name">olivia</span>
+                <span class="rp-pc-foot-name">Q仔</span>
               </div>
             </div>
           </div>
@@ -785,7 +785,7 @@ window.buildReportResponse = function(text) {
       return function() { return window.buildRecordResponse(key); };
     });
     return {
-      text: `这是olivia的${game.name} <strong>${d.title}</strong> 📅`
+      text: `这是Q仔的${game.name} <strong>${d.title}</strong> 📅`
         + `<p class="mq-intro">💡 ${d.tip}</p>`,
       cardHtml: `
       <div class="result-card">
@@ -861,7 +861,7 @@ window.buildReportResponse = function(text) {
   });
 
   return {
-    text: `这是olivia的${game.name} <strong>${d.title}</strong> 📅`,
+    text: `这是Q仔的${game.name} <strong>${d.title}</strong> 📅`,
     cardHtml: `
       <div class="result-card">
         <div class="result-card-header">${game.icon || '🎮'} ${game.name} · ${d.title} · ${d.period}</div>
@@ -1005,7 +1005,7 @@ window.buildPartnerResponse = function(text) {
   }).join('');
 
   return {
-    text: `为olivia匹配 ${matchInfo} ✨`,
+    text: `为Q仔匹配 ${matchInfo} ✨`,
     cardHtml: `
       <div class="result-card">
         <div class="result-card-header">🤝 为你匹配的搭子 · ${game.name}${hero ? ' · ' + hero.name : ''}</div>
@@ -1713,10 +1713,10 @@ window.buildHighlightResponse = function(text) {
   const highlightData = window.MOCK_HIGHLIGHT_DATA || {};
   const items = highlightData[game.id] || highlightData.wzry;
   return {
-    text: `正在为olivia生成 <strong>${game.name}昨日高光视频</strong>，提取到${items.length}个精彩时刻 🎬`,
+    text: `正在为Q仔生成 <strong>${game.name}昨日高光视频</strong>，提取到${items.length}个精彩时刻 🎬`,
     cardHtml: `
       <div class="result-card">
-        <div class="result-card-header">🎬 olivia的高光时刻 · ${game.name}</div>
+        <div class="result-card-header">🎬 Q仔的高光时刻 · ${game.name}</div>
         <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
           ${items.map(item=>`
             <div style="display:flex;align-items:center;gap:10px;padding:9px;background:#fafbff;border-radius:10px">
@@ -1971,7 +1971,7 @@ window.buildEmotionResponse = function(text) {
 
   const config = {
     happy: {
-      text: 'olivia，看起来今天战绩不错啊 🎉<br>想趁热打铁继续，还是见好就收？',
+      text: 'Q仔，看起来今天战绩不错啊 🎉<br>想趁热打铁继续，还是见好就收？',
       icon: '🎉',
       title: '今天状态在线！',
       sub: '趁手感好，选一个：',
@@ -1983,7 +1983,7 @@ window.buildEmotionResponse = function(text) {
       ]
     },
     tired: {
-      text: 'olivia，累了就歇歇，游戏不会跑的 😴<br>选一个放松方式：',
+      text: 'Q仔，累了就歇歇，游戏不会跑的 😴<br>选一个放松方式：',
       icon: '😴',
       title: '累了就放一放吧',
       sub: '先调整一下再说：',
@@ -1995,7 +1995,7 @@ window.buildEmotionResponse = function(text) {
       ]
     },
     angry: {
-      text: 'olivia，遇到这种队友确实气人 😤<br>别急，我帮你想办法：',
+      text: 'Q仔，遇到这种队友确实气人 😤<br>别急，我帮你想办法：',
       icon: '😤',
       title: '深呼吸，别被带节奏',
       sub: '来释放一下：',
@@ -2007,7 +2007,7 @@ window.buildEmotionResponse = function(text) {
       ]
     },
     frustrated: {
-      text: 'olivia，连跪确实太难受了 😮‍💨<br>我来帮你找个出口，选一个：',
+      text: 'Q仔，连跪确实太难受了 😮‍💨<br>我来帮你找个出口，选一个：',
       icon: '😮‍💨',
       title: '心态稳住，都是青铜的路',
       sub: '想怎么调整一下？',
