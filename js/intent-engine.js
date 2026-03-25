@@ -49,6 +49,58 @@ window.correctTypos = function(text) {
 // GAME / HERO DETECTION
 // ============================================================
 
+// 从文本中提取可能的游戏名（通用兜底方案）
+// 规则：识别"XXX + 意图词"模式，提取XXX作为游戏名
+window.extractGameNameFromText = function(text) {
+  const t = text.trim();
+  
+  // 常见意图关键词列表（用于分割游戏名）
+  const intentKeywords = [
+    '攻略', '资讯', '新闻', '消息', '礼包', '福利', '皮肤', '下载', 
+    '安装', '战绩', '战报', '数据', '提醒', '定时', '英雄', '角色',
+    '武将', '忍者', '武器', '装备', '技能', '天赋', '铭文', '出装'
+  ];
+  
+  // 尝试匹配: "游戏名 + 意图词"
+  for (const kw of intentKeywords) {
+    const idx = t.indexOf(kw);
+    if (idx > 0) {
+      const gameName = t.substring(0, idx).trim();
+      // 过滤掉过短或明显不是游戏名的情况
+      if (gameName.length >= 2 && gameName.length <= 20) {
+        return gameName;
+      }
+    }
+  }
+  
+  // 如果没有意图词，且文本长度适中，直接返回（可能是纯游戏名）
+  if (t.length >= 2 && t.length <= 20 && !/[？?！!。，,、]/.test(t)) {
+    return t;
+  }
+  
+  return null;
+};
+
+// 创建虚拟游戏对象（用于未在数据库中的游戏）
+window.createVirtualGame = function(gameName) {
+  return {
+    id: 'virtual_' + Date.now(),
+    name: gameName,
+    icon: '🎮',
+    emoji: '🎯',
+    skinLabel: '皮肤',
+    color: '#7f8c8d',
+    gradient: 'linear-gradient(135deg,#5f6c6d,#7f8c8d)',
+    bg: 'linear-gradient(135deg,#5f6c6d,#7f8c8d)',
+    cardBg: 'game-tab-assets/card2-bg-blur-65580c.png',
+    jumpUrl: '',
+    slogan: gameName,
+    keywords: [gameName],
+    status: 'download',
+    isVirtual: true  // 标记为虚拟游戏对象
+  };
+};
+
 window.detectHero = function(text, game) {
   if (!game) return null;
   const db = window.ENGINE_HERO_DB[game.id];
@@ -327,9 +379,17 @@ window.getLastMentionedGame = function() {
 // ── 辅助函数：带上下文感知的游戏检测 ──────────────────────
 // 先从当前文本识别，失败则从对话历史中获取最近提到的游戏
 window.detectGameWithContext = function(text) {
-  // 优先从当前输入识别
+  // 1️⃣ 优先从当前输入识别已知游戏
   const game = window.detectGame(text);
   if (game) return game;
-  // 再从对话上下文中获取
+  
+  // 2️⃣ 尝试提取未知游戏名（通用兜底）
+  const extractedGameName = window.extractGameNameFromText(text);
+  if (extractedGameName) {
+    console.log('[通用游戏识别] 检测到未录入游戏:', extractedGameName);
+    return window.createVirtualGame(extractedGameName);
+  }
+  
+  // 3️⃣ 最后才从对话历史上下文中获取
   return window.getLastMentionedGame();
 };

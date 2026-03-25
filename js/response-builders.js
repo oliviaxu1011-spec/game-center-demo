@@ -1033,8 +1033,8 @@ window.buildNewsResponse = function(text) {
     return { text: '想看哪个游戏的最新资讯呢？📰 告诉我游戏名~', quickReplies: resolved.quickReplies, onQR: resolved.onQR, _displayMap: resolved.displayMap };
   }
 
-  // 该游戏不支持资讯 → 友好提示并引导
-  if (!isGameSupportedForFeature(game.id, 'news')) {
+  // 该游戏不支持资讯（虚拟游戏跳过此检查,直接允许搜索）→ 友好提示并引导
+  if (!game.isVirtual && !isGameSupportedForFeature(game.id, 'news')) {
     const qrGames = getFeatureQuickReplyGames('news', 2);
     const qrItems = buildQR_L2_suggest(qrGames, 'news', game.name, 'guide');
     const resolved = resolveQR(qrItems, function(key) {
@@ -1159,24 +1159,45 @@ window._fetchAndFillNews = async function(cardId, game, userText) {
 // ── 降级到本地 mock 数据 ──────────────────────────────
 window._fallbackToMockNews = function(cardEl, game) {
   const newsData = window.MOCK_NEWS_DATA || {};
-  const items = newsData[game.id] || newsData.wzry;
+  const items = newsData[game.id];
 
-  cardEl.innerHTML = `
-    <div class="news-live-header">
-      <span class="news-live-badge">📰 资讯</span>
-      <span class="news-live-title">${game.name} · 近期资讯</span>
-    </div>
-    <div class="news-list">
-      ${items.map(n => `
-      <div class="news-item" onclick="showToast('正在打开: ${n.title.replace(/'/g, "\\'")}')">
-        <div class="news-img">${n.icon}</div>
-        <div class="news-info"><div class="news-title">${n.title}</div><div class="news-meta">${n.meta}</div></div>
-      </div>`).join('')}
-    </div>
-    <div class="news-live-footer" style="display:flex;justify-content:space-between;align-items:center">
-      <span>数据截至 2026年3月</span>
-      <span class="news-retry-btn" onclick="_retryNewsSearch(this,'${game.id}','${game.name}')" style="color:#1a6bff;cursor:pointer;font-weight:600;font-size:11px">🔄 搜索最新</span>
-    </div>`;
+  // 虚拟游戏或找不到 mock 数据 → 显示搜索失败提示（不回退到王者荣耀）
+  if (!items) {
+    cardEl.innerHTML = `
+      <div class="news-live-header">
+        <span class="news-live-badge">📰 资讯</span>
+        <span class="news-live-title">${game.name} · 近期资讯</span>
+      </div>
+      <div class="news-list">
+        <div class="news-item" style="justify-content:center;padding:20px 0">
+          <div class="news-info" style="text-align:center">
+            <div class="news-title" style="font-size:13px;color:#999">暂未搜索到 ${game.name} 的相关资讯</div>
+            <div class="news-meta">请稍后重试或换个关键词</div>
+          </div>
+        </div>
+      </div>
+      <div class="news-live-footer" style="display:flex;justify-content:space-between;align-items:center">
+        <span>数据截至 2026年3月</span>
+        <span class="news-retry-btn" onclick="_retryNewsSearch(this,'${game.id}','${game.name}')" style="color:#1a6bff;cursor:pointer;font-weight:600;font-size:11px">🔄 搜索最新</span>
+      </div>`;
+  } else {
+    cardEl.innerHTML = `
+      <div class="news-live-header">
+        <span class="news-live-badge">📰 资讯</span>
+        <span class="news-live-title">${game.name} · 近期资讯</span>
+      </div>
+      <div class="news-list">
+        ${items.map(n => `
+        <div class="news-item" onclick="showToast('正在打开: ${n.title.replace(/'/g, "\\'")}')">
+          <div class="news-img">${n.icon}</div>
+          <div class="news-info"><div class="news-title">${n.title}</div><div class="news-meta">${n.meta}</div></div>
+        </div>`).join('')}
+      </div>
+      <div class="news-live-footer" style="display:flex;justify-content:space-between;align-items:center">
+        <span>数据截至 2026年3月</span>
+        <span class="news-retry-btn" onclick="_retryNewsSearch(this,'${game.id}','${game.name}')" style="color:#1a6bff;cursor:pointer;font-weight:600;font-size:11px">🔄 搜索最新</span>
+      </div>`;
+  }
 
   // 更新上方的文字
   const parentContent = cardEl.closest('.ai-reply-card');
@@ -1195,7 +1216,7 @@ window._retryNewsSearch = async function(btnEl, gameId, gameName) {
   btnEl.textContent = '⏳ 搜索中…';
   btnEl.style.pointerEvents = 'none';
   try {
-    const results = await window.searchGameNews(gameId, gameName + '资讯');
+    const results = await window.searchGameNews(gameId, gameName + '资讯', gameName);
     const formatted = window.formatSearchResults(results, gameName);
     if (formatted && formatted.length > 0) {
       cardEl.innerHTML = `
@@ -1244,18 +1265,17 @@ window.buildGuideResponse = function(text) {
     }
   }
 
-  // 仍然未识别到 → 检查是否提到了具体游戏名（不在库中的游戏）
+  // ── 仍然未识别到 → 尝试提取游戏名创建虚拟游戏对象（通用兜底）──
   if (!game) {
-    // 如果用户文本中除了意图关键词外还有其他内容（可能是游戏名），标记需要 DeepSeek 处理
-    const intentKeywords = ['攻略','怎么玩','出装','加点','技巧','套路','打法','玩法','教学','教程','连招'];
-    let stripped = text;
-    intentKeywords.forEach(kw => { stripped = stripped.replace(new RegExp(kw, 'g'), ''); });
-    stripped = stripped.replace(/[？?！!。，,、~…\s]+/g, '').trim();
-    if (stripped.length >= 2) {
-      // 用户提到了具体游戏名（但不在库中）→ 标记转交 DeepSeek
-      return { _needDeepSeek: true, _reason: 'game_not_in_library', _extractedName: stripped };
+    const extractedGameName = window.extractGameNameFromText ? window.extractGameNameFromText(text) : null;
+    if (extractedGameName) {
+      console.log('[通用攻略识别] 检测到未录入游戏:', extractedGameName);
+      game = window.createVirtualGame(extractedGameName);
     }
-    // 纯粹只说了"攻略"没有游戏名 → 反问
+  }
+
+  // 仍未识别到且用户只说了"攻略"没有游戏名 → 反问
+  if (!game) {
     const qrGames = getFeatureQuickReplyGames('guide');
     const qrItems = buildQR_L1_selectGame(qrGames, 'guide');
     const resolved = resolveQR(qrItems, function(key) {
@@ -1264,8 +1284,8 @@ window.buildGuideResponse = function(text) {
     return { text: '想查哪个游戏的攻略呢？📖 告诉我游戏名~', quickReplies: resolved.quickReplies, onQR: resolved.onQR, _displayMap: resolved.displayMap };
   }
 
-  // 该游戏不支持攻略 → 友好提示并引导
-  if (!isGameSupportedForFeature(game.id, 'guide')) {
+  // 该游戏不支持攻略（虚拟游戏跳过此检查,直接允许搜索）
+  if (!game.isVirtual && !isGameSupportedForFeature(game.id, 'guide')) {
     const qrGames = getFeatureQuickReplyGames('guide', 2);
     const qrItems = buildQR_L2_suggest(qrGames, 'guide', game.name, 'news');
     const resolved = resolveQR(qrItems, function(key) {
