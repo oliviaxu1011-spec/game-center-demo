@@ -499,9 +499,10 @@ window.buildQR_L1_selectGame = function(games, featureId) {
  * @param {string} featureId - 功能ID
  * @param {string} currentGameName - 当前游戏名（可选，用于跨功能引导）
  * @param {string} crossFeatureId - 跨功能引导的功能ID（可选）
+ * @param {string} gameId - 当前游戏ID（可选，传入后会检查 crossFeatureId 是否对该游戏支持）
  * @returns {Array} [{text, actionKey}]
  */
-window.buildQR_L2_suggest = function(games, featureId, currentGameName, crossFeatureId) {
+window.buildQR_L2_suggest = function(games, featureId, currentGameName, crossFeatureId, gameId) {
   var CW = window.QR_COPYWRITING;
   var featureWord = {
     welfare: '福利', record: '战绩', replay: '复盘', partner: '找搭子',
@@ -521,10 +522,26 @@ window.buildQR_L2_suggest = function(games, featureId, currentGameName, crossFea
     result.push({ text: displayText, actionKey: actionKey });
   });
 
+  // 🔧 跨功能引导：如果传入了 gameId，检查 crossFeatureId 是否对该游戏支持
+  //    不支持时自动降级到该游戏支持的功能（优先 guide > news）
+  var isSupported = window.isGameSupportedForFeature || function() { return true; };
+  var effectiveCrossFeature = crossFeatureId;
+  if (gameId && crossFeatureId && !isSupported(gameId, crossFeatureId)) {
+    // crossFeatureId 对该游戏不支持 → 降级到支持的功能
+    var fallbackOrder = ['guide', 'news']; // 优先级排序
+    effectiveCrossFeature = null;
+    for (var i = 0; i < fallbackOrder.length; i++) {
+      if (fallbackOrder[i] !== featureId && isSupported(gameId, fallbackOrder[i])) {
+        effectiveCrossFeature = fallbackOrder[i];
+        break;
+      }
+    }
+  }
+
   // 跨功能引导
-  if (currentGameName && crossFeatureId) {
-    var crossWord = featureWord[crossFeatureId] || '';
-    var crossPrefix = crossFeatureId === 'download' ? '下载' : '';
+  if (currentGameName && effectiveCrossFeature) {
+    var crossWord = featureWord[effectiveCrossFeature] || '';
+    var crossPrefix = effectiveCrossFeature === 'download' ? '下载' : '';
     var crossTemplates = (CW.L2.crossFeature || {})[featureId] || [];
     var crossText = _pickTemplate(crossTemplates, currentGameName);
     var crossKey = crossPrefix + currentGameName + (crossPrefix ? '' : crossWord);

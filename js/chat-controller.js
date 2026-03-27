@@ -356,7 +356,13 @@ window.handleDeepSeekResult = function(text, dsResult) {
       const callbacks = {};
       qrOptions.forEach(opt => {
         callbacks[opt] = () => {
-          const resp = buildResponse(intentId, text + ' ' + opt);
+          // 🔧 根据选项内容重新判断真实意图，不盲目沿用原始 intentId
+          // 原因：纯游戏名引导场景下 intentId 是兜底值（如 "news"），
+          //       但用户选了"福利"就该走 welfare，选了"战绩"就该走 record
+          const combinedText = text + ' ' + opt;
+          const reDetected = window.detectIntent ? window.detectIntent(combinedText) : null;
+          const actualIntentId = reDetected ? reDetected.id : intentId;
+          const resp = buildResponse(actualIntentId, combinedText);
           return resp || { text: opt + '，好的，我来帮你处理！', cardHtml: null };
         };
       });
@@ -449,8 +455,85 @@ window.handleLocalResult = function(text, result) {
     return;
   }
 
-  // ── 无匹配 → pullback / fallback ──
+  // ── 无匹配 → 先检测纯游戏名 → 消歧追问 ──
   if (!result) {
+    // 🆕 纯游戏名检测：用户只输入了游戏名，没有功能意图词 → 主动追问
+    const _pureGame = window.detectGame(text);                        // 先查已知游戏库
+    const _trimmed = text.trim();
+    const _hasIntentWord = /查|领|看|找|复盘|战绩|福利|攻略|皮肤|搭子|提醒|下载|资讯|高光|排行|数据|战报/.test(_trimmed);
+    // 条件：识别到已知游戏 或 短文本可能是游戏名（2-8字、无标点、无意图词）
+    const _maybeGameName = !_pureGame && _trimmed.length >= 2 && _trimmed.length <= 8
+      && !/[？?！!。，,、\s]/.test(_trimmed) && !_hasIntentWord;
+    const _virtualGame = _maybeGameName ? window.createVirtualGame(_trimmed) : null;
+    const _gameForDisambig = _pureGame || _virtualGame;
+
+    if (_gameForDisambig && !_hasIntentWord) {
+      const gName = _gameForDisambig.name;
+      const gId   = _gameForDisambig.id;
+      const isVirtual = _gameForDisambig.isVirtual;
+      const skinLabel = _gameForDisambig.skinLabel || '皮肤';
+
+      // ── 动态查询该游戏支持的功能，构建个性化引导选项 ──
+      // 功能定义：intentId → { label(展示文案), action(回调文案), responseId(响应路由) }
+      const _featureMenu = [
+        { id: 'welfare',     label: '领福利',         action: gName + '福利',    responseId: 'welfare' },
+        { id: 'record',      label: '查战绩',         action: gName + '战绩',    responseId: 'record' },
+        { id: 'partner',     label: '找搭子',         action: gName + '找搭子',  responseId: 'partner' },
+        { id: 'guide',       label: '看攻略',         action: gName + '攻略',    responseId: 'guide' },
+        { id: 'news',        label: '看资讯',         action: gName + '资讯',    responseId: 'news' },
+        { id: 'skin',        label: '逛' + skinLabel,  action: gName + skinLabel,  responseId: 'skin' },
+        { id: 'download',    label: '下载游戏',       action: '下载' + gName,     responseId: 'download' },
+        { id: 'highlight',   label: '看高光',         action: gName + '高光',    responseId: 'highlight' },
+        { id: 'report',      label: '看战报',         action: gName + '战报',    responseId: 'report' },
+        { id: 'ranking',     label: '好友排行',       action: gName + '排行',    responseId: 'ranking' },
+        { id: 'replay',      label: 'AI复盘',         action: gName + '复盘',    responseId: 'replay' },
+        { id: 'match_query', label: '查对局',         action: gName + '对局',    responseId: 'match_query' },
+        { id: 'reminder',    label: '设提醒',         action: gName + '提醒',    responseId: 'reminder' },
+      ];
+
+      // 根据 FEATURE_GAME_SCOPE 过滤出该游戏支持的功能
+      // 虚拟游戏也走 isGameSupportedForFeature 统一判断（内部已处理虚拟游戏策略）
+      const isSupported = window.isGameSupportedForFeature || (() => false);
+      const supportedFeatures = _featureMenu.filter(f => isSupported(gId, f.id));
+
+      // 最多展示 5 个选项（避免过多），优先展示高频功能
+      const maxOptions = 5;
+      const displayFeatures = supportedFeatures.slice(0, maxOptions);
+
+      const disambigQR = displayFeatures.map(f => f.label);
+      const disambigCallbacks = {};
+      displayFeatures.forEach(f => {
+        disambigCallbacks[f.label] = () =>
+          buildResponse(f.responseId, f.action) || { text: '好的，帮你看看～', cardHtml: null };
+      });
+
+      // 根据功能数量调整引导话术
+      const featureCount = displayFeatures.length;
+      let guideText;
+      if (featureCount === 1) {
+        guideText = `提到<strong>${gName}</strong>，我可以帮你<strong>${displayFeatures[0].label}</strong>哦～`;
+      } else {
+        guideText = `提到<strong>${gName}</strong>啊～你想了解什么呢？😊`;
+      }
+
+      showTyping(() => {
+        addAIBubble(
+          guideText,
+          '🎮 功能引导',
+          75,
+          null,
+          disambigQR,
+          disambigCallbacks
+        );
+        const h = { role: 'assistant', content: `功能引导：${gName}` };
+        h._gameId = gId;
+        window.chatHistory.push(h);
+        if (window.chatHistory.length > MAX_HISTORY) window.chatHistory.shift();
+      });
+      return;
+    }
+
+    // ── 非游戏名 → pullback / fallback ──
     const pullbacks = window.DATA_PULLBACKS || [];
     let matched = null;
     const lower = text.toLowerCase();

@@ -73,10 +73,11 @@ window.extractGameNameFromText = function(text) {
     }
   }
   
-  // 如果没有意图词，且文本长度适中，直接返回（可能是纯游戏名）
-  if (t.length >= 2 && t.length <= 20 && !/[？?！!。，,、]/.test(t)) {
-    return t;
-  }
+  // 纯文本（无意图词）不再自动识别为游戏名
+  // 纯游戏名场景已由 chat-controller.js 的消歧追问逻辑统一处理
+  // if (t.length >= 2 && t.length <= 20 && !/[？?！!。，,、]/.test(t)) {
+  //   return t;
+  // }
   
   return null;
 };
@@ -212,6 +213,24 @@ window.detectIntent = function(text) {
   });
 
   if (bestScore === 0) return null;
+
+  // ── 纯游戏名拦截：如果用户只输入了游戏名（无意图词），不应匹配到任何意图 ──
+  // 典型场景："王者" 因编辑距离匹配到 skin 的 "忍者" keyword → 应拦截，交给消歧追问
+  const _pureGameCheck = window.detectGame ? window.detectGame(text) : null;
+  if (_pureGameCheck) {
+    const _inputTrimmed = text.trim();
+    // 检查输入是否只是游戏名本身（完全匹配或非常接近）
+    const _isJustGameName = _pureGameCheck.keywords.some(kw =>
+      _inputTrimmed === kw || _inputTrimmed === _pureGameCheck.name
+    );
+    if (_isJustGameName) {
+      // 再确认没有真正的意图词
+      const _hasRealIntent = /攻略|资讯|新闻|礼包|福利|皮肤|下载|战绩|战报|数据|提醒|搭子|复盘|高光|排行|出装|铭文|英雄|武将|日报|周报/.test(_inputTrimmed);
+      if (!_hasRealIntent) {
+        return null; // 纯游戏名 → 不匹配任何意图 → 交给 chat-controller 消歧追问
+      }
+    }
+  }
 
   // ── 游戏感知的意图修正（后处理）─────────────────
   // 规则：
