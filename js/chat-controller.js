@@ -295,6 +295,26 @@ window.processUserMessage = async function(text) {
   // ── Step B: 本地引擎先行识别（0ms，两种模式都先跑）──
   const localResult = detectIntent(text);
 
+  // ── Step B2: 异步英雄 AI 识别预处理 ──
+  // 当本地意图识别有结果（replay/partner/guide 等需要英雄信息的场景），
+  // 且本地英雄匹配失败时，提前调 AI 识别英雄并注入全局变量，
+  // 让后续同步的 buildXxxResponse 能读取到 AI 识别的英雄。
+  window._lastAIHeroResult = null; // 每轮清空
+  const heroRelatedIntents = ['replay', 'partner', 'guide'];
+  if (isHybrid && localResult && heroRelatedIntents.includes(localResult.id)) {
+    const _game = window.detectGameWithContext ? window.detectGameWithContext(text) : window.detectGame(text);
+    const _localHero = _game ? window.detectHero(text, _game) : null;
+    const _crossHero = !_localHero ? window.detectHeroAcrossGames(text) : null;
+    // 本地全部匹配失败 → 调 AI 异步识别
+    if (!_localHero && !_crossHero && window.detectHeroWithAI) {
+      const aiHeroResult = await window.detectHeroWithAI(text, _game);
+      if (aiHeroResult) {
+        window._lastAIHeroResult = aiHeroResult;
+        console.log(`[英雄AI兜底] 识别到: ${aiHeroResult.hero.name}(${aiHeroResult.source})`);
+      }
+    }
+  }
+
   // ── Step C: 本地引擎有结果 → 先试构建响应，检查是否需要转交 DeepSeek ──
   if (localResult) {
     // 预检：调 buildResponse 看看本地能否完整处理
@@ -310,6 +330,22 @@ window.processUserMessage = async function(text) {
   }
 
   // ── Step D: 本地无匹配 / 本地需要 AI 增强 → 尝试 DeepSeek AI ──
+  // 🆕 Step C2: 纯游戏名拦截 — 在走 DeepSeek 之前，先检查是否是纯游戏名
+  // 这样"英雄联盟"等库外游戏名可以走本地消歧追问（更快 + 能关联 pending query）
+  if (!localResult) {
+    const _pureGame2 = window.detectGame(text);
+    const _trimmed2 = text.trim();
+    const _hasIntent2 = /查|领|看|找|复盘|战绩|福利|攻略|皮肤|搭子|提醒|下载|资讯|高光|排行|数据|战报|怎么|出装|铭文/.test(_trimmed2);
+    const _maybeGame2 = !_pureGame2 && _trimmed2.length >= 2 && _trimmed2.length <= 8
+      && !/[？?！!。，,、\s]/.test(_trimmed2) && !_hasIntent2;
+    
+    if ((_pureGame2 || _maybeGame2) && !_hasIntent2) {
+      console.log('[Step C2] 拦截纯游戏名，走本地消歧追问:', _trimmed2);
+      handleLocalResult(text, null);
+      return;
+    }
+  }
+
   if (isHybrid) {
     const analyzingId = addAnalyzing('🤖 YoYo思考中…');
 
@@ -346,7 +382,17 @@ window.handleDeepSeekResult = function(text, dsResult) {
   histEntry._intentId = intentId;
   // 标记本轮提到的游戏，供后续上下文回溯
   const _gDs = window.detectGame(text);
-  if (_gDs) histEntry._gameId = _gDs.id;
+  if (_gDs) {
+    histEntry._gameId = _gDs.id;
+  } else {
+    // 🆕 已知游戏未匹配 → 检查用户消息历史中是否有虚拟游戏上下文
+    // 确保 DeepSeek 回复也能被关联到上下文中的虚拟游戏
+    const _lastVG = window.getLastMentionedGame ? window.getLastMentionedGame() : null;
+    if (_lastVG && _lastVG.isVirtual) {
+      histEntry._gameId = _lastVG.id;
+      histEntry._virtualGame = _lastVG;
+    }
+  }
   window.chatHistory.push(histEntry);
   if (window.chatHistory.length > MAX_HISTORY) window.chatHistory.shift();
 
@@ -359,7 +405,18 @@ window.handleDeepSeekResult = function(text, dsResult) {
           // 🔧 根据选项内容重新判断真实意图，不盲目沿用原始 intentId
           // 原因：纯游戏名引导场景下 intentId 是兜底值（如 "news"），
           //       但用户选了"福利"就该走 welfare，选了"战绩"就该走 record
-          const combinedText = text + ' ' + opt;
+          let combinedText = text + ' ' + opt;
+
+          // 🆕 如果用户选了"查查攻略"类选项，且历史中有 pending guide query，拼接英雄名
+          const isGuideOpt = /攻略|怎么玩|出装/.test(opt);
+          if (isGuideOpt && window._pendingGuideQuery && (Date.now() - window._pendingGuideQuery.timestamp < 120000)) {
+            const pendingHero = window._pendingGuideQuery.heroText;
+            if (pendingHero) {
+              combinedText = text + ' ' + pendingHero + ' ' + opt;
+              console.log('[追问回调] 拼接 pending hero:', pendingHero, '→', combinedText);
+            }
+          }
+
           const reDetected = window.detectIntent ? window.detectIntent(combinedText) : null;
           const actualIntentId = reDetected ? reDetected.id : intentId;
           const resp = buildResponse(actualIntentId, combinedText);
@@ -473,6 +530,40 @@ window.handleLocalResult = function(text, result) {
       const isVirtual = _gameForDisambig.isVirtual;
       const skinLabel = _gameForDisambig.skinLabel || '皮肤';
 
+      // 🆕 快速通道：如果有 pending guide query（用户之前问了"XX怎么玩"但没指定游戏），
+      // 现在用户说了游戏名 → 直接走攻略搜索，不再显示消歧菜单
+      // ⚠️ 关键：直接调用 _buildGuideCard 而非 buildGuideResponse，
+      //    因为 buildGuideResponse 内部会重新检测 game/hero，虚拟游戏的 hero 会丢失
+      if (window._pendingGuideQuery && (Date.now() - window._pendingGuideQuery.timestamp < 120000)) {
+        const pendingHero = window._pendingGuideQuery.heroText;
+        if (pendingHero) {
+          console.log('[消歧快速通道] 检测到 pending query，跳过消歧直接搜攻略:', gName, pendingHero);
+          // 先将游戏记录到历史（供后续上下文回溯）
+          window.addToHistory(text, 'user');
+          window._pendingGuideQuery = null; // 消费掉
+          // 直接构造 hero 对象，调用 _buildGuideCard 生成联网搜索卡片
+          const heroObj = { name: pendingHero, aliases: [pendingHero], role: '未知', icon: '🔍', _fromPending: true };
+          const response = window._buildGuideCard(_gameForDisambig, heroObj, gName + ' ' + pendingHero + ' 攻略');
+          showTyping(() => {
+            addAIBubble(
+              response.text,
+              '📖 攻略',
+              85,
+              response.cardHtml,
+              response.quickReplies,
+              response.onQR,
+              response._displayMap
+            );
+            const h = { role: 'assistant', content: `攻略：${gName} ${pendingHero}` };
+            h._gameId = gId;
+            if (isVirtual) h._virtualGame = _gameForDisambig;
+            window.chatHistory.push(h);
+            if (window.chatHistory.length > MAX_HISTORY) window.chatHistory.shift();
+          });
+          return;
+        }
+      }
+
       // ── 动态查询该游戏支持的功能，构建个性化引导选项 ──
       // 功能定义：intentId → { label(展示文案), action(回调文案), responseId(响应路由) }
       const _featureMenu = [
@@ -503,8 +594,18 @@ window.handleLocalResult = function(text, result) {
       const disambigQR = displayFeatures.map(f => f.label);
       const disambigCallbacks = {};
       displayFeatures.forEach(f => {
-        disambigCallbacks[f.label] = () =>
-          buildResponse(f.responseId, f.action) || { text: '好的，帮你看看～', cardHtml: null };
+        disambigCallbacks[f.label] = () => {
+          // 🆕 如果是攻略类功能 + 有 pending guide query → 拼接英雄名
+          let actionText = f.action;
+          if (f.id === 'guide' && window._pendingGuideQuery && (Date.now() - window._pendingGuideQuery.timestamp < 120000)) {
+            const pendingHero = window._pendingGuideQuery.heroText;
+            if (pendingHero) {
+              actionText = gName + ' ' + pendingHero + ' 攻略';
+              console.log('[消歧回调] 拼接 pending hero:', pendingHero, '→', actionText);
+            }
+          }
+          return buildResponse(f.responseId, actionText) || { text: '好的，帮你看看～', cardHtml: null };
+        };
       });
 
       // 根据功能数量调整引导话术

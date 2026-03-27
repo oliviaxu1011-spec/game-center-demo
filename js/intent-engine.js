@@ -358,7 +358,20 @@ window.addToHistory = function(role, content) {
   // 对用户消息自动标记提到的游戏，方便上下文回溯
   if (role === 'user' && content) {
     const g = window.detectGame(content);
-    if (g) entry._gameId = g.id;
+    if (g) {
+      entry._gameId = g.id;
+    } else {
+      // 🆕 已知游戏未匹配 → 检查是否是短文本游戏名（可能是库外游戏）
+      // 创建虚拟游戏对象并缓存，让后续 getLastMentionedGame 也能回溯到
+      const trimmed = content.trim();
+      const hasIntent = /查|领|看|找|复盘|战绩|福利|攻略|皮肤|搭子|提醒|下载|资讯|高光|排行|数据|战报|怎么|出装|铭文/.test(trimmed);
+      if (!hasIntent && trimmed.length >= 2 && trimmed.length <= 8 && !/[？?！!。，,、\s]/.test(trimmed)) {
+        // 可能是纯游戏名 → 创建虚拟游戏并标记
+        const vg = window.createVirtualGame(trimmed);
+        entry._gameId = vg.id;
+        entry._virtualGame = vg; // 存储虚拟游戏对象，供回溯时直接使用
+      }
+    }
   }
   window.chatHistory.push(entry);
   if (window.chatHistory.length > window.MAX_HISTORY) window.chatHistory.shift();
@@ -377,11 +390,18 @@ window.getLastIntent = function() {
 // 用于解决"先问王者战绩 → 再问AI复盘"时不再重复追问游戏名的问题
 // 回溯策略：优先查 _gameId 标记，再从历史文本中 detectGame
 window.getLastMentionedGame = function() {
-  // 1. 优先从 _gameId 标记中快速获取
+  // 1. 优先从 _gameId 标记中快速获取（已知游戏 + 虚拟游戏）
   for (let i = window.chatHistory.length - 1; i >= 0; i--) {
     const h = window.chatHistory[i];
-    if (h._gameId && window.ENGINE_GAMES[h._gameId]) {
-      return window.ENGINE_GAMES[h._gameId];
+    if (h._gameId) {
+      // 已知游戏：直接从 ENGINE_GAMES 获取
+      if (window.ENGINE_GAMES[h._gameId]) {
+        return window.ENGINE_GAMES[h._gameId];
+      }
+      // 🆕 虚拟游戏：从 _virtualGame 字段获取
+      if (h._virtualGame) {
+        return h._virtualGame;
+      }
     }
   }
   // 2. 降级：从历史消息文本中重新识别游戏（仅回溯用户消息）
@@ -412,3 +432,47 @@ window.detectGameWithContext = function(text) {
   // 3️⃣ 最后才从对话历史上下文中获取
   return window.getLastMentionedGame();
 };
+
+// ============================================================
+// 异步英雄识别（本地优先 + AI 兜底）
+// 用于 response-builders 需要英雄信息但本地匹配失败的场景
+// ============================================================
+window.detectHeroWithAI = async function(text, game) {
+  // 1️⃣ 先尝试本地匹配（0ms）
+  if (game) {
+    const localHero = window.detectHero(text, game);
+    if (localHero) return { hero: localHero, game: game, source: 'local' };
+  }
+
+  // 2️⃣ 本地无匹配，尝试跨游戏本地匹配
+  const crossResult = window.detectHeroAcrossGames(text);
+  if (crossResult) {
+    return { hero: crossResult.hero, game: crossResult.game, source: 'local_cross' };
+  }
+
+  // 3️⃣ 本地全部失败，调 AI 兜底
+  if (window.callDeepSeekForHero) {
+    const gameId = game ? game.id : null;
+    const aiResult = await window.callDeepSeekForHero(text, gameId);
+    if (aiResult && aiResult.hero) {
+      // 🆕 检查是否是库外游戏的英雄
+      if (aiResult._unsupportedGame) {
+        // 库外游戏英雄 → 创建虚拟游戏对象，让搜索流程能利用游戏名和英雄名
+        const virtualGameName = aiResult.gameName || aiResult.gameId || '未知游戏';
+        const virtualGame = window.createVirtualGame(virtualGameName);
+        console.log(`[英雄AI识别] 库外游戏英雄: ${aiResult.hero.name} → ${virtualGameName}(虚拟)`);
+        return { hero: aiResult.hero, game: virtualGame, source: 'ai_unsupported' };
+      }
+      // AI 识别成功，返回英雄对象和对应游戏
+      const resolvedGame = game || window.ENGINE_GAMES[aiResult.gameId] || null;
+      return { hero: aiResult.hero, game: resolvedGame, source: 'ai' };
+    }
+  }
+
+  // 4️⃣ 全部失败
+  return null;
+};
+
+// ── 全局变量：存储最近一次 AI 异步识别的英雄结果 ──
+// 供同步的 buildXxxResponse 函数读取（由 chat-controller 提前填充）
+window._lastAIHeroResult = null;

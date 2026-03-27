@@ -1,25 +1,18 @@
 // ============================================================
-// WEB SEARCH — 联网搜索模块（百度搜索）
+// WEB SEARCH — 联网搜索模块（Tavily Search API）
 // 为 AI Bot 提供实时资讯能力，替代静态 mock 数据
+// Tavily 是专为 AI 优化的搜索引擎，返回结构化 JSON，稳定可靠
 // 修改说明：直接编辑此文件即可调整搜索逻辑，刷新页面生效
 // ============================================================
 
 // ── 搜索配置 ──────────────────────────────────────
 window.WEB_SEARCH_CONFIG = {
-  // 使用多个 CORS 代理做**并发竞速**（谁先返回用谁）
-  // 2026.03 更新：扩充代理池，增加可用性
-  corsProxies: [
-    'https://proxy.corsfix.com/?',
-    'https://api.allorigins.win/raw?url=',
-    'https://api.codetabs.com/v1/proxy?quest=',
-    'https://test.cors.workers.dev/?',
-    'https://thingproxy.freeboard.io/fetch/',
-    'https://corsproxy.io/?',
-  ],
-  // 百度搜索 URL 模板
-  baiduUrl: 'https://www.baidu.com/s?wd=',
-  // 搜索超时（毫秒）— 7s（部分代理响应较慢，给足时间）
-  timeout: 7000,
+  // ── Tavily Search API ──
+  tavilyApiKey: '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',
+  tavilyApiUrl: 'https://api.tavily.com/search',
+
+  // 搜索超时（毫秒）
+  timeout: 10000,
   // 缓存有效期（毫秒）— 30分钟
   cacheTTL: 30 * 60 * 1000,
 };
@@ -57,7 +50,7 @@ window.GAME_SEARCH_QUERIES = {
 };
 
 // ============================================================
-// 核心搜索函数 — 通过百度搜索获取实时资讯（并发竞速版）
+// 核心搜索函数 — Tavily Search API
 // ============================================================
 window.webSearch = async function(query, options) {
   options = options || {};
@@ -71,183 +64,104 @@ window.webSearch = async function(query, options) {
     return cached.data;
   }
 
-  const encodedQuery = encodeURIComponent(query);
-  const searchUrl = window.WEB_SEARCH_CONFIG.baiduUrl + encodedQuery;
-  const proxies = window.WEB_SEARCH_CONFIG.corsProxies;
   const timeout = window.WEB_SEARCH_CONFIG.timeout;
 
-  // ── 并发竞速：所有代理同时发起请求，谁先成功用谁 ──
-  const racePromises = proxies.map((proxy, i) => {
-    return new Promise(async (resolve) => {
-      try {
-        // 不同代理的 URL 拼接方式不同：
-        // corsfix / cors.workers.dev / thingproxy → 直接拼原始 URL
-        // allorigins / codetabs / corsproxy.io → 需要 encodeURIComponent
-        const needsEncode = proxy.includes('allorigins') || proxy.includes('codetabs');
-        const proxyUrl = proxy + (needsEncode ? encodeURIComponent(searchUrl) : searchUrl);
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
+  console.log('[WebSearch] 开始搜索:', query);
+  let results = null;
 
-        const res = await fetch(proxyUrl, {
-          signal: controller.signal,
-          headers: { 'Accept': 'text/html' },
-        });
+  // ── Tavily Search API ──
+  results = await _searchViaTavily(query, maxResults, timeout, options);
 
-        if (!res.ok) {
-          clearTimeout(timeoutId);
-          console.warn(`[WebSearch] 代理${i}返回 ${res.status}`);
-          resolve(null);
-          return;
-        }
-
-        // res.text() 也可能挂起（如代理返回极慢的流式响应）
-        // 用 Promise.race 给 body 读取加超时保护
-        const html = await Promise.race([
-          res.text(),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('body读取超时')), timeout)),
-        ]);
-        clearTimeout(timeoutId);
-        const results = parseBaiduResults(html, maxResults);
-
-        if (results.length > 0) {
-          console.log(`[WebSearch] 代理${i}成功，获取 ${results.length} 条结果`);
-          resolve(results);
-        } else {
-          console.warn(`[WebSearch] 代理${i}返回0结果`);
-          resolve(null);
-        }
-      } catch (e) {
-        if (e.name === 'AbortError') {
-          console.warn(`[WebSearch] 代理${i}超时(${timeout}ms)`);
-        } else {
-          console.warn(`[WebSearch] 代理${i}失败:`, e.message);
-        }
-        resolve(null);
-      }
-    });
-  });
-
-  // 用自定义 race：第一个非 null 的结果胜出
-  // 同时加入**总超时保护**，防止所有代理都卡住（如 res.text() 永远不返回）
-  const totalTimeout = timeout + 3000; // 总超时 = 单代理超时 + 3s 缓冲
-  try {
-    const results = await Promise.race([
-      _raceForFirst(racePromises),
-      new Promise(resolve => setTimeout(() => {
-        console.warn(`[WebSearch] 总超时(${totalTimeout}ms)，强制降级`);
-        resolve(null);
-      }, totalTimeout)),
-    ]);
-    if (results) {
-      window._searchCache[cacheKey] = { data: results, time: Date.now() };
-      return results;
-    }
-  } catch (e) {
-    console.warn('[WebSearch] 竞速全部失败');
+  // 写入缓存
+  if (results && results.length > 0) {
+    results._searchEngine = results._searchEngine || 'Tavily';
+    window._searchCache[cacheKey] = { data: results, time: Date.now() };
+    return results;
   }
 
   return [];
 };
 
-// 辅助函数：等待第一个成功（非 null）的 Promise
-function _raceForFirst(promises) {
-  return new Promise((resolve, reject) => {
-    let pending = promises.length;
-    if (pending === 0) return resolve(null);
-    promises.forEach(p => {
-      p.then(result => {
-        if (result) resolve(result);
-        else if (--pending === 0) resolve(null);
-      });
-    });
-  });
-}
+// ============================================================
+// Tavily Search API — 专为 AI 优化的搜索引擎
+// 返回结构化 JSON，支持中文搜索，无 CORS 问题
+// API 文档：https://docs.tavily.com/documentation/api-reference/endpoint/search
+// ============================================================
+async function _searchViaTavily(query, maxResults, timeout, options) {
+  const apiKey = window.WEB_SEARCH_CONFIG.tavilyApiKey;
+  const apiUrl = window.WEB_SEARCH_CONFIG.tavilyApiUrl;
 
-// ============================================================
-// 解析百度搜索结果 HTML
-// ============================================================
-function parseBaiduResults(html, maxResults) {
-  const results = [];
+  if (!apiKey) {
+    console.warn('[WebSearch] Tavily API Key 未配置');
+    return null;
+  }
 
   try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    // 百度搜索结果在 .result.c-container 或 .c-result 中
-    const containers = doc.querySelectorAll('.result.c-container, .c-container[data-click], div[tpl]');
+    // 构造请求体
+    // 注意：中文游戏搜索统一使用 general topic，news topic 偏向英文新闻源
+    const requestBody = {
+      query: query,
+      max_results: Math.min(maxResults, 10),
+      search_depth: 'basic',
+      topic: (options && options.topic) || 'general',
+    };
 
-    containers.forEach((el) => {
-      if (results.length >= maxResults) return;
-
-      // 标题
-      const titleEl = el.querySelector('h3 a, .t a, .c-title a');
-      if (!titleEl) return;
-      const title = titleEl.textContent.trim().replace(/\s+/g, ' ');
-      if (!title || title.length < 4) return;
-
-      // 摘要
-      const absEl = el.querySelector('.c-abstract, .content-right_2s-H4, .c-span-last, .c-font-normal');
-      const abstract = absEl ? absEl.textContent.trim().replace(/\s+/g, ' ').slice(0, 120) : '';
-
-      // 来源
-      const srcEl = el.querySelector('.c-showurl, .source_s_3LaA0, .c-color-gray, .c-gap-right-xsmall');
-      const source = srcEl ? srcEl.textContent.trim() : '';
-
-      // 链接
-      const href = titleEl.getAttribute('href') || '';
-
-      results.push({
-        title: cleanTitle(title),
-        abstract: abstract,
-        source: source,
-        url: href,
-      });
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey,
+      },
+      body: JSON.stringify(requestBody),
     });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.warn('[WebSearch] Tavily API HTTP', res.status, errText.slice(0, 200));
+      return null;
+    }
+
+    const data = await res.json();
+
+    if (data.results && data.results.length > 0) {
+      console.log(`[WebSearch] Tavily 搜索成功，获取 ${data.results.length} 条结果（耗时 ${data.response_time}s）`);
+      const results = data.results.map(r => ({
+        title: r.title || '',
+        abstract: (r.content || '').slice(0, 150),
+        source: _extractDomain(r.url),
+        url: r.url || '',
+        score: r.score || 0,
+      }));
+      results._searchEngine = 'Tavily';
+      return results;
+    }
+
+    console.log('[WebSearch] Tavily 返回 0 条结果');
+    return null;
   } catch (e) {
-    console.warn('[WebSearch] HTML解析失败:', e.message);
+    if (e.name === 'AbortError') {
+      console.warn('[WebSearch] Tavily API 超时');
+    } else {
+      console.warn('[WebSearch] Tavily API 失败:', e.message);
+    }
+    return null;
   }
-
-  // 如果 DOM 解析没拿到结果，使用正则作为降级方案
-  if (results.length === 0) {
-    return parseByRegex(html, maxResults);
-  }
-
-  return results;
 }
 
-// ── 正则降级解析 ──────────────────────────────────
-function parseByRegex(html, maxResults) {
-  const results = [];
-  // 匹配百度搜索结果标题
-  const titleRegex = /<h3[^>]*class="[^"]*t[^"]*"[^>]*>[\s\S]*?<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let match;
-
-  while ((match = titleRegex.exec(html)) !== null && results.length < maxResults) {
-    const url = match[1] || '';
-    const rawTitle = match[2] || '';
-    // 清除 HTML 标签
-    const title = rawTitle.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-    if (title.length < 4) continue;
-
-    results.push({
-      title: cleanTitle(title),
-      abstract: '',
-      source: '',
-      url: url,
-    });
+// ── 从 URL 提取域名作为来源 ──────────────────────────
+function _extractDomain(url) {
+  try {
+    const u = new URL(url);
+    return u.hostname.replace(/^www\./, '');
+  } catch (e) {
+    return '';
   }
-
-  return results;
-}
-
-// ── 标题清洗 ──────────────────────────────────────
-function cleanTitle(title) {
-  return title
-    .replace(/百度(安全验证|快照)/g, '')
-    .replace(/_百度[^_]*$/g, '')
-    .replace(/- 百度[^-]*$/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
 }
 
 // ============================================================
