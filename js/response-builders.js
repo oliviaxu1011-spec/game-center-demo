@@ -640,6 +640,12 @@ window.buildReplayResponse = function(text) {
     }
   }
 
+  // 🆕 本地匹配失败 → 检查 AI 异步识别的英雄结果，从中获取游戏信息
+  if (!game && window._lastAIHeroResult && window._lastAIHeroResult.game) {
+    game = window._lastAIHeroResult.game;
+    console.log('[复盘] AI兜底提供游戏:', game.name);
+  }
+
   // 仍然未识别 → 追问用户（从统一配置动态生成选项）
   if (!game) {
     const qrGames = getFeatureQuickReplyGames('replay');
@@ -924,6 +930,15 @@ window.buildPartnerResponse = function(text) {
       hero = crossResult.hero;
     }
   }
+
+  // 🆕 本地匹配全部失败 → 检查 AI 异步识别的英雄结果
+  if (!hero && window._lastAIHeroResult) {
+    if (!game && window._lastAIHeroResult.game) {
+      game = window._lastAIHeroResult.game;
+    }
+    hero = window._lastAIHeroResult.hero;
+    console.log('[找搭子] AI兜底提供英雄:', hero.name, '游戏:', game?.name);
+  }
   // 仍未识别到游戏 → 反问用户
   if (!game) {
     const qrGames = getFeatureQuickReplyGames('partner');
@@ -945,6 +960,10 @@ window.buildPartnerResponse = function(text) {
   }
 
   if (!hero) hero = detectHero(text, game);
+  // 🆕 detectHero 仍失败 → 再次检查 AI 兜底结果
+  if (!hero && window._lastAIHeroResult && window._lastAIHeroResult.hero) {
+    hero = window._lastAIHeroResult.hero;
+  }
 
   // 位置关键词（从 data/mock/partner.js 加载）
   const roleKeywords = window.MOCK_ROLE_KEYWORDS || {};
@@ -1079,7 +1098,7 @@ window.buildNewsResponse = function(text) {
             <div class="search-loading-spinner"></div>
             <div class="search-loading-text">
               <div class="search-loading-title">🔍 正在联网搜索</div>
-              <div class="search-loading-desc">正在通过百度搜索 ${game.name} 最新资讯…</div>
+              <div class="search-loading-desc">正在联网搜索 ${game.name} 最新资讯…</div>
             </div>
           </div>
         </div>
@@ -1153,7 +1172,7 @@ window._fetchAndFillNews = async function(cardId, game, userText) {
           </div>`).join('')}
         </div>
         <div class="news-live-footer">
-          <span>数据来源：百度搜索 · ${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})}</span>
+          <span>数据来源：联网搜索 · ${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})}</span>
         </div>`;
 
       // 更新上方的文字
@@ -1161,7 +1180,19 @@ window._fetchAndFillNews = async function(cardId, game, userText) {
       if (parentContent) {
         const textEl = parentContent.querySelector('.ai-reply-desc');
         if (textEl) {
-          textEl.innerHTML = `为你找到 <strong>${game.name}</strong> 的 <strong>${formatted.length} 条最新资讯</strong> 🌐`;
+          // 🆕 如果 AI 已启用，调用 DeepSeek 对资讯内容进行流式总结
+          if (window.DEEPSEEK_CONFIG.enabled() && window.streamAISummary) {
+            textEl.innerHTML = `<span class="ai-stream-text">正在为你总结资讯要点…</span><span class="ai-stream-cursor">|</span>`;
+            textEl.classList.add('ai-streaming');
+            window.streamAISummary(formatted, game.name, 'news', textEl).then(ok => {
+              if (!ok) {
+                textEl.innerHTML = `为你找到 <strong>${game.name}</strong> 的 <strong>${formatted.length} 条最新资讯</strong> 🌐`;
+              }
+              window.scrollChat && window.scrollChat();
+            });
+          } else {
+            textEl.innerHTML = `为你找到 <strong>${game.name}</strong> 的 <strong>${formatted.length} 条最新资讯</strong> 🌐`;
+          }
         }
       }
     } else {
@@ -1260,7 +1291,7 @@ window._retryNewsSearch = async function(btnEl, gameId, gameName) {
           </div>`).join('')}
         </div>
         <div class="news-live-footer">
-          <span>数据来源：百度搜索 · ${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})}</span>
+          <span>数据来源：联网搜索 · ${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})}</span>
         </div>`;
     } else {
       btnEl.textContent = '❌ 搜索无结果';
@@ -1272,6 +1303,25 @@ window._retryNewsSearch = async function(btnEl, gameId, gameName) {
   }
 };
 
+// ── 从文本中提取潜在的角色名（去除意图词后的剩余文本）───────────────────
+window._extractPotentialHeroName = function(text) {
+  const intentWords = ['怎么玩','怎么出装','出装','铭文','打法','攻略','技巧','教学',
+    '怎么打','怎么用','天赋','符文','连招','玩法','怎么样','厉害吗','强吗','好用吗'];
+  let heroText = text.trim();
+  for (const iw of intentWords) {
+    heroText = heroText.replace(iw, '');
+  }
+  heroText = heroText.trim();
+  // 2-10 字，不包含标点和常见无意义词
+  if (heroText.length >= 2 && heroText.length <= 10 && !/[？?！!。，,、\s]/.test(heroText)) {
+    return heroText;
+  }
+  return null;
+};
+
+// 🆕 pending query 全局存储（当 buildGuideResponse 反问"选游戏"时保存，供后续回溯）
+window._pendingGuideQuery = null;
+
 // ── 攻略响应（支持联网搜索角色攻略） ───────────────────────────────────────
 window.buildGuideResponse = function(text) {
   const DEFAULT_GAME = window.ENGINE_DEFAULT_GAME;
@@ -1280,6 +1330,20 @@ window.buildGuideResponse = function(text) {
   let game = window.detectGame(text);
   let hero = null;
 
+  // 🆕 检查 pending query：如果上一轮反问了"选游戏"，且本次识别到了游戏，自动关联上一轮的英雄名
+  if (game && window._pendingGuideQuery && (Date.now() - window._pendingGuideQuery.timestamp < 120000)) {
+    const pendingHero = window._pendingGuideQuery.heroText;
+    if (pendingHero) {
+      hero = { name: pendingHero, aliases: [pendingHero], role: '未知', icon: '🔍', _fromPending: true };
+      console.log('[攻略] 回溯 pending query 英雄名:', pendingHero, '+ 游戏:', game.name);
+    }
+    window._pendingGuideQuery = null; // 消费后清空
+  }
+  // 如果是虚拟游戏（从上下文回溯时），也检查 pending query
+  if (!game && !hero && window._pendingGuideQuery && (Date.now() - window._pendingGuideQuery.timestamp < 120000)) {
+    // 先不消费，让后面的上下文回溯逻辑处理游戏识别
+  }
+
   // ── 未从当前文本识别到游戏 → 先尝试通过英雄名跨游戏识别 ──
   if (!game) {
     const crossResult = detectHeroAcrossGames(text);
@@ -1287,6 +1351,17 @@ window.buildGuideResponse = function(text) {
       game = crossResult.game;
       hero = crossResult.hero;
     }
+  }
+
+  // 🆕 本地匹配全部失败 → 检查 AI 异步识别的英雄结果
+  if (!hero && window._lastAIHeroResult) {
+    if (!game && window._lastAIHeroResult.game) {
+      game = window._lastAIHeroResult.game;
+    }
+    if (!hero) {
+      hero = window._lastAIHeroResult.hero;
+    }
+    console.log('[攻略] AI兜底提供英雄:', hero?.name, '游戏:', game?.name);
   }
 
   // ── 仍然未识别到 → 尝试提取游戏名创建虚拟游戏对象（通用兜底）──
@@ -1298,8 +1373,48 @@ window.buildGuideResponse = function(text) {
     }
   }
 
+  // 🆕 仍然未识别到 → 从对话上下文中回溯（可能用户之前说了游戏名）
+  if (!game) {
+    const ctxGame = window.getLastMentionedGame ? window.getLastMentionedGame() : null;
+    if (ctxGame) {
+      console.log('[攻略] 从对话上下文回溯到游戏:', ctxGame.name, ctxGame.isVirtual ? '(虚拟)' : '');
+      game = ctxGame;
+      // 🆕 有上下文游戏 + 先检查 pending query 中的英雄名
+      if (!hero && window._pendingGuideQuery && (Date.now() - window._pendingGuideQuery.timestamp < 120000)) {
+        const pendingHero = window._pendingGuideQuery.heroText;
+        if (pendingHero) {
+          hero = { name: pendingHero, aliases: [pendingHero], role: '未知', icon: '🔍', _fromPending: true };
+          console.log('[攻略] 从 pending query 回溯英雄名:', pendingHero);
+        }
+        window._pendingGuideQuery = null;
+      }
+      // 有上下文游戏 + 用户文本中可能有英雄名 → 尝试从文本中提取角色名
+      // 例如"卡牌大师怎么玩" → 去掉意图词后得到"卡牌大师"
+      if (!hero) {
+        const intentWords = ['怎么玩','怎么出装','出装','铭文','打法','攻略','技巧','教学','怎么打','怎么用','天赋','符文','连招','玩法'];
+        let heroText = text.trim();
+        for (const iw of intentWords) {
+          heroText = heroText.replace(iw, '');
+        }
+        heroText = heroText.trim();
+        if (heroText.length >= 2 && heroText.length <= 10) {
+          // 构造一个临时的英雄对象用于搜索
+          hero = { name: heroText, aliases: [heroText], role: '未知', icon: '🔍', _fromText: true };
+          console.log('[攻略] 从用户文本中提取角色名:', heroText);
+        }
+      }
+    }
+  }
+
   // 仍未识别到且用户只说了"攻略"没有游戏名 → 反问
   if (!game) {
+    // 🆕 保存 pending query：用户可能在说某个角色的攻略但没指定游戏
+    // 当用户后续回答游戏名时，可以回溯这个 pending query 自动关联
+    const _pendingHeroText = _extractPotentialHeroName(text);
+    if (_pendingHeroText) {
+      window._pendingGuideQuery = { heroText: _pendingHeroText, originalText: text, timestamp: Date.now() };
+      console.log('[攻略] 保存 pending query:', _pendingHeroText);
+    }
     const qrGames = getFeatureQuickReplyGames('guide');
     const qrItems = buildQR_L1_selectGame(qrGames, 'guide');
     const resolved = resolveQR(qrItems, function(key) {
@@ -1321,6 +1436,10 @@ window.buildGuideResponse = function(text) {
 
   // 已确定游戏，尝试识别英雄
   if (!hero) hero = detectHero(text, game);
+  // 🆕 detectHero 仍失败 → 再次检查 AI 兜底结果
+  if (!hero && window._lastAIHeroResult && window._lastAIHeroResult.hero) {
+    hero = window._lastAIHeroResult.hero;
+  }
 
   // ── 有英雄 → 直接给英雄攻略（联网搜索或本地） ──
   if (hero) return _buildGuideCard(game, hero, text);
@@ -1357,10 +1476,20 @@ window._buildGuideCard = function(game, hero, text) {
         </div>
       </div>`;
 
-    // 异步搜索攻略
-    setTimeout(() => {
-      _fetchAndFillGuide(cardId, game, hero, heroName);
-    }, 10);
+    // 异步搜索攻略 — 轮询等待 DOM 元素出现后再执行
+    // ⚠️ 不能用固定 setTimeout(10ms)，因为 showTyping 延迟 350~500ms 才会将卡片插入 DOM
+    //    如果 DOM 元素不存在就执行 _fetchAndFillGuide，它会直接 return，搜索永远不会完成
+    (function _waitAndFetch(attempts) {
+      const el = document.getElementById(cardId);
+      if (el) {
+        _fetchAndFillGuide(cardId, game, hero, heroName);
+      } else if (attempts < 30) {
+        // 每 50ms 检查一次，最多等 1.5s（30 * 50ms）
+        setTimeout(() => _waitAndFetch(attempts + 1), 50);
+      } else {
+        console.warn('[GuideSearch] DOM 元素超时未出现，放弃搜索:', cardId);
+      }
+    })(0);
 
     return {
       text: `正在为你联网搜索 <strong>${heroName}</strong> 的${game.name}最新攻略… 🔍`,
@@ -1376,7 +1505,30 @@ window._buildGuideCard = function(game, hero, text) {
 // ── 本地攻略卡片（无联网搜索）───────────────────────────
 window._buildLocalGuideCard = function(game, heroName) {
   const guideData = window.MOCK_GUIDE_DATA || {};
-  const gd = guideData[game.id] || guideData.wzry || {};
+  const gd = guideData[game.id]; // 不再回退到 wzry
+
+  // 🆕 虚拟游戏或没有 mock 数据 → 提供搜索引导
+  if (!gd || (game.isVirtual || (typeof game.id === 'string' && game.id.startsWith('virtual_')))) {
+    const searchQuery = encodeURIComponent(`${game.name} ${heroName} 攻略 出装 打法`);
+    const baiduUrl = `https://www.baidu.com/s?wd=${searchQuery}`;
+    return {
+      text: `暂无 <strong>${heroName}</strong> 的本地攻略数据，你可以直接搜索查看 🔍`,
+      cardHtml: `
+        <div class="result-card">
+          <div class="result-card-header">📖 ${heroName} · ${game.name}攻略</div>
+          <div style="padding:16px 14px;text-align:center">
+            <div style="font-size:28px;margin-bottom:8px">🔍</div>
+            <div style="font-size:13px;color:#555;margin-bottom:12px">暂无本地攻略数据</div>
+            <a href="${baiduUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#1a6bff;color:#fff;border:none;border-radius:20px;padding:8px 16px;font-size:12px;font-weight:600;text-decoration:none;cursor:pointer">
+              🌐 搜索 ${heroName} 攻略
+            </a>
+          </div>
+        </div>`,
+      ...(_buildAfterCompleteQR('guide', game.name, ['news'], game.id) || {}),
+    };
+  }
+
+  // 库内游戏 + 有 mock 数据 → 正常显示
   return {
     text: `这是 <strong>${heroName}</strong> 的${game.name}推荐配置和核心玩法 📖`,
     cardHtml: `
@@ -1446,17 +1598,31 @@ window._fetchAndFillGuide = async function(cardId, game, hero, heroName) {
         </div>
         <div style="padding:0 14px 10px">
           <div style="font-size:11px;color:#888;padding:6px 0;border-top:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center">
-            <span>数据来源：百度搜索 · ${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})}</span>
+            <span>数据来源：联网搜索 · ${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})}</span>
             <span>点击可查看详情</span>
           </div>
         </div>`;
 
-      // 更新上方的文字
+      // 更新上方的文字（卡片内已有"为你找到 N 条攻略"，气泡文字用不同措辞避免重复）
       const parentContent = cardEl.closest('.ai-reply-card');
       if (parentContent) {
         const textEl = parentContent.querySelector('.ai-reply-desc');
         if (textEl) {
-          textEl.innerHTML = `为你找到 <strong>${heroName}</strong> 的 <strong>${formatted.length} 条最新攻略</strong> 🌐`;
+          // 🆕 如果 AI 已启用，调用 DeepSeek 对搜索结果进行流式总结
+          if (window.DEEPSEEK_CONFIG.enabled() && window.streamAISummary) {
+            textEl.innerHTML = `<span class="ai-stream-text">正在为你总结攻略要点…</span><span class="ai-stream-cursor">|</span>`;
+            textEl.classList.add('ai-streaming');
+            // 异步调用，不阻塞卡片渲染
+            window.streamAISummary(formatted, heroName, 'guide', textEl).then(ok => {
+              if (!ok) {
+                // AI 总结失败，降级为固定文案
+                textEl.innerHTML = `已为你搜索到 <strong>${heroName}</strong> 的最新攻略，点击查看详情 📖`;
+              }
+              window.scrollChat && window.scrollChat();
+            });
+          } else {
+            textEl.innerHTML = `已为你搜索到 <strong>${heroName}</strong> 的最新攻略，点击查看详情 📖`;
+          }
         }
       }
     } else {
@@ -1476,7 +1642,44 @@ window._fetchAndFillGuide = async function(cardId, game, hero, heroName) {
 // ── 攻略降级到本地 mock 数据 ──────────────────────────────
 window._fallbackToMockGuide = function(cardEl, game, heroName) {
   const guideData = window.MOCK_GUIDE_DATA || {};
-  const gd = guideData[game.id] || guideData.wzry || {};
+  const gd = guideData[game.id]; // 注意：不再回退到 wzry，只使用该游戏自己的 mock 数据
+
+  // 🆕 如果是虚拟游戏或该游戏没有本地 mock 数据 → 显示搜索引导而非假数据
+  if (!gd || (game.isVirtual || (typeof game.id === 'string' && game.id.startsWith('virtual_')))) {
+    const searchQuery = encodeURIComponent(`${game.name} ${heroName} 攻略 出装 打法`);
+    const baiduUrl = `https://www.baidu.com/s?wd=${searchQuery}`;
+    cardEl.innerHTML = `
+      <div class="result-card-header">📖 ${heroName} · ${game.name}攻略</div>
+      <div style="padding:16px 14px">
+        <div style="text-align:center;padding:12px 0 16px">
+          <div style="font-size:28px;margin-bottom:8px">🔍</div>
+          <div style="font-size:13px;color:#555;line-height:1.6">
+            暂时没有搜索到 <strong>${heroName}</strong> 的在线攻略<br>
+            <span style="font-size:12px;color:#888">网络搜索可能暂时不可用</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <a href="${baiduUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#1a6bff;color:#fff;border:none;border-radius:20px;padding:8px 16px;font-size:12px;font-weight:600;text-decoration:none;cursor:pointer">
+            🌐 搜索攻略
+          </a>
+          <span class="news-retry-btn" onclick="_retryGuideSearch(this,'${game.id.replace(/'/g, "\\'")}','${game.name.replace(/'/g, "\\'")}','${heroName.replace(/'/g, "\\'")}')" style="display:inline-flex;align-items:center;gap:4px;background:#eef3ff;color:#1a6bff;border:1px solid rgba(26,107,255,.2);border-radius:20px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer">
+            🔄 重新搜索
+          </span>
+        </div>
+      </div>`;
+
+    // 更新上方的文字
+    const parentContent = cardEl.closest('.ai-reply-card');
+    if (parentContent) {
+      const textEl = parentContent.querySelector('.ai-reply-desc');
+      if (textEl) {
+        textEl.innerHTML = `正在尝试获取 <strong>${heroName}</strong> 的${game.name}攻略，你也可以直接搜索查看 🔍`;
+      }
+    }
+    return;
+  }
+
+  // 库内游戏 + 有本地 mock 数据 → 正常显示
   cardEl.innerHTML = `
     <div class="result-card-header">📖 ${heroName} · ${game.name}攻略</div>
     <div style="padding:12px">
@@ -1533,7 +1736,7 @@ window._retryGuideSearch = async function(btnEl, gameId, gameName, heroName) {
         </div>
         <div style="padding:0 14px 10px">
           <div style="font-size:11px;color:#888;padding:6px 0;border-top:1px solid #f0f0f0;display:flex;justify-content:space-between">
-            <span>数据来源：百度搜索 · ${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})}</span>
+            <span>数据来源：联网搜索 · ${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})}</span>
             <span>点击可查看详情</span>
           </div>
         </div>`;
@@ -1609,12 +1812,24 @@ const GUIDE_TYPE_DEFAULT = [
 // ── 识别攻略子类型 ──────────────────────────────────────
 function _detectGuideType(text, game) {
   const types = GUIDE_TYPE_CONFIG[game.id] || GUIDE_TYPE_DEFAULT;
-  const lower = text.toLowerCase();
+  // 🆕 从文本中去掉游戏名，避免游戏名中的关键词误匹配
+  // 例如"英雄联盟"包含"英雄"，会误匹配到 hero 类型的 keywords
+  let cleanText = text.toLowerCase();
+  if (game.name) {
+    cleanText = cleanText.replace(new RegExp(game.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '');
+  }
+  // 同样去掉已知的游戏别名
+  if (game.keywords) {
+    game.keywords.forEach(kw => {
+      cleanText = cleanText.replace(new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '');
+    });
+  }
+  cleanText = cleanText.trim();
 
   // 遍历每个类型的关键词，找到第一个匹配的
   for (const t of types) {
     for (const kw of t.keywords) {
-      if (lower.includes(kw)) return t;
+      if (cleanText.includes(kw)) return t;
     }
   }
   return null; // 没有匹配到任何子类型
@@ -1639,6 +1854,14 @@ function _buildGuideTypeAsk(game) {
 
 // ── 按攻略类型构建卡片 ──────────────────────────────────
 window._buildTypedGuideCard = function(game, guideType, text) {
+  // 🆕 虚拟游戏没有本地 mock 类型数据 → 直接走联网搜索
+  if (game.isVirtual || (typeof game.id === 'string' && game.id.startsWith('virtual_'))) {
+    // 将攻略类型作为搜索关键词，构造一个虚拟 hero 对象用于联网搜索
+    const searchSubject = guideType.label; // 如"角色攻略"、"版本攻略"
+    const searchHero = { name: searchSubject, aliases: [searchSubject], role: '未知', icon: guideType.icon, _fromTypedGuide: true };
+    return window._buildGuideCard(game, searchHero, text);
+  }
+
   const typedGuideData = _getTypedGuideData(game, guideType);
 
   return {
