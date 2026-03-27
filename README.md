@@ -1,7 +1,7 @@
 # YoYo — 游戏中心 AI 助手
 
 > 基于纯原生 HTML/CSS/JS 构建的移动端 AI 聊天助手 Demo，模拟 QQ 游戏中心内的 AI 课代表交互体验。
-> 支持 12 种游戏垂类意图识别 + DeepSeek 大模型 + 联网实时搜索。
+> 支持 13 种游戏垂类意图识别 + DeepSeek 大模型 + 联网实时搜索。
 
 ---
 
@@ -30,12 +30,12 @@
 │   ├── data-generators.js        # 动态数据生成器（战绩、复盘等 Mock 数据）
 │   ├── deepseek-api.js           # DeepSeek 大模型 API 调用
 │   ├── web-search.js             # 联网搜索模块（百度搜索 + CORS 代理竞速）
-│   ├── response-builders.js      # 响应构建器（12 种意图的卡片生成 + 功能×游戏支持范围）
+│   ├── response-builders.js      # 响应构建器（13 种意图的卡片生成 + 功能×游戏支持范围）
 │   ├── video-handler.js          # 视频生成/播放/分享交互
 │   └── chat-controller.js        # 聊天主控制器（UI 渲染、面板控制、消息收发）
 │
 ├── data/                         # 数据配置
-│   ├── intents.js                # 意图定义（12 种意图 + 关键词 + 正则）
+│   ├── intents.js                # 意图定义（13 种意图 + 关键词 + 正则）
 │   ├── games.js                  # 游戏数据库（游戏列表 + 识别关键词）
 │   ├── heroes.js                 # 英雄数据库（各游戏英雄 + 别名）
 │   ├── typo-abbr.js              # 谐音/错别字纠正映射
@@ -43,6 +43,7 @@
 │   ├── system-prompt.js          # DeepSeek 系统提示词
 │   ├── deepseek-config.js        # DeepSeek API 配置（Key/URL/Model）
 │   ├── pullback-fallback.js      # 拉回话题/降级处理逻辑
+│   ├── qr-copywriting.js        # 追问文案三级体系（L1精确/L2引导/L3对话）
 │   └── mock/                     # Mock 数据
 │       ├── welfare.js            # 福利卡片数据
 │       ├── record.js             # 战绩数据
@@ -180,7 +181,7 @@ index.html
 │   │   └── .hl              蓝色渐变高亮文字
 │   ├── p.landing-desc       描述文字
 │   ├── .intent-pills        意图标签横滑区 (单行横滑, 隐藏滚动条)
-│   │   └── .intent-pill ×12 灰底蓝字标签
+│   │   └── .intent-pill ×13 灰底蓝字标签
 │   └── button.start-btn     "进入Demo · 自由对话 →" (100%宽, 蓝色渐变+阴影)
 ```
 
@@ -312,7 +313,7 @@ index.html
 │
 ├── .aio-bottom-fixed
 │   ├── .aio-quick-actions#inputHints   快捷标签横滑区
-│   │   └── button.aio-quick-btn × 12  福利/战绩/复盘/找搭子...
+│   │   └── button.aio-quick-btn × 13  福利/战绩/复盘/找搭子...
 │   └── .aio-input-bar                  输入栏
 │       ├── .aio-input-content
 │       │   ├── .aio-mic-btn           麦克风图标 (SVG)
@@ -338,6 +339,7 @@ index.html
 | 情绪互动 | `.emotion-card > .emotion-actions` | 情绪互动 |
 | 定时提醒 | `.reminder-card` | 定时提醒 |
 | 视频卡片 | `.video-card-hero` / `.video-ondemand-*` | 高光视频 |
+| 好友排行 | `.ranking-card` | 好友排行榜 |
 | 联网搜索 | `.news-search-status` + `.news-live-*` | 实时搜索 |
 
 ---
@@ -413,6 +415,7 @@ index.html
 | `report` 日报/周报 | `'NONE'` | 不区分游戏 |
 | `emotion` 情绪互动 | `'NONE'` | 不区分游戏 |
 | `reminder` 提醒 | `'ALL'` | 全部游戏 |
+| `ranking` 好友排行 | `['wzry','hpjy','sjz']` | 仅支持 3 款游戏 |
 
 **不支持的游戏会怎样？** → 自动显示友好提示文案 + 引导到支持的游戏快捷回复按钮
 
@@ -454,10 +457,13 @@ index.html
 |:---|:---|
 | `editDistance(a, b)` | 计算编辑距离 |
 | `correctTypos(text)` | 纠正错别字/谐音 |
-| `detectGame(text)` | 识别游戏 |
+| `detectGame(text)` | 识别游戏（仅从当前文本） |
+| `detectGameWithContext(text)` | 识别游戏（当前文本失败则回溯历史） |
 | `detectHero(text, gameId)` | 识别英雄 |
 | `parseTimeRange(text)` | 解析时间范围 |
-| `detectIntent(text)` | 识别意图（返回意图对象 + 置信度） |
+| `detectIntent(text)` | 识别意图（返回意图对象 + 置信度 + 歧义信息） |
+| `getLastIntent()` | 从对话历史获取最近一次意图 ID |
+| `getLastMentionedGame()` | 从对话历史回溯最近提到的游戏（上下文推断） |
 
 ---
 
@@ -465,7 +471,7 @@ index.html
 **位置**: `js/response-builders.js`
 **职责**: 根据意图 ID 生成回复（文本 + HTML 卡片）+ 功能×游戏支持范围管理
 
-**12 种意图对应的构建函数**:
+**13 种意图对应的构建函数**:
 
 | 意图 ID | 构建函数 | 作用 |
 |:---|:---|:---|
@@ -474,13 +480,14 @@ index.html
 | `replay` | `buildReplayResponse()` | AI 复盘卡片 |
 | `partner` | `buildPartnerResponse()` | 找搭子卡片 |
 | `news` | `buildNewsResponse()` | 资讯卡片（联网搜索） |
-| `guide` | `buildGuideResponse()` | 攻略指南卡片（联网搜索） |
+| `guide` | `buildGuideResponse()` | 攻略指南卡片（联网搜索）|
 | `highlight` | `buildHighlightResponse()` | 高光视频卡片 |
 | `download` | `buildDownloadResponse()` | 游戏下载卡片 |
 | `skin` | `buildSkinResponse()` | 皮肤展示卡片 |
 | `report` | `buildReportResponse()` | 周报/数据报告卡片 |
 | `emotion` | `buildEmotionResponse()` | 情绪互动（陪聊） |
 | `reminder` | `buildReminderResponse()` | 提醒/通知 |
+| `ranking` | `buildRankingResponse()` | 好友排行榜卡片 |
 
 **辅助函数**:
 | 函数 | 作用 |
@@ -565,8 +572,7 @@ index.html
 ## 📊 数据文件说明
 
 ### data/intents.js — 意图配置
-定义 12 种意图，每种包含：`id`、`label`、`keywords`（弱匹配）、`strongKeywords`（强匹配）、`patterns`（正则）
-
+定义 13 种意图，每种包含：`id`、`label`、`keywords`（弱匹配）、`strongKeywords`（强匹配）、`patterns`（正则）
 ### data/games.js — 游戏数据库
 ```javascript
 { id: 'wzry', name: '王者荣耀', icon: '⚔️', keywords: ['王者', '荣耀', ...] }
@@ -609,7 +615,7 @@ window.DATA_HERO_DB = {
 | **流程** | 输入 → 意图识别 → 预定义卡片 | 输入 → 大模型理解 → 自由回复 |
 | **速度** | 即时 | 1-3 秒 |
 | **优点** | 快速、准确、离线可用 | 理解力强、支持任意话题 |
-| **缺点** | 仅 12 种预定义意图 | 需 API Key、可能产生幻觉 |
+| **缺点** | 仅 13 种预定义意图 | 需 API Key、可能产生幻觉 |
 
 **启用 DeepSeek**:
 1. 点击右上角 ≡ 菜单 → 输入 API Key → 保存
@@ -701,6 +707,14 @@ A: 自动降级到本地 Mock 数据。可在 `js/web-search.js` 添加新的 CO
 
 ## 📝 版本历史
 
-- **v1.2** — 新增联网搜索（百度 + CORS 代理竞速）、功能×游戏支持范围配置、不支持游戏的友好拦截引导、overscroll 防护优化
-- **v1.1** — 新增 web-search.js 联网搜索模块、partner.js 找搭子 Mock 数据
-- **v1.0** — 初始版本，支持 12 种意图 + DeepSeek 集成
+- **v1.0** — 初始版本，单文件原型（3000+ 行混合代码），支持 12 种意图 + DeepSeek 集成 + 简单追问
+- **v1.1** — 代码架构重构（20+ 模块化文件）+ 移动端体验优化（iOS 安全区、键盘弹起）
+- **v1.2** — 功能增强：取消提醒 + 追问策略（上下文游戏推断）+ 置信度三级分级 + 歧义检测
+- **v1.3** — 双引擎模式：DeepSeek 集成升级 + 联网搜索（6 代理并发竞速）+ 功能×游戏支持范围配置
+- **v1.4** — 追问系统全面优化：三级文案体系 + 13 功能全覆盖 + 上下文去重 + 横向功能引导
+- **v1.5** — 下载功能优化（新增王者世界 + 预约状态差异化）+ 卡片样式细节优化
+- **v1.6** — 意图识别增强：战绩关键词扩充 + 未知游戏分步处理 + 攻略 5 类子类型识别
+- **v1.7** — 全局按钮样式统一 + 视频交互优化 + 商业化术语配置（skinLabel）
+- **v1.8** — 周报卡片尺寸优化 + 追问 Emoji 双重过滤 + 通用游戏支持（虚拟游戏对象）
+- **v1.9** — 新增 ranking（好友排行）意图 + 纯游戏名消歧追问（动态功能菜单）+ 库外游戏规则 + 游戏感知意图修正（record→report）+ match_query 追问配置
+- **v1.10** — 追问菜单动态过滤（根据游戏支持功能过滤追问选项）+ 编辑距离匹配优化（解决"王者"与"忍者"误判）+ 库外游戏功能限制明确化（仅资讯+攻略）

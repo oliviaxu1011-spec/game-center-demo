@@ -75,6 +75,13 @@ window.getFeatureSupportedGames = function(featureId) {
 // ── 辅助函数：判断某游戏是否支持某功能 ───────────────────────
 window.isGameSupportedForFeature = function(gameId, featureId) {
   const scope = window.FEATURE_GAME_SCOPE[featureId];
+  // 🔧 虚拟游戏（不在库中）特殊处理：只允许资讯和攻略（可联网搜索），
+  //    其他功能（福利/战绩/搭子/皮肤等）需要本地数据，虚拟游戏没有 → 不支持
+  if (typeof gameId === 'string' && gameId.startsWith('virtual_')) {
+    // 资讯和攻略可以联网搜索，允许虚拟游戏使用
+    const virtualAllowed = ['news', 'guide'];
+    return virtualAllowed.includes(featureId);
+  }
   if (scope === 'ALL') return true;
   if (scope === 'NONE') return true; // 不区分游戏的功能不做拦截
   return Array.isArray(scope) && scope.includes(gameId);
@@ -115,9 +122,10 @@ window.getUnsupportedGameTip = function(featureId, gameName, gameId) {
 };
 
 // ── 通用追问构建辅助：功能完成后自动生成追问选项 ───────────────
-// 用法：var qr = _buildAfterCompleteQR('record', game.name, ['replay', 'ranking', 'partner']);
+// 用法：var qr = _buildAfterCompleteQR('record', game.name, ['replay', 'ranking', 'partner'], game.id);
 // 返回：{ quickReplies, onQR, _displayMap } 或 null（无配置时）
-window._buildAfterCompleteQR = function(featureId, gameName, nextFeatureIds) {
+// 🔧 第4个参数 gameId 可选：传入后会用 isGameSupportedForFeature 过滤，确保只推荐该游戏支持的功能
+window._buildAfterCompleteQR = function(featureId, gameName, nextFeatureIds, gameId) {
   // 功能 → 对应 builder 的映射
   var featureBuilderMap = {
     welfare:     function(k) { return window.buildWelfareResponse(k); },
@@ -142,6 +150,12 @@ window._buildAfterCompleteQR = function(featureId, gameName, nextFeatureIds) {
     match_query: '对局',
   };
 
+  // 🔧 辅助：检查某功能是否对当前游戏可用
+  var isSupported = window.isGameSupportedForFeature || function() { return true; };
+  var _canUse = function(fid) {
+    return !gameId || isSupported(gameId, fid);
+  };
+
   // ── 上下文去重：过滤掉对话中已经执行过的功能 ──────────────
   var usedIntents = {};
   (window.chatHistory || []).forEach(function(h) {
@@ -150,12 +164,12 @@ window._buildAfterCompleteQR = function(featureId, gameName, nextFeatureIds) {
   // 当前功能自身也算已使用
   usedIntents[featureId] = true;
 
-  // 从候选列表中移除已使用的功能
+  // 从候选列表中移除已使用的功能 + 该游戏不支持的功能
   var filteredIds = nextFeatureIds.filter(function(fid) {
-    return !usedIntents[fid];
+    return !usedIntents[fid] && _canUse(fid);
   });
 
-  // 如果过滤后数量不足，从候补池中补充（排除已用 + 已在列表中的）
+  // 如果过滤后数量不足，从候补池中补充（排除已用 + 已在列表中的 + 不支持的）
   if (filteredIds.length < nextFeatureIds.length) {
     var allFeatures = ['welfare', 'record', 'replay', 'partner', 'news',
                        'guide', 'skin', 'ranking', 'highlight', 'reminder'];
@@ -165,15 +179,19 @@ window._buildAfterCompleteQR = function(featureId, gameName, nextFeatureIds) {
 
     for (var i = 0; i < allFeatures.length && filteredIds.length < 3; i++) {
       var candidate = allFeatures[i];
-      if (!usedIntents[candidate] && !inList[candidate]) {
+      if (!usedIntents[candidate] && !inList[candidate] && _canUse(candidate)) {
         filteredIds.push(candidate);
         inList[candidate] = true;
       }
     }
   }
 
-  // 如果全部功能都用过了，降级回原始列表（至少给用户一些选择）
-  if (filteredIds.length === 0) filteredIds = nextFeatureIds;
+  // 如果全部功能都用过了或都不支持，降级回原始列表中该游戏支持的功能
+  if (filteredIds.length === 0) {
+    filteredIds = nextFeatureIds.filter(function(fid) { return _canUse(fid); });
+  }
+  // 如果该游戏完全没有支持的追问功能，返回 null（不展示追问）
+  if (filteredIds.length === 0) return null;
 
   var qrItems = buildQR_L2_afterComplete(featureId, gameName, filteredIds);
   if (!qrItems || qrItems.length === 0) return null;
@@ -228,7 +246,7 @@ window.buildWelfareResponse = function(text) {
     // 该游戏不支持福利 → 友好提示并引导
     if (!isGameSupportedForFeature(game.id, 'welfare')) {
       const qrGames = getFeatureQuickReplyGames('welfare', 2);
-      const qrItems = buildQR_L2_suggest(qrGames, 'welfare', game.name, 'guide');
+      const qrItems = buildQR_L2_suggest(qrGames, 'welfare', game.name, 'guide', game.id);
       const resolved = resolveQR(qrItems, function(key) {
         if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
         return function() { return window.buildWelfareResponse(key); };
@@ -238,7 +256,7 @@ window.buildWelfareResponse = function(text) {
     const welfareByGame = window.MOCK_WELFARE_BY_GAME || {};
     const items = welfareByGame[game.id] || welfareByGame.wzry;
     // 追问：领完福利引导看战绩/逛皮肤/找搭子
-    var welfareQR = _buildAfterCompleteQR('welfare', game.name, ['record', 'skin', 'partner']);
+    var welfareQR = _buildAfterCompleteQR('welfare', game.name, ['record', 'skin', 'partner'], game.id);
     var welfareResult = {
       text: `${game.name}今天有 <strong>${items.length}个福利</strong> 可以领，快去领吧！`,
       card: 'welfare_' + game.id,
@@ -320,9 +338,12 @@ window.buildMatchQueryResponse = function(text) {
   // 不支持的游戏 → 友好提示
   if (!isGameSupportedForFeature(game.id, 'match_query')) {
     var qrGames2 = getFeatureQuickReplyGames('match_query');
-    var qrItems2 = buildQR_L2_suggest(qrGames2, 'match_query', game.name, 'record');
+    var qrItems2 = buildQR_L2_suggest(qrGames2, 'match_query', game.name, 'record', game.id);
     var resolved2 = resolveQR(qrItems2, function(key) {
       if (key === game.name + '战绩') return function() { return window.buildRecordResponse(game.name + '战绩'); };
+      // 降级场景：crossFeature 可能从 record 降级到 guide/news
+      if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
+      if (key === game.name + '资讯') return function() { return window.buildNewsResponse(game.name + '资讯'); };
       return function() { return window.buildMatchQueryResponse(key); };
     });
     return { text: getUnsupportedGameTip('match_query', game.name), quickReplies: resolved2.quickReplies, onQR: resolved2.onQR, _displayMap: resolved2.displayMap };
@@ -473,7 +494,7 @@ window.buildRecordResponse = function(text) {
   // 识别到了游戏，但该游戏不支持战绩查询 → 友好提示并引导
   if (!isGameSupportedForFeature(game.id, 'record')) {
     const qrGames = getFeatureQuickReplyGames('record', 2);
-    const qrItems = buildQR_L2_suggest(qrGames, 'record', game.name, 'guide');
+    const qrItems = buildQR_L2_suggest(qrGames, 'record', game.name, 'guide', game.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
       return function() { return window.buildRecordResponse(key); };
@@ -546,7 +567,7 @@ window.buildRecordResponse = function(text) {
     return {
       text: `这是Q仔 <strong>${range.label}</strong> 的${game.name}战绩 📊`,
       cardHtml: recentCardHtml,
-      ...(_buildAfterCompleteQR('record', game.name, ['replay', 'ranking', 'partner']) || {}),
+      ...(_buildAfterCompleteQR('record', game.name, ['replay', 'ranking', 'partner'], game.id) || {}),
     };
   }
 
@@ -601,7 +622,7 @@ window.buildRecordResponse = function(text) {
   return {
     text: textLabel,
     cardHtml: dataCardHtml,
-    ...(_buildAfterCompleteQR('record', game.name, ['replay', 'ranking', 'partner']) || {}),
+    ...(_buildAfterCompleteQR('record', game.name, ['replay', 'ranking', 'partner'], game.id) || {}),
   };
 };
 
@@ -645,7 +666,7 @@ window.buildReplayResponse = function(text) {
   // 识别到了游戏，但该游戏不支持复盘 → 友好提示并引导
   if (!isGameSupportedForFeature(game.id, 'replay')) {
     const qrGames = getFeatureQuickReplyGames('replay');
-    const qrItems = buildQR_L2_suggest(qrGames, 'replay', game.name, 'record');
+    const qrItems = buildQR_L2_suggest(qrGames, 'replay', game.name, 'record', game.id);
     // 追加攻略引导（检查去重）
     var guideKey = game.name + '攻略';
     var hasDup = qrItems.some(function(item) { return item.actionKey === guideKey; });
@@ -653,6 +674,7 @@ window.buildReplayResponse = function(text) {
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '战绩') return function() { return window.buildRecordResponse(game.name + '战绩'); };
       if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
+      if (key === game.name + '资讯') return function() { return window.buildNewsResponse(game.name + '资讯'); };
       return function() { return window.buildReplayResponse(key); };
     });
     return { text: getUnsupportedGameTip('replay', game.name), quickReplies: resolved.quickReplies, onQR: resolved.onQR, _displayMap: resolved.displayMap };
@@ -723,7 +745,7 @@ window.buildReplayResponse = function(text) {
     // 自定义追问：highlight 按钮直接调用 handleGenerateHighlightVideo，保持"这局"语境
     ...(function() {
       // 获取 guide 和 partner 的通用追问
-      var baseQR = _buildAfterCompleteQR('replay', game.name, ['guide', 'partner']);
+      var baseQR = _buildAfterCompleteQR('replay', game.name, ['guide', 'partner'], game.id);
       var qrTexts = baseQR ? (baseQR.quickReplies || []) : [];
       var qrOnQR = baseQR ? (baseQR.onQR || {}) : {};
       var qrDisplayMap = baseQR ? (baseQR._displayMap || {}) : {};
@@ -761,9 +783,11 @@ window.buildReportResponse = function(text) {
   // 识别到了游戏，但该游戏不支持周报 → 友好提示并引导
   if (!isGameSupportedForFeature(game.id, 'report')) {
     const qrGames = getFeatureQuickReplyGames('report', 2);
-    const qrItems = buildQR_L2_suggest(qrGames, 'report', game.name, 'record');
+    const qrItems = buildQR_L2_suggest(qrGames, 'report', game.name, 'record', game.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '战绩') return function() { return window.buildRecordResponse(game.name + '战绩'); };
+      if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
+      if (key === game.name + '资讯') return function() { return window.buildNewsResponse(game.name + '资讯'); };
       return function() { return window.buildReportResponse(key); };
     });
     return { text: getUnsupportedGameTip('report', game.name), quickReplies: resolved.quickReplies, onQR: resolved.onQR, _displayMap: resolved.displayMap };
@@ -912,7 +936,7 @@ window.buildPartnerResponse = function(text) {
   // 该游戏不支持找搭子 → 友好提示并引导
   if (!isGameSupportedForFeature(game.id, 'partner')) {
     const qrGames = getFeatureQuickReplyGames('partner', 2);
-    const qrItems = buildQR_L2_suggest(qrGames, 'partner', game.name, 'guide');
+    const qrItems = buildQR_L2_suggest(qrGames, 'partner', game.name, 'guide', game.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
       return function() { return window.buildPartnerResponse(key); };
@@ -1013,7 +1037,7 @@ window.buildPartnerResponse = function(text) {
           ${partnerCards}
         </div>
       </div>`,
-    ...(_buildAfterCompleteQR('partner', game.name, ['record', 'welfare', 'reminder']) || {}),
+    ...(_buildAfterCompleteQR('partner', game.name, ['record', 'welfare', 'reminder'], game.id) || {}),
   };
 };
 
@@ -1033,10 +1057,10 @@ window.buildNewsResponse = function(text) {
     return { text: '想看哪个游戏的最新资讯呢？📰 告诉我游戏名~', quickReplies: resolved.quickReplies, onQR: resolved.onQR, _displayMap: resolved.displayMap };
   }
 
-  // 该游戏不支持资讯（虚拟游戏跳过此检查,直接允许搜索）→ 友好提示并引导
-  if (!game.isVirtual && !isGameSupportedForFeature(game.id, 'news')) {
+  // 该游戏不支持资讯 → 友好提示并引导（虚拟游戏在 isGameSupportedForFeature 中统一处理）
+  if (!isGameSupportedForFeature(game.id, 'news')) {
     const qrGames = getFeatureQuickReplyGames('news', 2);
-    const qrItems = buildQR_L2_suggest(qrGames, 'news', game.name, 'guide');
+    const qrItems = buildQR_L2_suggest(qrGames, 'news', game.name, 'guide', game.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
       return function() { return window.buildNewsResponse(key); };
@@ -1069,7 +1093,7 @@ window.buildNewsResponse = function(text) {
   return {
     text: `正在为你联网查找 <strong>${game.name}</strong> 最新资讯… 🌐`,
     cardHtml: loadingHtml,
-    ...(_buildAfterCompleteQR('news', game.name, ['welfare', 'guide', 'skin']) || {}),
+    ...(_buildAfterCompleteQR('news', game.name, ['welfare', 'guide', 'skin'], game.id) || {}),
   };
 };
 
@@ -1284,10 +1308,10 @@ window.buildGuideResponse = function(text) {
     return { text: '想查哪个游戏的攻略呢？📖 告诉我游戏名~', quickReplies: resolved.quickReplies, onQR: resolved.onQR, _displayMap: resolved.displayMap };
   }
 
-  // 该游戏不支持攻略（虚拟游戏跳过此检查,直接允许搜索）
-  if (!game.isVirtual && !isGameSupportedForFeature(game.id, 'guide')) {
+  // 该游戏不支持攻略 → 友好提示并引导（虚拟游戏在 isGameSupportedForFeature 中统一处理）
+  if (!isGameSupportedForFeature(game.id, 'guide')) {
     const qrGames = getFeatureQuickReplyGames('guide', 2);
-    const qrItems = buildQR_L2_suggest(qrGames, 'guide', game.name, 'news');
+    const qrItems = buildQR_L2_suggest(qrGames, 'guide', game.name, 'news', game.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '资讯') return function() { return window.buildNewsResponse(game.name + '资讯'); };
       return function() { return window.buildGuideResponse(key); };
@@ -1341,7 +1365,7 @@ window._buildGuideCard = function(game, hero, text) {
     return {
       text: `正在为你联网搜索 <strong>${heroName}</strong> 的${game.name}最新攻略… 🔍`,
       cardHtml: loadingHtml,
-      ...(_buildAfterCompleteQR('guide', game.name, ['record', 'partner', 'replay']) || {}),
+      ...(_buildAfterCompleteQR('guide', game.name, ['record', 'partner', 'replay'], game.id) || {}),
     };
   }
 
@@ -1369,7 +1393,7 @@ window._buildLocalGuideCard = function(game, heroName) {
           </div>
         </div>
       </div>`,
-    ...(_buildAfterCompleteQR('guide', game.name, ['record', 'partner', 'replay']) || {}),
+    ...(_buildAfterCompleteQR('guide', game.name, ['record', 'partner', 'replay'], game.id) || {}),
   };
 };
 
@@ -1633,7 +1657,7 @@ window._buildTypedGuideCard = function(game, guideType, text) {
           </div>
         </div>
       </div>`,
-    ...(_buildAfterCompleteQR('guide', game.name, ['record', 'partner', 'replay']) || {}),
+    ...(_buildAfterCompleteQR('guide', game.name, ['record', 'partner', 'replay'], game.id) || {}),
   };
 };
 
@@ -1702,9 +1726,11 @@ window.buildHighlightResponse = function(text) {
   // 该游戏不支持高光 → 友好提示并引导
   if (!isGameSupportedForFeature(game.id, 'highlight')) {
     const qrGames = getFeatureQuickReplyGames('highlight', 2);
-    const qrItems = buildQR_L2_suggest(qrGames, 'highlight', game.name, 'record');
+    const qrItems = buildQR_L2_suggest(qrGames, 'highlight', game.name, 'record', game.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '战绩') return function() { return window.buildRecordResponse(game.name + '战绩'); };
+      if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
+      if (key === game.name + '资讯') return function() { return window.buildNewsResponse(game.name + '资讯'); };
       return function() { return window.buildHighlightResponse(key); };
     });
     return { text: getUnsupportedGameTip('highlight', game.name), quickReplies: resolved.quickReplies, onQR: resolved.onQR, _displayMap: resolved.displayMap };
@@ -1732,7 +1758,7 @@ window.buildHighlightResponse = function(text) {
           </div>
         </div>
       </div>`,
-    ...(_buildAfterCompleteQR('highlight', game.name, ['record', 'partner', 'replay']) || {}),
+    ...(_buildAfterCompleteQR('highlight', game.name, ['record', 'partner', 'replay'], game.id) || {}),
   };
 };
 
@@ -1797,7 +1823,7 @@ window.buildDownloadResponse = function(text) {
   // 该游戏不支持下载 → 友好提示并引导
   if (detectedGame && !isGameSupportedForFeature(detectedGame.id, 'download')) {
     const qrGames = getFeatureQuickReplyGames('download', 2);
-    const qrItems = buildQR_L2_suggest(qrGames, 'download', detectedGame.name, 'guide');
+    const qrItems = buildQR_L2_suggest(qrGames, 'download', detectedGame.name, 'guide', detectedGame.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === detectedGame.name + '攻略') return function() { return window.buildGuideResponse(detectedGame.name + '攻略'); };
       return function() { return window.buildDownloadResponse(key); };
@@ -1871,7 +1897,7 @@ window.buildDownloadResponse = function(text) {
           </div>` : ''}
         </div>
       </div>`,
-    ...(_buildAfterCompleteQR('download', dlGameName, ['guide', 'news', 'welfare']) || {}),
+    ...(_buildAfterCompleteQR('download', dlGameName, ['guide', 'news', 'welfare'], detectedGame && detectedGame.id) || {}),
   };
 };
 
@@ -1915,7 +1941,7 @@ window.buildSkinResponse = function(text) {
   // 该游戏不支持 → 友好提示并引导
   if (!isGameSupportedForFeature(game.id, 'skin')) {
     const qrGames = getFeatureQuickReplyGames('skin', 2);
-    const qrItems = buildQR_L2_suggest(qrGames, 'skin', game.name, 'guide');
+    const qrItems = buildQR_L2_suggest(qrGames, 'skin', game.name, 'guide', game.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
       return function() { return window.buildSkinResponse(key); };
@@ -1929,7 +1955,7 @@ window.buildSkinResponse = function(text) {
   if (skins.length === 0) {
     const qrGames = getFeatureQuickReplyGames('skin', 2);
     const otherGames = qrGames.filter(g => g.id !== game.id);
-    const qrItems = buildQR_L2_suggest(otherGames, 'skin', game.name, 'guide');
+    const qrItems = buildQR_L2_suggest(otherGames, 'skin', game.name, 'guide', game.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
       return function() { return window.buildSkinResponse(key); };
@@ -1955,7 +1981,7 @@ window.buildSkinResponse = function(text) {
             </div>`).join('')}
         </div>
       </div>`,
-    ...(_buildAfterCompleteQR('skin', game.name, ['welfare', 'news', 'record']) || {}),
+    ...(_buildAfterCompleteQR('skin', game.name, ['welfare', 'news', 'record'], game.id) || {}),
   };
 };
 
@@ -2065,7 +2091,7 @@ window.buildReminderResponse = function(text) {
   // 该游戏不支持提醒 → 友好提示并引导
   if (!isGameSupportedForFeature(game.id, 'reminder')) {
     const qrGames = getFeatureQuickReplyGames('reminder', 2);
-    const qrItems = buildQR_L2_suggest(qrGames, 'reminder', game.name, 'guide');
+    const qrItems = buildQR_L2_suggest(qrGames, 'reminder', game.name, 'guide', game.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
       return function() { return window.buildReminderResponse(key + text); };
@@ -2092,7 +2118,7 @@ window.buildReminderResponse = function(text) {
           </div>
         </div>
       </div>`,
-    ...(_buildAfterCompleteQR('reminder', game.name, ['welfare', 'partner', 'record']) || {}),
+    ...(_buildAfterCompleteQR('reminder', game.name, ['welfare', 'partner', 'record'], game.id) || {}),
   };
 };
 
@@ -2235,9 +2261,11 @@ window.buildRankingResponse = function(text) {
   // 该游戏不支持排行 → 友好提示并引导
   if (!isGameSupportedForFeature(game.id, 'ranking')) {
     const qrGames = getFeatureQuickReplyGames('ranking', 2);
-    const qrItems = buildQR_L2_suggest(qrGames, 'ranking', game.name, 'record');
+    const qrItems = buildQR_L2_suggest(qrGames, 'ranking', game.name, 'record', game.id);
     const resolved = resolveQR(qrItems, function(key) {
       if (key === game.name + '战绩') return function() { return window.buildRecordResponse(game.name + '战绩'); };
+      if (key === game.name + '攻略') return function() { return window.buildGuideResponse(game.name + '攻略'); };
+      if (key === game.name + '资讯') return function() { return window.buildNewsResponse(game.name + '资讯'); };
       return function() { return window.buildRankingResponse(key); };
     });
     return { text: getUnsupportedGameTip('ranking', game.name), quickReplies: resolved.quickReplies, onQR: resolved.onQR, _displayMap: resolved.displayMap };
@@ -2312,7 +2340,7 @@ window.buildRankingResponse = function(text) {
 
   // 快捷回复：优先引导同游戏下的其他功能（游戏关联度优先策略）
   // 策略：排行完成后 → 同游戏战绩/复盘/找搭子 优先于 跨游戏排行
-  var rankingQR = _buildAfterCompleteQR('ranking', game.name, ['record', 'replay', 'partner']);
+  var rankingQR = _buildAfterCompleteQR('ranking', game.name, ['record', 'replay', 'partner'], game.id);
   var qrTexts, onQR, displayMap;
   if (rankingQR && rankingQR.quickReplies && rankingQR.quickReplies.length > 0) {
     qrTexts = rankingQR.quickReplies;
