@@ -270,7 +270,12 @@
   display:block;
   height:0.5px;
   background:rgba(0,0,0,0.08);
-  margin:0 16px;
+  margin:0 16px 8px;
+}
+/* 攻略/资讯搜索结果卡片不需要上方分隔线 */
+.ai-reply-card .result-card:has(.news-list)::before,
+.ai-reply-card .result-card:has(.news-search-status)::before {
+  display:none;
 }
 .ai-reply-card .result-card .result-card-header {
   border-radius:0;
