@@ -1581,11 +1581,11 @@ window._fetchAndFillGuide = async function(cardId, game, hero, heroName) {
       // 搜索成功 → 渲染联网攻略
       cardEl.innerHTML = `
         <div class="result-card-header">📖 ${heroName} · ${game.name}攻略</div>
-        <div class="news-live-header" style="padding:0 14px">
+        <div class="news-live-header" style="padding:8px 14px">
           <span class="news-live-badge">🌐 实时</span>
           <span class="news-live-title">为你找到 ${formatted.length} 条${heroName}攻略</span>
         </div>
-        <div class="news-list" style="padding:0 10px 4px">
+        <div class="news-list" style="padding:4px 10px 4px">
           ${formatted.map(n => `
           <div class="news-item news-item-live" onclick="${n.url ? `window.open('${n.url.replace(/'/g, "\\'")}','_blank')` : `showToast('${n.fullTitle.replace(/'/g, "\\'")}')`}" style="cursor:pointer">
             <div class="news-img">📖</div>
@@ -1719,11 +1719,11 @@ window._retryGuideSearch = async function(btnEl, gameId, gameName, heroName) {
     if (formatted && formatted.length > 0) {
       cardEl.innerHTML = `
         <div class="result-card-header">📖 ${heroName} · ${gameName}攻略</div>
-        <div class="news-live-header" style="padding:0 14px">
+        <div class="news-live-header" style="padding:8px 14px">
           <span class="news-live-badge">🌐 实时</span>
           <span class="news-live-title">为你找到 ${formatted.length} 条${heroName}攻略</span>
         </div>
-        <div class="news-list" style="padding:0 10px 4px">
+        <div class="news-list" style="padding:4px 10px 4px">
           ${formatted.map(n => `
           <div class="news-item news-item-live" onclick="${n.url ? `window.open('${n.url.replace(/'/g, "\\'")}','_blank')` : `showToast('${n.fullTitle.replace(/'/g, "\\'")}')`}" style="cursor:pointer">
             <div class="news-img">📖</div>
