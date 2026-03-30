@@ -337,7 +337,8 @@ window.processUserMessage = async function(text) {
     const _trimmed2 = text.trim();
     const _hasIntent2 = /查|领|看|找|复盘|战绩|福利|攻略|皮肤|搭子|提醒|下载|资讯|高光|排行|数据|战报|怎么|出装|铭文/.test(_trimmed2);
     const _maybeGame2 = !_pureGame2 && _trimmed2.length >= 2 && _trimmed2.length <= 8
-      && !/[？?！!。，,、\s]/.test(_trimmed2) && !_hasIntent2;
+      && !/[？?！!。，,、\s]/.test(_trimmed2) && !_hasIntent2
+      && !/^(最近|上[一二两三四五六七八九十\d]*[把局场盘]|今天|昨天|前天|本周|上周|这周|刚才|这把|近期|最近[一那]?[把局场盘])/.test(_trimmed2);
     
     if ((_pureGame2 || _maybeGame2) && !_hasIntent2) {
       console.log('[Step C2] 拦截纯游戏名，走本地消歧追问:', _trimmed2);
@@ -474,7 +475,7 @@ window.handleLocalResult = function(text, result) {
         }
       );
       const h = { role: 'assistant', content: `确认意图：${guessLabel}？` }; h._intentId = result.id;
-      const _gW = window.detectGame(text);
+      const _gW = window.detectGame(text) || window.getLastMentionedGame();
       if (_gW) h._gameId = _gW.id;
       window.chatHistory.push(h); if (window.chatHistory.length > MAX_HISTORY) window.chatHistory.shift();
     });
@@ -505,7 +506,7 @@ window.handleLocalResult = function(text, result) {
         }
       );
       const h = { role: 'assistant', content: `消歧义：${opt1} vs ${opt2}` }; h._intentId = result.id;
-      const _gA = window.detectGame(text);
+      const _gA = window.detectGame(text) || window.getLastMentionedGame();
       if (_gA) h._gameId = _gA.id;
       window.chatHistory.push(h); if (window.chatHistory.length > MAX_HISTORY) window.chatHistory.shift();
     });
@@ -518,9 +519,10 @@ window.handleLocalResult = function(text, result) {
     const _pureGame = window.detectGame(text);                        // 先查已知游戏库
     const _trimmed = text.trim();
     const _hasIntentWord = /查|领|看|找|复盘|战绩|福利|攻略|皮肤|搭子|提醒|下载|资讯|高光|排行|数据|战报/.test(_trimmed);
-    // 条件：识别到已知游戏 或 短文本可能是游戏名（2-8字、无标点、无意图词）
+    // 条件：识别到已知游戏 或 短文本可能是游戏名（2-8字、无标点、无意图词、非时间词）
     const _maybeGameName = !_pureGame && _trimmed.length >= 2 && _trimmed.length <= 8
-      && !/[？?！!。，,、\s]/.test(_trimmed) && !_hasIntentWord;
+      && !/[？?！!。，,、\s]/.test(_trimmed) && !_hasIntentWord
+      && !/^(最近|上[一二两三四五六七八九十\d]*[把局场盘]|今天|昨天|前天|本周|上周|这周|刚才|这把|近期|最近[一那]?[把局场盘])/.test(_trimmed);
     const _virtualGame = _maybeGameName ? window.createVirtualGame(_trimmed) : null;
     const _gameForDisambig = _pureGame || _virtualGame;
 
@@ -692,7 +694,7 @@ window.handleLocalResult = function(text, result) {
       );
       const h = { role: 'assistant', content: response.text }; h._intentId = result.id;
       // 标记本轮提到的游戏，供后续上下文回溯
-      const _g = window.detectGame(text);
+      const _g = window.detectGame(text) || window.getLastMentionedGame();
       if (_g) h._gameId = _g.id;
       window.chatHistory.push(h); if (window.chatHistory.length > MAX_HISTORY) window.chatHistory.shift();
     }

@@ -60,6 +60,9 @@ window.extractGameNameFromText = function(text) {
     '安装', '战绩', '战报', '数据', '提醒', '定时', '英雄', '角色',
     '武将', '忍者', '武器', '装备', '技能', '天赋', '铭文', '出装'
   ];
+
+  // 🔧 非游戏名过滤：这些修饰词/形容词/时间词不应被当作游戏名
+  const NON_GAME_NAMES = /^(完整|全部|所有|总|累计|赛季|历史|最近|最新|今天|昨天|前天|本周|上周|这周|近期|查看|查查|看看|帮我|给我|我的|具体|详细|简要|每日|每周|本月|上月|当前|目前|一下|一些|更多|其他|哪些|什么|怎么)$/;
   
   // 尝试匹配: "游戏名 + 意图词"
   for (const kw of intentKeywords) {
@@ -68,6 +71,8 @@ window.extractGameNameFromText = function(text) {
       const gameName = t.substring(0, idx).trim();
       // 过滤掉过短或明显不是游戏名的情况
       if (gameName.length >= 2 && gameName.length <= 20) {
+        // 🔧 过滤掉修饰词/时间词/动词短语，这些不是游戏名
+        if (NON_GAME_NAMES.test(gameName)) continue;
         return gameName;
       }
     }
@@ -338,7 +343,7 @@ window.parseTimeRange = function(text) {
   if (/前天|前日/.test(t))                     return { label:'前天',      days:2,  tag:'day_before_yesterday' };
   if (/昨天|昨日|yesterday/.test(t))          return { label:'昨日',      days:1,  tag:'yesterday' };
   if (/今天|今日|today/.test(t))               return { label:'今日',      days:1,  tag:'today' };
-  if (/上一把|上把|上局|刚才|这把|最近一把/.test(t)) return { label:'最近一局',  days:0,  tag:'last_match', matchIndex: 0 };
+  if (/上一把|上把|上局|刚才|这把|最近一把|最近一局|最近那局|最近那把/.test(t)) return { label:'最近一局',  days:0,  tag:'last_match', matchIndex: 0 };
   if (/本周|这周|最近一周|7天|七天/.test(t))   return { label:'本周',      days:7,  tag:'week' };
   if (/上周/.test(t))                          return { label:'上周',      days:14, tag:'last_week' };
   if (/本月|这个月|30天|三十天/.test(t))       return { label:'本月',      days:30, tag:'month' };
@@ -365,7 +370,9 @@ window.addToHistory = function(role, content) {
       // 创建虚拟游戏对象并缓存，让后续 getLastMentionedGame 也能回溯到
       const trimmed = content.trim();
       const hasIntent = /查|领|看|找|复盘|战绩|福利|攻略|皮肤|搭子|提醒|下载|资讯|高光|排行|数据|战报|怎么|出装|铭文/.test(trimmed);
-      if (!hasIntent && trimmed.length >= 2 && trimmed.length <= 8 && !/[？?！!。，,、\s]/.test(trimmed)) {
+      // 🔧 过滤时间词：防止"最近一局""上一把""今天""昨天"等被误判为游戏名
+      const isTimeWord = /^(最近|上[一二两三四五六七八九十\d]*[把局场盘]|今天|昨天|前天|本周|上周|这周|刚才|这把|近期|最近一[把局场盘]|最近那[把局场盘])/.test(trimmed);
+      if (!hasIntent && !isTimeWord && trimmed.length >= 2 && trimmed.length <= 8 && !/[？?！!。，,、\s]/.test(trimmed)) {
         // 可能是纯游戏名 → 创建虚拟游戏并标记
         const vg = window.createVirtualGame(trimmed);
         entry._gameId = vg.id;

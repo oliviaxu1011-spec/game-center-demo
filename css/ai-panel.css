@@ -1236,15 +1236,6 @@
   overflow:hidden;
 }
 
-/* 键盘弹出时快捷操作标签也隐藏，节省空间 */
-.ai-panel.keyboard-open .aio-quick-actions {
-  height:0;
-  padding:0;
-  opacity:0;
-  overflow:hidden;
-  margin:0;
-}
-
 .aio-home-indicator-bar {
   width:134px;
   height:5px;
