@@ -921,18 +921,12 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
         const isKbOpen = vh < fullHeight * 0.75;
         setKeyboardState(isKbOpen);
 
-        // 将面板高度限制为可视区域高度
-        panel.style.height = vh + 'px';
-        panel.style.maxHeight = vh + 'px';
+        // 面板高度保持固定，不随键盘动态调整
+        // 只滚动聊天区域，确保最新消息可见
         scrollChat();
       }
     });
-    window.visualViewport.addEventListener('scroll', () => {
-      if (panel && !panel.classList.contains('hidden')) {
-        // 确保面板紧贴可视区域底部
-        panel.style.top = window.visualViewport.offsetTop + 'px';
-      }
-    });
+    // 不再动态调整 panel.style.top，保持面板固定位置
   }
 
   chatInput.addEventListener('focus', () => {
@@ -945,11 +939,6 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
   chatInput.addEventListener('blur', () => {
     setTimeout(() => {
       setKeyboardState(false);
-      if (panel) {
-        panel.style.height = '';
-        panel.style.maxHeight = '';
-        panel.style.top = '';
-      }
     }, 100);
   });
 

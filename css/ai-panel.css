@@ -6,7 +6,7 @@
   box-shadow:0 -4px 20px rgba(0,0,0,.08);
   z-index:200; max-height:100vh; max-height:100dvh;
   display:flex; flex-direction:column;
-  transition:transform .4s cubic-bezier(.22,1,.36,1), opacity .3s ease, height .25s ease, max-height .25s ease, top .15s ease;
+  transition:transform .4s cubic-bezier(.22,1,.36,1), opacity .3s ease;
   overflow:hidden;
   top:0;
   touch-action:pan-y;
