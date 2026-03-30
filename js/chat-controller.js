@@ -914,18 +914,23 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
 
   if (window.visualViewport) {
     const fullHeight = window.visualViewport.height;
-    window.visualViewport.addEventListener('resize', () => {
-      const vh = window.visualViewport.height;
-      if (panel && !panel.classList.contains('hidden')) {
-        // 键盘弹出时，viewport 高度会明显变小
-        const isKbOpen = vh < fullHeight * 0.75;
-        setKeyboardState(isKbOpen);
 
-        // 将面板高度限制为可视区域高度，使输入框紧贴键盘
-        panel.style.height = vh + 'px';
-        scrollChat();
-      }
-    });
+    const adjustPanel = () => {
+      if (!panel || panel.classList.contains('hidden')) return;
+      const vv = window.visualViewport;
+      const vh = vv.height;
+      const isKbOpen = vh < fullHeight * 0.75;
+      setKeyboardState(isKbOpen);
+
+      // 将面板定位到可视区域：top 跟随 viewport 偏移，height 跟随 viewport 高度
+      panel.style.top = vv.offsetTop + 'px';
+      panel.style.height = vh + 'px';
+      panel.style.bottom = 'auto';
+      scrollChat();
+    };
+
+    window.visualViewport.addEventListener('resize', adjustPanel);
+    window.visualViewport.addEventListener('scroll', adjustPanel);
   }
 
   chatInput.addEventListener('focus', () => {
@@ -940,6 +945,8 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
       setKeyboardState(false);
       if (panel) {
         panel.style.height = '';
+        panel.style.top = '0';
+        panel.style.bottom = '0';
       }
     }, 100);
   });
